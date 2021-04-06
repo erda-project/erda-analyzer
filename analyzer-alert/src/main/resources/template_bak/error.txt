@@ -1,0 +1,23 @@
+【严重】应用异常错误
+
+项目：{{ project_name }}
+
+应用：{{ application_name }}
+
+服务：{{ runtime_name }} / {{ service_name }}
+
+实例：{{ instance_id }}
+
+类：{{ class }}
+
+方法：{{ method }}
+
+行数：{{ line }}
+
+错误：{{ type }}
+
+{{ window }} 分钟内出现 {{ count }} 次
+
+时间：{{ timestamp }}
+
+[点击查看详情]({{ details_url }})

@@ -1,0 +1,37 @@
+version: "1.1"
+stages:
+- stage:
+  - git-checkout:
+      alias: repo
+      params:
+        depth: 1
+- stage:
+  - custom-script:
+      alias: metrics
+      commands:
+      - cd ..
+      - repo/build.sh analyzer-metrics
+  - custom-script:
+      alias: alert
+      commands:
+      - cd ..
+      - repo/build.sh analyzer-alert
+  - custom-script:
+      alias: error-insight
+      commands:
+      - cd ..
+      - repo/build.sh analyzer-error-insight
+- stage:
+  - release:
+      alias: dicehub
+      params:
+        check_diceyml: false
+        dice_yml: ${repo}/dice.yml
+        release_id_path: dicehub
+        image:
+          analyzer-metrics: ${metrics:OUTPUT:image}
+          analyzer-metrics-task: ${metrics:OUTPUT:image}
+          analyzer-alert: ${alert:OUTPUT:image}
+          analyzer-alert-task: ${alert:OUTPUT:image}
+          analyzer-error-insight: ${error-insight:OUTPUT:image}
+          analyzer-error-insight-task: ${error-insight:OUTPUT:image}

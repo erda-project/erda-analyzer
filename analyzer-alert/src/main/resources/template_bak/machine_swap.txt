@@ -1,0 +1,9 @@
+【警告】机器 swap 内存使用率({{ used_percent_avg }}%%)异常，建议关闭机器 swap 交换分区
+
+集群：{{ cluster_name }}
+
+机器：{{ host_ip }}
+
+时间：{{ timestamp }}
+
+[点击查看详情]({{ details_url }})

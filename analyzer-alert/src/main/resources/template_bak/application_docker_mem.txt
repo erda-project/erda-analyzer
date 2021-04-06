@@ -1,0 +1,11 @@
+项目：{{ project_name }}
+
+应用：{{ application_name }}
+
+服务：{{ runtime_name }} / {{ service_name }}
+
+容器ID：{{ container_id }}
+
+【警告】{{ service_name }} 服务容器内存使用率({{ usage_percent_avg }}%%)异常，使用量: {{ usage_value }}MB 分配量: {{ limit_value }}MB
+
+时间: {{ timestamp }}

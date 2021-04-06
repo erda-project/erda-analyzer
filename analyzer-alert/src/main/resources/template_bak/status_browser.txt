@@ -1,0 +1,13 @@
+【警告】页面内容改变
+
+项目：{{ project_name }}
+
+环境：{{ workspace }}
+
+页面：{{ url }}
+
+事件：[{{ metric_name }}]({{ url }})页面内容和基准点对比不一致
+
+时间：{{ timestamp }}
+
+[点击查看详情]({{ details_url }})

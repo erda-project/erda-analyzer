@@ -1,0 +1,233 @@
+version: 2.0
+
+envs:
+  AKKA_ASK_TIMEOUT: "60s"
+  AKKA_LOOKUP_TIMEOUT: "60s"
+  AKKA_TCP_TIMEOUT: "60s"
+  AKKA_FRAMESIZE: "268435456b"
+  HEARTBEAT_TIMEOUT: "60000"
+  RESOURCEMANAGER_JOB_TIMEOUT: "10minutes"
+  RESOURCEMANAGER_TASKMANAGER_TIMEOUT: "30000"
+  JOB_MANAGER_HEAP_SIZE: "700m"
+  PARALLELISM_DEFAULT: "2"
+  TASK_MANAGER_MEM_PREALLOCATION: "true"
+  TASK_MANAGER_NUMBER_OF_TASK_SLOTS: "2"
+  TASK_MANAGER_MEMORY_MANAGED_FRACTION: "0"
+  FLINK_ENV_JAVA_OPTS_TM: -XX:+UseG1GC -XX:MaxMetaspaceSize=268435456
+
+services:
+  analyzer-metrics:
+    cmd: flink-entrypoint.sh jobcluster --job-classname cloud.erda.analyzer.metrics.Main
+    resources:
+      cpu: 0.01
+      max_cpu: 0.5
+      mem: 1024
+      max_mem: 1024
+    deployments:
+      replicas: 1
+      labels:
+        GROUP: spot-analyzer
+    health_check:
+      http:
+        port: 8081
+        path: /jobmanager/config
+        duration: 120
+    ports:
+      - 8081
+      - 6123
+      - 6124
+      - 6125
+    binds:
+      - <%$.Storage.MountPoint%>/spot-v2/analyzer/metrics:/data:rw
+    envs:
+      JOB_MANAGER_NAME: self
+      PARALLELISM_DEFAULT: "4"
+      STREAM_PARALLELISM_INPUT: "4"
+      STREAM_PARALLELISM_OPERATOR: "4"
+      STREAM_PARALLELISM_OUTPUT: "4"
+      STREAM_CHECKPOINT_ENABLE: "false"
+      STREAM_CHECKPOINT_INTERVAL: "120000"
+      STREAM_STATE_BACKEND: "jobmanager"
+      STREAM_STATE_BACKEND_FS_PATH: "file:///data/checkpoints"
+      STATE_BACKEND_ROCKSDB_LOCALDIR: "/tmp/rocksdb"
+      GROUP_ID: "spot-analyzer-metrics"
+
+  analyzer-metrics-task:
+    cmd: flink-entrypoint.sh taskmanager
+    resources:
+      cpu: 0.01
+      max_cpu: 1
+      mem: 2048
+      max_mem: 2048
+    deployments:
+      replicas: 2
+      labels:
+        GROUP: spot-analyzer
+    ports:
+      - 6121
+      - 6122
+      - 6125
+    health_check:
+      exec:
+        cmd: "ps aux | grep TaskManagerRunner || exit 1"
+        duration: 120
+    depends_on:
+      - analyzer-metrics
+    binds:
+      - <%$.Storage.MountPoint%>/spot-v2/analyzer/metrics:/data:rw
+    envs:
+      JOB_MANAGER_NAME: analyzer_metrics
+      TASK_MANAGER_MEMORY_PROCESS_SIZE: 1843m
+
+  analyzer-alert:
+    cmd: flink-entrypoint.sh jobcluster --job-classname cloud.erda.analyzer.alert.Main
+    resources:
+      cpu: 0.01
+      max_cpu: 0.5
+      mem: 1024
+      max_mem: 1024
+    deployments:
+      replicas: 1
+      labels:
+        GROUP: spot-analyzer
+    health_check:
+      http:
+        port: 8081
+        path: /jobmanager/config
+        duration: 120
+    ports:
+      - 8081
+      - 6123
+      - 6124
+      - 6125
+    depends_on:
+      - cmdb
+      - eventbox
+    binds:
+      - <%$.Storage.MountPoint%>/spot-v2/analyzer/alert:/data:rw
+    envs:
+      JOB_MANAGER_NAME: self
+      STREAM_PARALLELISM_INPUT: "2"
+      STREAM_PARALLELISM_OPERATOR: "2"
+      STREAM_PARALLELISM_OUTPUT: "2"
+      STREAM_CHECKPOINT_ENABLE: "true"
+      STREAM_CHECKPOINT_INTERVAL: "120000"
+      STREAM_STATE_BACKEND: "jobmanager"
+      STREAM_STATE_BACKEND_FS_PATH: "file:///data/checkpoints"
+      STATE_BACKEND_ROCKSDB_LOCALDIR: "/tmp/rocksdb"
+      GROUP_ID: spot-analyzer-alert
+
+  analyzer-alert-task:
+    cmd: flink-entrypoint.sh taskmanager
+    resources:
+      cpu: 0.01
+      max_cpu: 1
+      mem: 2048
+      max_mem: 2048
+    deployments:
+      replicas: 1
+      labels:
+        GROUP: spot-analyzer
+    ports:
+      - 6121
+      - 6122
+      - 6125
+    health_check:
+      exec:
+        cmd: "ps aux | grep TaskManagerRunner || exit 1"
+        duration: 120
+    depends_on:
+      - analyzer-alert
+    binds:
+      - <%$.Storage.MountPoint%>/spot-v2/analyzer/alert:/data:rw
+    envs:
+      JOB_MANAGER_NAME: analyzer_alert
+      TASK_MANAGER_MEMORY_PROCESS_SIZE: 1843m
+
+  analyzer-error-insight:
+    cmd: flink-entrypoint.sh jobcluster --job-classname cloud.erda.analyzer.errorInsight.Main
+    resources:
+      cpu: 0.01
+      max_cpu: 1
+      mem: 2048
+      max_mem: 2048
+    deployments:
+      replicas: 1
+      labels:
+        GROUP: spot-analyzer
+    health_check:
+      http:
+        port: 8081
+        path: /jobmanager/config
+        duration: 120
+    ports:
+      - 8081
+      - 6123
+      - 6124
+      - 6125
+    binds:
+      - <%$.Storage.MountPoint%>/spot-v2/analyzer/error-insight:/data:rw
+    envs:
+      JOB_MANAGER_NAME: self
+      GROUP_ID: spot-analyzer-error-insight
+      STREAM_PARALLELISM_INPUT: "2"
+      STREAM_PARALLELISM_OPERATOR: "2"
+      STREAM_PARALLELISM_OUTPUT: "2"
+      CASSANDRA_BATCHSIZE: "10"
+
+  analyzer-error-insight-task:
+    cmd: flink-entrypoint.sh taskmanager
+    resources:
+      cpu: 0.01
+      max_cpu: 1
+      mem: 2048
+      max_mem: 2048
+    deployments:
+      replicas: 1
+      labels:
+        GROUP: spot-analyzer
+    ports:
+      - 6121
+      - 6122
+      - 6125
+    health_check:
+      exec:
+        cmd: "ps aux | grep TaskManagerRunner || exit 1"
+        duration: 120
+    depends_on:
+      - analyzer-error-insight
+    binds:
+      - <%$.Storage.MountPoint%>/spot-v2/analyzer/error-insight:/data:rw
+    envs:
+      JOB_MANAGER_NAME: analyzer_error_insight
+      TASK_MANAGER_MEMORY_PROCESS_SIZE: 1843m
+
+environments:
+  test:
+    envs:
+      AKKA_FRAMESIZE: "62914560b"
+      JOB_MANAGER_HEAP_SIZE: 375m
+    services:
+      analyzer-metrics:
+        resources:
+          cpu: 0.1
+          max_cpu: 0.2
+          mem: 512
+        envs:
+          PARALLELISM_DEFAULT: "2"
+          STREAM_PARALLELISM_INPUT: "2"
+          STREAM_PARALLELISM_OPERATOR: "2"
+          STREAM_PARALLELISM_OUTPUT: "2"
+      analyzer-metrics-task:
+        deployments:
+          replicas: 1
+      analyzer-alert:
+        resources:
+          cpu: 0.1
+          max_cpu: 0.2
+          mem: 512
+      analyzer-error-insight:
+        resources:
+          cpu: 0.1
+          max_cpu: 0.2
+          mem: 512

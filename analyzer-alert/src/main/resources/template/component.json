@@ -1,0 +1,18 @@
+{
+  "match": [
+    {
+      "metrics": ["xxxx", "xxxxx"],
+      "exists": {
+        "tags": ["xxx"],
+        "fields": ["xxx", "xxx"]
+      },
+      "filters": {
+        "tags": {
+
+        }
+      }
+    }
+  ],
+  "keys": ["xxx", "xxx"],
+  "content": "abc for {{xxxx}} xxx {{xxxx}} {{xxxx}} { ... }"
+}

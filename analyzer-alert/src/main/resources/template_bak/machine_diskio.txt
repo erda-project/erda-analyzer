@@ -1,0 +1,9 @@
+【警告】机器磁盘 IO 操作百分比({{ pct_util_min }}%%)异常
+
+集群：{{ cluster_name }}
+
+机器：{{ host_ip }}
+
+时间：{{ timestamp }}
+
+[点击查看详情]({{ details_url }})
