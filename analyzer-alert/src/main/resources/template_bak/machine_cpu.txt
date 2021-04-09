@@ -1,0 +1,9 @@
+【警告】机器 CPU 使用率({{ usage_active_avg }}%%)过高
+
+集群：{{ cluster_name }}
+
+机器：{{ host_ip }}
+
+时间：{{ timestamp }}
+
+[点击查看详情]({{ details_url }})

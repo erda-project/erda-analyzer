@@ -1,0 +1,13 @@
+项目：{{ project_name }}
+
+应用：{{ application_name }}
+
+服务：{{ runtime_name }} / {{ service_name }}
+
+容器ID：{{ container_id }}
+
+【警告】{{ service_name }} 服务容器 OOM，请检查是否内存设置过小！
+
+时间: {{ timestamp }}
+
+[点击查看详情]({{ details_url }})

@@ -1,0 +1,9 @@
+集群：{{ cluster_name }}
+
+机器：{{ host_ip }}
+
+容器ID：{{ container_id }}
+
+【警告】{{ component_name }} 组件容器 OOM，请检查是否内存设置过小！
+
+时间: {{ timestamp }}

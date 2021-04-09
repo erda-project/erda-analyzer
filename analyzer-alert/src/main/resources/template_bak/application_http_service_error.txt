@@ -1,0 +1,13 @@
+【警告】服务HTTP错误率异常
+
+项目：{{ target_project_name }}
+
+应用：{{ target_application_name }}
+
+服务：{{ target_runtime_name }} / {{ target_service_name }}
+
+事件：{{ window }}分钟内HTTP错误率 {{ error_percent }}%% 错误请求次数{{ error_count }} 总请求次数{{ call_count }}
+
+时间：{{ timestamp }}
+
+[点击查看详情]({{ details_url }})

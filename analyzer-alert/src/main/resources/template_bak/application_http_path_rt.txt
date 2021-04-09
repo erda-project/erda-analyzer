@@ -1,0 +1,15 @@
+【警告】服务接口HTTP响应时间异常
+
+项目：{{ target_project_name }}
+
+应用：{{ target_application_name }}
+
+服务：{{ target_runtime_name }} / {{ target_service_name }}
+
+接口: {{ http_method }} {{ http_url }}
+
+事件：{{ window }}分钟内接口平均响应时间{{ elapsed }}ms 请求次数{{ count }}
+
+时间：{{ timestamp }}
+
+[点击查看详情]({{ details_url }})

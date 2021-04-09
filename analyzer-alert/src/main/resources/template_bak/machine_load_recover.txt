@@ -1,0 +1,9 @@
+【恢复】机器 load5 告警恢复
+
+集群：{{ cluster_name }}
+
+机器：{{ host_ip }}
+
+持续时间：{{ duration }}分钟
+
+恢复时间：{{ timestamp }}

@@ -1,0 +1,15 @@
+【警告】JVM 堆内存使用率过高
+
+项目：{{ project_name }}
+
+应用：{{ application_name }}
+
+服务：{{ runtime_name }} / {{ service_name }}
+
+实例：{{ instance_id }}
+
+事件：JVM 堆内存使用率 ({{ usage_percent_avg }}%%) 堆内存使用量({{ used_value }}MB) 最大堆内存({{ max_value }}MB)
+
+时间：{{ timestamp }}
+
+[点击查看详情]({{ details_url }})

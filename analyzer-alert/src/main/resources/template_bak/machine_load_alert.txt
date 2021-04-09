@@ -1,0 +1,9 @@
+【严重】机器系统 5 分钟 load({{ load5 }}) 异常
+
+集群：{{ cluster_name }}
+
+机器：{{ host_ip }}
+
+时间：{{ timestamp }}
+
+[点击查看详情]({{ details_url }})

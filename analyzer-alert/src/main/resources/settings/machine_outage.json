@@ -1,0 +1,19 @@
+{
+  "alert_type": "x",
+  "alert_index": "x",
+
+  "silent_duration": 1000,
+  "time_window": 1000,
+  "templates": {
+    "ticket,history": {
+      "mode": "single",
+      "title": " {{metric.tags.xxxx}} ",
+      "content": "{{for xxx }}"
+    },
+    "dingding,notify_group": {
+      "mode": "many",
+      "title": "xxx",
+      "content": "{{for metrics }} xxx {{end}}"
+    }
+  }
+}

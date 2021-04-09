@@ -1,0 +1,15 @@
+【警告】NodeJS 堆内存使用率异常
+
+项目：{{ project_name }}
+
+应用：{{ application_name }}
+
+服务：{{ runtime_name }} / {{ service_name }}
+
+实例：{{ instance_id }}
+
+事件：NodeJS 堆内存使用率({{ usage_percent_avg }}%%) 堆内存使用量({{ heap_total_value }}MB) RSS 内存({{ rss_value }}MB) 总内存({{ max_value }})
+
+时间：{{ timestamp }}
+
+[点击查看详情]({{ details_url }})
