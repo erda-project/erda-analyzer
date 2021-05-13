@@ -16,12 +16,8 @@ package cloud.erda.analyzer.alert;
 
 import cloud.erda.analyzer.alert.functions.*;
 import cloud.erda.analyzer.alert.models.*;
-import cloud.erda.analyzer.alert.sinks.AlertRecordSink;
-import cloud.erda.analyzer.alert.sinks.NotifyRecordSink;
 import cloud.erda.analyzer.alert.sources.AllNotifyTemplates;
 import cloud.erda.analyzer.alert.watermarks.RenderedAlertEventWatermarkExtractor;
-import cloud.erda.analyzer.alert.functions.*;
-import cloud.erda.analyzer.alert.models.*;
 import cloud.erda.analyzer.alert.sinks.EventBoxSink;
 import cloud.erda.analyzer.alert.sources.NotifyReader;
 import cloud.erda.analyzer.alert.sources.NotifyTemplateReader;
@@ -45,6 +41,8 @@ import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTime
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
+import schemas.RecordSchema;
+
 import static cloud.erda.analyzer.common.constant.Constants.*;
 
 import java.util.ArrayList;
@@ -189,20 +187,28 @@ public class Main {
                 .map(new NotifyEventTemplateRenderFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR));
 
-
         // 存储告警记录
-        alertRender
-                .map(new AlertRecordMapFunction())
+        //不进行数据存储操作，将数据发送到kafka中，由monitor读取再存入mysql中
+        alertRender.
+                map(new AlertRecordMapFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-                .addSink(new AlertRecordSink(parameterTool.getProperties()))
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
-                .name("store alert record");
-        // 存储通知记录
+                .name("RenderedAlertEvent to record")
+                .addSink(new FlinkKafkaProducer<>(
+                        parameterTool.getRequired(Constants.KAFKA_BROKERS),
+                        parameterTool.getRequired(Constants.TOPIC_RECORD_ALERT),
+                        new RecordSchema(AlertRecord.class)))
+                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
+                .name("push alert record output to kafka");
+
         notifyRender.map(new NotifyRecordMapFunction())
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-                .addSink(new NotifyRecordSink(parameterTool.getProperties()))
+                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
+                .name("RenderedNotifyEvent to record")
+                .addSink(new FlinkKafkaProducer<>(
+                        parameterTool.getRequired(KAFKA_BROKERS),
+                        parameterTool.getRequired(TOPIC_RECORD_NOTIFY),
+                        new RecordSchema<>(NotifyRecord.class)))
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
-                .name("store notify record");
+                .name("push notify record output to kafka");
 
         // 存储ticket告警指标
 //        ticketAlertEvents
