@@ -37,6 +37,10 @@ public class Constants {
 
     public static final String TOPIC_METRICS_TEMP = "kafka.topic.metrics_temp";
 
+    //由monitor将记录存入mysql的topic
+    public static final String TOPIC_RECORD_ALERT = "kafka.topic.alert.record";
+    public static final String TOPIC_RECORD_NOTIFY = "kafka.topic.notify.record";
+
     public static final String KAFKA_BROKERS = "bootstrap.servers";
 
     /**
@@ -189,4 +193,7 @@ public class Constants {
     public static final String SCOPE_ID = "_metric_scope_id";
 
     public static final String MICRO_SERVICE = "micro_service";
+
+    //http request interval
+    public static final String HTTP_INTERVAL = "http_interval";
 }
