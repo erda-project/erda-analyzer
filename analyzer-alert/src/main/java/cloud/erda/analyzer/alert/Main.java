@@ -45,8 +45,6 @@ import schemas.RecordSchema;
 
 import static cloud.erda.analyzer.common.constant.Constants.*;
 
-import java.util.ArrayList;
-
 @Slf4j
 public class Main {
 
@@ -118,12 +116,12 @@ public class Main {
                 .returns(AlertNotify.class)
                 .name("Query alert notify from mysql");
 
-        //alert_notify_template数据，从集合中读取数据
-        //从集合列表读取系统配置的消息通知模版
-        AllNotifyTemplates allNotifyTemplates = new AllNotifyTemplates();
-        ArrayList<NotifyTemplate> templates = allNotifyTemplates.GetSysTemplateList(parameterTool.getProperties());
 
-        DataStream<NotifyTemplate> allTemplates = env.fromCollection(templates).name("get templates from arraylist");
+        DataStream<NotifyTemplate> allTemplates = env.addSource(new AllNotifyTemplates(parameterTool.get(Constants.MONITOR_ADDR)))
+                .forceNonParallel()
+                .returns(NotifyTemplate.class)
+                .name("get templates use http");
+
         DataStream<UniversalTemplate> allUniversalTemplates = allTemplates.flatMap(new UniversalTemplateProcessFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("transform to universalTemplate");
