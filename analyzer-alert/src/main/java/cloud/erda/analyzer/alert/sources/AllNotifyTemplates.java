@@ -15,9 +15,10 @@
 package cloud.erda.analyzer.alert.sources;
 
 import cloud.erda.analyzer.alert.models.NotifyTemplate;
-import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.utils.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -28,17 +29,22 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Properties;
 
 @Slf4j
-public class AllNotifyTemplates {
-    public ArrayList<NotifyTemplate> GetSysTemplateList(Properties props) throws IOException {
+public class AllNotifyTemplates implements SourceFunction<NotifyTemplate>{
+    private String monitorAddr;
+    private CloseableHttpClient httpclient;
+    private long httpInterval = 60000;
+
+    public AllNotifyTemplates(String monitorAddr) {
+        this.monitorAddr = monitorAddr;
+    }
+
+    public ArrayList<NotifyTemplate> GetSysTemplateList() throws IOException {
         ArrayList<NotifyTemplate> templateArr = new ArrayList<>();
-        String monitorAddr = (String) props.getOrDefault(Constants.MONITOR_ADDR, "monitor.default.svc.cluster.local:7096");
         String uri = "/api/notify/all-templates";
         String templateUrl = "http://" + monitorAddr + uri;
-//        String templateUrl = "http://localhost:7096/api/notify/all-templates";
-        CloseableHttpClient httpclient = HttpClients.createDefault();
+        this.httpclient = HttpClients.createDefault();
         try {
             HttpGet httpGet = new HttpGet(templateUrl);
             CloseableHttpResponse closeableHttpResponse = httpclient.execute(httpGet);
@@ -55,9 +61,29 @@ public class AllNotifyTemplates {
         } catch (Exception e) {
             log.error("get all templates is failed err:", e);
             return templateArr;
-        } finally {
-            httpclient.close();
         }
         return templateArr;
+    }
+
+    @Override
+    public void run(SourceContext<NotifyTemplate> sourceContext) throws Exception {
+        while (true) {
+            val list = GetSysTemplateList();
+            for (int i = 0; i < list.size(); i++) {
+                sourceContext.collect(list.get(i));
+            }
+            Thread.sleep(this.httpInterval);
+        }
+    }
+
+    @Override
+    public void cancel() {
+        if(this.httpclient != null) {
+            try {
+                this.httpclient.close();
+            } catch (Exception e) {
+                log.error("close httpclient is error");
+            }
+        }
     }
 }
