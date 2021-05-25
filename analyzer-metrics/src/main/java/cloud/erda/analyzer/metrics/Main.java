@@ -82,7 +82,6 @@ public class Main {
                 .returns(ExpressionMetadata.class)
                 .name("Query metric expression from mysql");
 
-//        DataStream<ExpressionMetadata> expressionQuery = alertExpressionQuery.union(metricExpressionQuery);
         DataStream<ExpressionMetadata> expressionQuery = alertExpressionOrg.union(metricExpressionQuery);
 
         //metric data from kafka
