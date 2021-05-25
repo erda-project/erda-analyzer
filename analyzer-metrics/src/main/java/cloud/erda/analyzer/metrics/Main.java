@@ -14,8 +14,8 @@
 
 package cloud.erda.analyzer.metrics;
 
-import cloud.erda.analyzer.alert.utils.StateDescriptors;
 import cloud.erda.analyzer.metrics.functions.*;
+import cloud.erda.analyzer.metrics.sources.AllDiceOrg;
 import cloud.erda.analyzer.runtime.functions.*;
 import cloud.erda.analyzer.runtime.models.*;
 import com.esotericsoftware.kryo.serializers.CompatibleFieldSerializer;
@@ -40,6 +40,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
+import utils.StateDescriptors;
 
 import java.util.Arrays;
 import java.util.List;
@@ -57,10 +58,10 @@ public class Main {
 
         //查询dice_org
         DataStream<DiceOrg> diceOrgQuery = env
-                .addSource(new FlinkMysqlAppendSource<>(Constants.DICE_ORG_QUERY,parameterTool.getLong(Constants.METRIC_METADATA_INTERVAL,60000),new DiceOrgReader(),parameterTool.getProperties()))
+                .addSource(new AllDiceOrg(parameterTool.get(Constants.CMDB_ADDR)))
                 .forceNonParallel()
                 .returns(DiceOrg.class)
-                .name("query dice_org form mysql");
+                .name("get all dice org");
 
         //规则表达式数据
         DataStream<ExpressionMetadata> alertExpressionQuery = env

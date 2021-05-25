@@ -25,13 +25,13 @@ public class DiceOrgBroadcastProcessFunction extends BroadcastProcessFunction<Ex
         }
         val orgId = expressionMetadata.getAttributes().get("dice_org_id");
         ReadOnlyBroadcastState<Long,String> diceOrg = readOnlyContext.getBroadcastState(diceOrgDescriptor);
-        String orgName = "";
+        String orgName = new String();
         if (orgId != null) {
             orgName = diceOrg.get((Long.parseLong(orgId)));
         }
         String displayUrl = expressionMetadata.getAttributes().get("display_url");
         String recordUrl = expressionMetadata.getAttributes().get("record_url");
-        if (orgName != "") {
+        if (orgName != null) {
             if (displayUrl != null) {
                 displayUrl = ModifyUrl(orgName,displayUrl);
                 expressionMetadata.getAttributes().put("display_url",displayUrl);
@@ -40,8 +40,8 @@ public class DiceOrgBroadcastProcessFunction extends BroadcastProcessFunction<Ex
                 recordUrl = ModifyUrl(orgName,recordUrl);
                 expressionMetadata.getAttributes().put("record_url",recordUrl);
             }
+            collector.collect(expressionMetadata);
         }
-        collector.collect(expressionMetadata);
     }
 
     public String ModifyUrl(String orgName,String url) throws MalformedURLException {
