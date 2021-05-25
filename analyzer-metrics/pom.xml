@@ -26,6 +26,12 @@
             <artifactId>analyzer-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>cloud.erda</groupId>
+            <artifactId>analyzer-alert</artifactId>
+            <version>3.0.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

@@ -43,4 +43,7 @@ public class StateDescriptors {
     public static final MapStateDescriptor<String, Map<String, UniversalTemplate>> notifyTemplate =
             new MapStateDescriptor<>("notify_template_state", BasicTypeInfo.STRING_TYPE_INFO,
                     new MapTypeInfo<>(BasicTypeInfo.STRING_TYPE_INFO, TypeInformation.of(UniversalTemplate.class)));
+
+    public static final MapStateDescriptor<Long,String> diceOrgDescriptor =
+            new MapStateDescriptor<>("dice_org",BasicTypeInfo.LONG_TYPE_INFO,BasicTypeInfo.STRING_TYPE_INFO);
 }
