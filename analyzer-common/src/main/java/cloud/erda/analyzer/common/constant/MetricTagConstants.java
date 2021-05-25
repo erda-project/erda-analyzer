@@ -35,7 +35,7 @@ public class MetricTagConstants {
     public static final String METRIC_NAME = "metric_name";
     public static final String KEY = "key";
     public static final String LEVEL = "level";
-    public static final String SOURCE = "source";
+    public static final String SOURCE = "cloud/erda/analyzer/common/source";
 
 
     public static final String HOSTIP = "host_ip";
