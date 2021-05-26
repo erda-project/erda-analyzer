@@ -96,7 +96,7 @@ public class Main {
                 .name("alert metrics consumer");
 
         // 存储原始告警数据
-        alertMetric.addSink(new FlinkKafkaProducer<>(
+        alertMetricWithOrg.addSink(new FlinkKafkaProducer<>(
                 parameterTool.getRequired(Constants.KAFKA_BROKERS),
                 parameterTool.getRequired(Constants.TOPIC_METRICS),
                 new MetricEventSchema()
