@@ -1,15 +1,10 @@
-package cloud.erda.analyzer.metrics.sources;
+package cloud.erda.analyzer.alert.sources;
 
+import cloud.erda.analyzer.alert.models.DiceOrg;
+import cloud.erda.analyzer.alert.utils.HttpClientPool;
 import cloud.erda.analyzer.common.utils.GsonUtil;
-import cloud.erda.analyzer.runtime.models.DiceOrg;
 import lombok.extern.slf4j.Slf4j;
-import cloud.erda.analyzer.common.source.*;
-import lombok.val;
-import org.apache.flink.streaming.api.functions.source.SourceFunction;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
@@ -18,9 +13,9 @@ import java.util.ArrayList;
 import java.util.Map;
 
 @Slf4j
-public class AllDiceOrg extends HttpRequestSource<DiceOrg> {
+public class OrgList extends HttpRequestSource<DiceOrg> {
 
-    public AllDiceOrg(String requestAddr) {
+    public OrgList(String requestAddr) {
         super(requestAddr);
     }
 
@@ -28,9 +23,8 @@ public class AllDiceOrg extends HttpRequestSource<DiceOrg> {
     public ArrayList<DiceOrg> HttpRequestGetData() throws IOException {
         ArrayList<DiceOrg> orgs = new ArrayList<>();
         String uri = "/api/orgs";
-
         String orgUrl = "http://" + this.requestAddr + uri;
-        this.httpClient = HttpClients.createDefault();
+        this.httpClient = HttpClientPool.getConnection();
         try {
             HttpGet httpGet = new HttpGet(orgUrl);
             httpGet.addHeader("Internal-Client", "bundle");
@@ -48,7 +42,9 @@ public class AllDiceOrg extends HttpRequestSource<DiceOrg> {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            this.closeableHttpResponse.close();
+            if (this.closeableHttpResponse != null) {
+                this.closeableHttpResponse.close();
+            }
         }
         return orgs;
     }

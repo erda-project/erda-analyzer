@@ -1,4 +1,4 @@
-package cloud.erda.analyzer.common.source;
+package cloud.erda.analyzer.alert.sources;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 @Slf4j
-public class HttpRequestSource<T> implements SourceFunction<T> {
+public abstract class HttpRequestSource<T> implements SourceFunction<T> {
     public CloseableHttpClient httpClient;
     public String requestAddr;
     public final long httpInterval = 60000;
@@ -19,9 +19,7 @@ public class HttpRequestSource<T> implements SourceFunction<T> {
         this.requestAddr = requestAddr;
     }
 
-    public ArrayList<T> HttpRequestGetData() throws IOException {
-        return null;
-    }
+    public abstract ArrayList<T> HttpRequestGetData() throws IOException;
 
     @Override
     public void run(SourceContext<T> sourceContext) throws Exception {

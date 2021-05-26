@@ -1,4 +1,4 @@
-package cloud.erda.analyzer.runtime.models;
+package cloud.erda.analyzer.alert.models;
 
 import lombok.Data;
 

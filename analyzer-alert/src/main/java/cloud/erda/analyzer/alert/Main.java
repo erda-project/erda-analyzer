@@ -16,12 +16,9 @@ package cloud.erda.analyzer.alert;
 
 import cloud.erda.analyzer.alert.functions.*;
 import cloud.erda.analyzer.alert.models.*;
-import cloud.erda.analyzer.alert.sources.AllNotifyTemplates;
+import cloud.erda.analyzer.alert.sources.*;
 import cloud.erda.analyzer.alert.watermarks.RenderedAlertEventWatermarkExtractor;
 import cloud.erda.analyzer.alert.sinks.EventBoxSink;
-import cloud.erda.analyzer.alert.sources.NotifyReader;
-import cloud.erda.analyzer.alert.sources.NotifyTemplateReader;
-import cloud.erda.analyzer.alert.sources.SpotNotifyReader;
 import cloud.erda.analyzer.alert.utils.StateDescriptors;
 import cloud.erda.analyzer.alert.watermarks.AlertEventWatermarkExtractor;
 import cloud.erda.analyzer.common.constant.AlertConstants;
@@ -64,7 +61,7 @@ public class Main {
         StreamExecutionEnvironment env = ExecutionEnv.prepare(parameterTool);
 
         DataStream<MetricEvent> alertMetric = env.addSource(new FlinkKafkaConsumer<>(
-                parameterTool.getRequired(Constants.TOPIC_ALERT),
+                parameterTool.getRequired(TOPIC_ALERT),
                 new MetricEventSchema(),
                 parameterTool.getProperties()))
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_INPUT))
@@ -74,9 +71,21 @@ public class Main {
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_INPUT))
                 .name("alert metrics consumer");
 
+        DataStream<DiceOrg> diceOrgQuery = env
+                .addSource(new OrgList(parameterTool.get(Constants.CMDB_ADDR)))
+                .forceNonParallel()
+                .returns(DiceOrg.class)
+                .name("get all dice org");
+
+        DataStream<MetricEvent> alertMetricWithOrg = alertMetric
+                .connect(diceOrgQuery.broadcast(StateDescriptors.diceOrgDescriptor))
+                .process(new DiceOrgBroadcastProcessFunction(StateDescriptors.diceOrgDescriptor))
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+                .name("alert expression with org name");
+
         //获取notify相关的metric
         DataStream<MetricEvent> notifyMetric = env.addSource(new FlinkKafkaConsumer<>(
-                parameterTool.getRequired(Constants.TOPIC_NOTIFY),
+                parameterTool.getRequired(TOPIC_NOTIFY),
                 new MetricEventSchema(),
                 parameterTool.getProperties()))
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_INPUT))
@@ -87,16 +96,16 @@ public class Main {
                 .name("alert metrics consumer");
 
         // 存储原始告警数据
-        alertMetric.addSink(new FlinkKafkaProducer<>(
-                parameterTool.getRequired(Constants.KAFKA_BROKERS),
-                parameterTool.getRequired(Constants.TOPIC_METRICS),
+        alertMetricWithOrg.addSink(new FlinkKafkaProducer<>(
+                parameterTool.getRequired(KAFKA_BROKERS),
+                parameterTool.getRequired(TOPIC_METRICS),
                 new MetricEventSchema()
         )).setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
                 .name("Store raw alert metrics to kafka");
 
         notifyMetric.addSink(new FlinkKafkaProducer<>(
-                parameterTool.getRequired(Constants.KAFKA_BROKERS),
-                parameterTool.getRequired(Constants.TOPIC_METRICS),
+                parameterTool.getRequired(KAFKA_BROKERS),
+                parameterTool.getRequired(TOPIC_METRICS),
                 new MetricEventSchema()
         )).setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
                 .name("Store raw notify metrics to kafka");
@@ -109,15 +118,20 @@ public class Main {
                 .name("Query notify from mysql");
         //sp_alert_notify
         DataStream<AlertNotify> alertNotifyQuery = env
-                .addSource(new FlinkMysqlAppendSource<>(Constants.ALERT_NOTIFY_QUERY,
+                .addSource(new FlinkMysqlAppendSource<>(ALERT_NOTIFY_QUERY,
                         parameterTool.getLong(METRIC_METADATA_INTERVAL, 60000),
                         new NotifyReader(), parameterTool.getProperties()))
                 .forceNonParallel() // 避免多个线程重复读取mysql
                 .returns(AlertNotify.class)
                 .name("Query alert notify from mysql");
 
+//        DataStream<DiceOrg> diceOrgQuery = env
+//                .addSource(new OrgList(parameterTool.get(CMDB_ADDR)))
+//                .forceNonParallel()
+//                .returns(DiceOrg.class)
+//                .name("get all dice org");
 
-        DataStream<NotifyTemplate> allTemplates = env.addSource(new AllNotifyTemplates(parameterTool.get(Constants.MONITOR_ADDR)))
+        DataStream<NotifyTemplate> allTemplates = env.addSource(new AllNotifyTemplates(parameterTool.get(MONITOR_ADDR)))
                 .forceNonParallel()
                 .returns(NotifyTemplate.class)
                 .name("get templates use http");
@@ -127,7 +141,7 @@ public class Main {
                 .name("transform to universalTemplate");
 
         DataStream<AlertNotifyTemplate> alertNotifyTemplateQuery = env
-                .addSource(new FlinkMysqlAppendSource<>(Constants.ALERT_NOTIFY_TEMPLATE_QUERY, parameterTool.getLong(METRIC_METADATA_INTERVAL, 60000), new NotifyTemplateReader(false), parameterTool.getProperties()))
+                .addSource(new FlinkMysqlAppendSource<>(ALERT_NOTIFY_TEMPLATE_QUERY, parameterTool.getLong(METRIC_METADATA_INTERVAL, 60000), new NotifyTemplateReader(false), parameterTool.getProperties()))
                 .forceNonParallel()
                 .returns(AlertNotifyTemplate.class)
                 .name("Query alert notify template from mysql");
@@ -138,7 +152,7 @@ public class Main {
                 .name("Query alert notify custom template from mysql");
 
         // metric转换event
-        DataStream<AlertEvent> alertEvents = alertMetric
+        DataStream<AlertEvent> alertEvents = alertMetricWithOrg
                 .flatMap(new AlertEventMapFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("map metric to alert event");
@@ -192,14 +206,14 @@ public class Main {
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("RenderedAlertEvent to record")
                 .addSink(new FlinkKafkaProducer<>(
-                        parameterTool.getRequired(Constants.KAFKA_BROKERS),
-                        parameterTool.getRequired(Constants.TOPIC_RECORD_ALERT),
+                        parameterTool.getRequired(KAFKA_BROKERS),
+                        parameterTool.getRequired(TOPIC_RECORD_ALERT),
                         new RecordSchema(AlertRecord.class)))
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
                 .name("push alert record output to kafka");
 
         notifyRender.map(new NotifyRecordMapFunction())
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("RenderedNotifyEvent to record")
                 .addSink(new FlinkKafkaProducer<>(
                         parameterTool.getRequired(KAFKA_BROKERS),

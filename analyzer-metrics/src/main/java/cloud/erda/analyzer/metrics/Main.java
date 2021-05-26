@@ -15,7 +15,6 @@
 package cloud.erda.analyzer.metrics;
 
 import cloud.erda.analyzer.metrics.functions.*;
-import cloud.erda.analyzer.metrics.sources.AllDiceOrg;
 import cloud.erda.analyzer.runtime.functions.*;
 import cloud.erda.analyzer.runtime.models.*;
 import com.esotericsoftware.kryo.serializers.CompatibleFieldSerializer;
@@ -25,6 +24,7 @@ import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.schemas.MetricEventSchema;
 import cloud.erda.analyzer.common.utils.ExecutionEnv;
 import cloud.erda.analyzer.common.watermarks.MetricWatermarkExtractor;
+import cloud.erda.analyzer.metrics.functions.*;
 import cloud.erda.analyzer.metrics.sources.AlertExpressionMetadataReader;
 import cloud.erda.analyzer.metrics.sources.MetricExpressionMetadataReader;
 import cloud.erda.analyzer.runtime.sources.FlinkMysqlAppendSource;
@@ -40,12 +40,9 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
-import utils.StateDescriptors;
 
 import java.util.Arrays;
 import java.util.List;
-
-import static cloud.erda.analyzer.common.constant.Constants.STREAM_PARALLELISM_OPERATOR;
 
 @Slf4j
 public class Main {
@@ -55,26 +52,12 @@ public class Main {
         StreamExecutionEnvironment env = ExecutionEnv.prepare(parameterTool);
         env.getConfig().registerTypeWithKryoSerializer(Expression.class, CompatibleFieldSerializer.class);
         env.getConfig().registerTypeWithKryoSerializer(ExpressionFunction.class, CompatibleFieldSerializer.class);
-
-        //查询dice_org
-        DataStream<DiceOrg> diceOrgQuery = env
-                .addSource(new AllDiceOrg(parameterTool.get(Constants.CMDB_ADDR)))
-                .forceNonParallel()
-                .returns(DiceOrg.class)
-                .name("get all dice org");
-
         //规则表达式数据
         DataStream<ExpressionMetadata> alertExpressionQuery = env
                 .addSource(new FlinkMysqlAppendSource<>(Constants.ALERT_EXPRESSION_QUERY, parameterTool.getLong(Constants.METRIC_METADATA_INTERVAL, 60000), new AlertExpressionMetadataReader(), parameterTool.getProperties()))
                 .forceNonParallel()
                 .returns(ExpressionMetadata.class)
                 .name("Query alert expression from mysql");
-
-        DataStream<ExpressionMetadata> alertExpressionOrg = alertExpressionQuery
-                .connect(diceOrgQuery.broadcast(StateDescriptors.diceOrgDescriptor))
-                .process(new DiceOrgBroadcastProcessFunction(StateDescriptors.diceOrgDescriptor))
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-                .name("alert expression with org name");
 
         //规则表达式数据
         DataStream<ExpressionMetadata> metricExpressionQuery = env
@@ -83,7 +66,7 @@ public class Main {
                 .returns(ExpressionMetadata.class)
                 .name("Query metric expression from mysql");
 
-        DataStream<ExpressionMetadata> expressionQuery = alertExpressionOrg.union(metricExpressionQuery);
+        DataStream<ExpressionMetadata> expressionQuery = alertExpressionQuery.union(metricExpressionQuery);
 
         //metric data from kafka
         List<String> topics = Arrays.asList(parameterTool.getRequired(Constants.TOPIC_METRICS), parameterTool.getRequired(Constants.TOPIC_METRICS_TEMP));

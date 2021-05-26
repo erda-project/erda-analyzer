@@ -1,7 +1,7 @@
-package cloud.erda.analyzer.runtime.functions;
+package cloud.erda.analyzer.alert.functions;
 
-import cloud.erda.analyzer.runtime.models.DiceOrg;
-import cloud.erda.analyzer.runtime.models.ExpressionMetadata;
+import cloud.erda.analyzer.alert.models.DiceOrg;
+import cloud.erda.analyzer.common.models.MetricEvent;
 import lombok.val;
 import org.apache.flink.api.common.state.MapStateDescriptor;
 import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
@@ -11,7 +11,7 @@ import org.apache.flink.util.Collector;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class DiceOrgBroadcastProcessFunction extends BroadcastProcessFunction<ExpressionMetadata, DiceOrg,ExpressionMetadata> {
+public class DiceOrgBroadcastProcessFunction extends BroadcastProcessFunction<MetricEvent, DiceOrg,MetricEvent> {
 
     private MapStateDescriptor<Long,String> diceOrgDescriptor;
     public DiceOrgBroadcastProcessFunction(MapStateDescriptor<Long,String> diceOrgDescriptor) {
@@ -19,28 +19,30 @@ public class DiceOrgBroadcastProcessFunction extends BroadcastProcessFunction<Ex
     }
 
     @Override
-    public void processElement(ExpressionMetadata expressionMetadata, ReadOnlyContext readOnlyContext, Collector<ExpressionMetadata> collector) throws Exception {
-        if (expressionMetadata == null) {
+    public void processElement(MetricEvent metricEvent, ReadOnlyContext readOnlyContext, Collector<MetricEvent> collector) throws Exception {
+        if (metricEvent == null) {
             return;
         }
-        val orgId = expressionMetadata.getAttributes().get("dice_org_id");
+        String orgName = metricEvent.getTags().get("org_name");
         ReadOnlyBroadcastState<Long,String> diceOrg = readOnlyContext.getBroadcastState(diceOrgDescriptor);
-        String orgName = new String();
-        if (orgId != null) {
-            orgName = diceOrg.get((Long.parseLong(orgId)));
+        if (orgName == null) {
+            String orgId = metricEvent.getTags().get("dice_org_id");
+            if (orgId != null) {
+                orgName = diceOrg.get(Long.parseLong(orgId));
+            }
         }
-        String displayUrl = expressionMetadata.getAttributes().get("display_url");
-        String recordUrl = expressionMetadata.getAttributes().get("record_url");
         if (orgName != null) {
+            String displayUrl = metricEvent.getTags().get("display_url");
+            String recordUrl = metricEvent.getTags().get("record_url");
             if (displayUrl != null) {
                 displayUrl = ModifyUrl(orgName,displayUrl);
-                expressionMetadata.getAttributes().put("display_url",displayUrl);
+                metricEvent.getTags().put("display_url",displayUrl);
             }
             if (recordUrl != null) {
                 recordUrl = ModifyUrl(orgName,recordUrl);
-                expressionMetadata.getAttributes().put("record_url",recordUrl);
+                metricEvent.getTags().put("record_url",recordUrl);
             }
-            collector.collect(expressionMetadata);
+            collector.collect(metricEvent);
         }
     }
 
@@ -60,7 +62,7 @@ public class DiceOrgBroadcastProcessFunction extends BroadcastProcessFunction<Ex
     }
 
     @Override
-    public void processBroadcastElement(DiceOrg diceOrg, Context ctx, Collector<ExpressionMetadata> collector) throws Exception {
+    public void processBroadcastElement(DiceOrg diceOrg, Context ctx, Collector<MetricEvent> collector) throws Exception {
         if (diceOrg != null) {
             ctx.getBroadcastState(diceOrgDescriptor).put(diceOrg.getId(),diceOrg.getName());
         }

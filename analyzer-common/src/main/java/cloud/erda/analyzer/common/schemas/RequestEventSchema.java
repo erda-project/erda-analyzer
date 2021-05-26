@@ -19,6 +19,7 @@ import cloud.erda.analyzer.common.schemas.requests.*;
 import cloud.erda.analyzer.common.utils.NumberParser;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import cloud.erda.analyzer.common.schemas.requests.*;
 import lombok.val;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -321,7 +322,7 @@ public class RequestEventSchema implements DeserializationSchema<MetricEvent> {
             String[] lines = msg.split("\\n");
             metric.addTag("error", lines[0]);
         }
-        metric.addTag("cloud/erda/analyzer/common/source", data.get("cloud/erda/analyzer/common/source"));
+        metric.addTag("source", data.get("source"));
         metric.addTag("line_no", data.get("lineno"));
         metric.addTag("column_no", data.get("colno"));
         metric.addTag("message", data.get("msg"));
