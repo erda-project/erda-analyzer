@@ -15,7 +15,6 @@
 package cloud.erda.analyzer.common.functions;
 
 import cloud.erda.analyzer.common.models.MetricEvent;
-import lombok.val;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
 
@@ -29,6 +28,9 @@ import java.util.regex.Pattern;
  * @date 2020/9/25 17:23
  */
 public class MetricEventCorrectFunction implements FlatMapFunction<MetricEvent, MetricEvent> {
+
+    private static String pattern = "(.*)-org.*";
+    private static Pattern p = Pattern.compile(pattern);
 
 //    @Override
 //    public boolean filter(MetricEvent metricEvent) throws Exception {
@@ -46,7 +48,7 @@ public class MetricEventCorrectFunction implements FlatMapFunction<MetricEvent, 
             String recordUrl = metricEvent.getTags().get("record_url");
             String orgName = metricEvent.getTags().get("org_name");
             if (orgName == null) {
-                orgName = getOrgName(displayUrl,recordUrl);
+                orgName = getOrgName(displayUrl, recordUrl);
             }
             if (orgName != null) {
                 if (displayUrl != null) {
@@ -69,7 +71,7 @@ public class MetricEventCorrectFunction implements FlatMapFunction<MetricEvent, 
         StringBuffer stringBuffer = new StringBuffer(url);
         String head = protocol + "://" + host + "/";
         String subString = url.substring(head.length() - 1, url.length() - head.length() - 1);
-        val elements = subString.split("/");
+        String[] elements = subString.split("/");
         if (!elements[0].equals(orgName)) {
             stringBuffer.insert(head.length(), orgName + "/");
             return stringBuffer.toString();
@@ -77,15 +79,13 @@ public class MetricEventCorrectFunction implements FlatMapFunction<MetricEvent, 
         return url;
     }
 
-    public String getOrgName(String displayUrl,String recordUrl) throws MalformedURLException {
+    public String getOrgName(String displayUrl, String recordUrl) throws MalformedURLException {
         if (displayUrl == null && recordUrl == null) {
             return null;
         }
         String url = displayUrl == null ? recordUrl : displayUrl;
         URL u = new URL(url);
         String host = u.getHost();
-        String pattern = "(.*)-org.*";
-        Pattern p = Pattern.compile(pattern);
         Matcher matcher = p.matcher(host);
         if (matcher.find()) {
             return matcher.group(1);
