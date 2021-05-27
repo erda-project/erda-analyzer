@@ -24,7 +24,7 @@ public class OrgList extends HttpRequestSource<DiceOrg> {
         ArrayList<DiceOrg> orgs = new ArrayList<>();
         String uri = "/api/orgs";
         String orgUrl = "http://" + this.requestAddr + uri;
-        this.httpClient = HttpClientPool.getConnection();
+        this.httpClient = HttpClientPool.getHttpClient();
         try {
             HttpGet httpGet = new HttpGet(orgUrl);
             httpGet.addHeader("Internal-Client", "bundle");
