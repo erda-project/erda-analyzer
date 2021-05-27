@@ -136,7 +136,6 @@ public class Constants {
 
     public static final String ALERT_NOTIFY_CUSTOM_TEMPLATE_QUERY = "SELECT * FROM `sp_customize_alert_notify_template` WHERE enable = 1";
 
-
     /**
      * Script Invoker
      */

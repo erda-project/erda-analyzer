@@ -16,9 +16,12 @@ package cloud.erda.analyzer.alert;
 
 import cloud.erda.analyzer.alert.functions.*;
 import cloud.erda.analyzer.alert.models.*;
-import cloud.erda.analyzer.alert.sources.*;
+import cloud.erda.analyzer.alert.sources.AllNotifyTemplates;
 import cloud.erda.analyzer.alert.watermarks.RenderedAlertEventWatermarkExtractor;
 import cloud.erda.analyzer.alert.sinks.EventBoxSink;
+import cloud.erda.analyzer.alert.sources.NotifyReader;
+import cloud.erda.analyzer.alert.sources.NotifyTemplateReader;
+import cloud.erda.analyzer.alert.sources.SpotNotifyReader;
 import cloud.erda.analyzer.alert.utils.StateDescriptors;
 import cloud.erda.analyzer.alert.watermarks.AlertEventWatermarkExtractor;
 import cloud.erda.analyzer.common.constant.AlertConstants;
@@ -71,18 +74,6 @@ public class Main {
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_INPUT))
                 .name("alert metrics consumer");
 
-        DataStream<DiceOrg> diceOrgQuery = env
-                .addSource(new OrgList(parameterTool.get(Constants.CMDB_ADDR)))
-                .forceNonParallel()
-                .returns(DiceOrg.class)
-                .name("get all dice org");
-
-        DataStream<MetricEvent> alertMetricWithOrg = alertMetric
-                .connect(diceOrgQuery.broadcast(StateDescriptors.diceOrgDescriptor))
-                .process(new DiceOrgBroadcastProcessFunction(StateDescriptors.diceOrgDescriptor))
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-                .name("alert expression with org name");
-
         //获取notify相关的metric
         DataStream<MetricEvent> notifyMetric = env.addSource(new FlinkKafkaConsumer<>(
                 parameterTool.getRequired(Constants.TOPIC_NOTIFY),
@@ -96,7 +87,7 @@ public class Main {
                 .name("alert metrics consumer");
 
         // 存储原始告警数据
-        alertMetricWithOrg.addSink(new FlinkKafkaProducer<>(
+        alertMetric.addSink(new FlinkKafkaProducer<>(
                 parameterTool.getRequired(Constants.KAFKA_BROKERS),
                 parameterTool.getRequired(Constants.TOPIC_METRICS),
                 new MetricEventSchema()
@@ -147,7 +138,7 @@ public class Main {
                 .name("Query alert notify custom template from mysql");
 
         // metric转换event
-        DataStream<AlertEvent> alertEvents = alertMetricWithOrg
+        DataStream<AlertEvent> alertEvents = alertMetric
                 .flatMap(new AlertEventMapFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("map metric to alert event");

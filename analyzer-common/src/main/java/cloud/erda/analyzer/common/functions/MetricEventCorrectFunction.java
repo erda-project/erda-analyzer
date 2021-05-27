@@ -15,8 +15,14 @@
 package cloud.erda.analyzer.common.functions;
 
 import cloud.erda.analyzer.common.models.MetricEvent;
+import lombok.val;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author liuhaoyang
@@ -36,7 +42,54 @@ public class MetricEventCorrectFunction implements FlatMapFunction<MetricEvent, 
             if (metricEvent.getTimestamp() > currentTimestamp) {
                 metricEvent.setTimestamp(currentTimestamp);
             }
+            String displayUrl = metricEvent.getTags().get("display_url");
+            String recordUrl = metricEvent.getTags().get("record_url");
+            String orgName = metricEvent.getTags().get("org_name");
+            if (orgName == null) {
+                orgName = getOrgName(displayUrl,recordUrl);
+            }
+            if (orgName != null) {
+                if (displayUrl != null) {
+                    displayUrl = ModifyUrl(orgName, displayUrl);
+                    metricEvent.getTags().put("display_url", displayUrl);
+                }
+                if (recordUrl != null) {
+                    recordUrl = ModifyUrl(orgName, recordUrl);
+                    metricEvent.getTags().put("record_url", recordUrl);
+                }
+            }
             collector.collect(metricEvent);
         }
+    }
+
+    public String ModifyUrl(String orgName, String url) throws MalformedURLException {
+        URL u = new URL(url);
+        String protocol = u.getProtocol();
+        String host = u.getHost();
+        StringBuffer stringBuffer = new StringBuffer(url);
+        String head = protocol + "://" + host + "/";
+        String subString = url.substring(head.length() - 1, url.length() - head.length() - 1);
+        val elements = subString.split("/");
+        if (!elements[0].equals(orgName)) {
+            stringBuffer.insert(head.length(), orgName + "/");
+            return stringBuffer.toString();
+        }
+        return url;
+    }
+
+    public String getOrgName(String displayUrl,String recordUrl) throws MalformedURLException {
+        if (displayUrl == null && recordUrl == null) {
+            return null;
+        }
+        String url = displayUrl == null ? recordUrl : displayUrl;
+        URL u = new URL(url);
+        String host = u.getHost();
+        String pattern = "(.*)-org.*";
+        Pattern p = Pattern.compile(pattern);
+        Matcher matcher = p.matcher(host);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
     }
 }
