@@ -63,6 +63,8 @@ public class AlertConstants {
 
     public static final String ALERT_NOTIFY_TYPE_HISTORY = "history";
 
+    public static final String ORG_NAME = "org_name";
+
     public static final String DISPLAY_URL = "display_url";
 
     public static final String RECORD_URL = "record_url";

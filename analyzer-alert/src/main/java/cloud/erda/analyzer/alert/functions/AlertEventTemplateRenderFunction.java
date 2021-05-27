@@ -28,9 +28,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.functions.MapFunction;
 
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static cloud.erda.analyzer.common.utils.DateUtils.YYYY_MM_DD_HH_MM_SS;
 
@@ -40,6 +44,9 @@ import static cloud.erda.analyzer.common.utils.DateUtils.YYYY_MM_DD_HH_MM_SS;
  **/
 @Slf4j
 public class AlertEventTemplateRenderFunction implements MapFunction<AlertEvent, RenderedAlertEvent> {
+
+    private static String pattern = "(.*)-org.*";
+    private static Pattern p = Pattern.compile(pattern);
 
     private TemplateManager templateManager = new TemplateManager();
 
@@ -59,9 +66,14 @@ public class AlertEventTemplateRenderFunction implements MapFunction<AlertEvent,
 //        templateContext.put(AlertConstants.TRIGGER_DURATION_MIN, getTriggerDurationMin(templateContext));
         processTriggerDuration(templateContext);
 
+        String orgName = value.getMetricEvent().getTags().get(AlertConstants.ORG_NAME);
         String displayUrl = value.getMetricEvent().getTags().get(AlertConstants.DISPLAY_URL);
         if (displayUrl != null) {
+            if (orgName == null) {
+                orgName = getOrgName(displayUrl);
+            }
             String displayUrlId = renderId + "_display_url";
+            displayUrl = orgName == null ? displayUrl : modifyUrl(orgName,displayUrl);
             displayUrl = this.renderUrl(displayUrlId, displayUrl, templateContext);
             templateContext.put(AlertConstants.DISPLAY_URL, displayUrl);
             value.getMetricEvent().getTags().put(AlertConstants.DISPLAY_URL, displayUrl);
@@ -69,7 +81,11 @@ public class AlertEventTemplateRenderFunction implements MapFunction<AlertEvent,
 
         String recordUrl = value.getMetricEvent().getTags().get(AlertConstants.RECORD_URL);
         if (recordUrl != null) {
+            if (orgName == null) {
+                orgName = getOrgName(recordUrl);
+            }
             String recordUrlId = renderId + "_record_url";
+            recordUrl = orgName == null ? recordUrl : modifyUrl(orgName,recordUrl);
             recordUrl = this.renderUrl(recordUrlId, recordUrl, templateContext);
             templateContext.put(AlertConstants.RECORD_URL, recordUrl);
             value.getMetricEvent().getTags().put(AlertConstants.RECORD_URL, recordUrl);
@@ -146,5 +162,33 @@ public class AlertEventTemplateRenderFunction implements MapFunction<AlertEvent,
             templateContextEncode.put(k, val);
         });
         return urlRenderer.render(templateContextEncode);
+    }
+
+    public String modifyUrl(String orgName, String url) throws MalformedURLException {
+        URL u = new URL(url);
+        String protocol = u.getProtocol();
+        String host = u.getHost();
+        StringBuffer stringBuffer = new StringBuffer(url);
+        String head = protocol + "://" + host + "/";
+        String subString = url.substring(head.length() - 1, url.length() - head.length() - 1);
+        String[] elements = subString.split("/");
+        if (!elements[0].equals(orgName)) {
+            stringBuffer.insert(head.length(), orgName + "/");
+            return stringBuffer.toString();
+        }
+        return url;
+    }
+
+    public String getOrgName(String url) throws MalformedURLException {
+        if (url == null) {
+            return null;
+        }
+        URL u = new URL(url);
+        String host = u.getHost();
+        Matcher matcher = p.matcher(host);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return null;
     }
 }
