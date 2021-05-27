@@ -22,6 +22,7 @@ import cloud.erda.analyzer.alert.templates.TemplateRenderer;
 import cloud.erda.analyzer.alert.templates.formatters.FractionTemplateFormatter;
 import cloud.erda.analyzer.alert.templates.formatters.TemplateFormatter;
 import cloud.erda.analyzer.alert.templates.formatters.TemplateFormatterFactory;
+import cloud.erda.analyzer.alert.utils.RepairErrorUrlUtils;
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.utils.DateUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +41,6 @@ import static cloud.erda.analyzer.common.utils.DateUtils.YYYY_MM_DD_HH_MM_SS;
  **/
 @Slf4j
 public class AlertEventTemplateRenderFunction implements MapFunction<AlertEvent, RenderedAlertEvent> {
-
     private TemplateManager templateManager = new TemplateManager();
 
     @Override
@@ -58,6 +58,9 @@ public class AlertEventTemplateRenderFunction implements MapFunction<AlertEvent,
         templateContext.put(AlertConstants.TIMESTAMP_UNIX, timestamp);
 //        templateContext.put(AlertConstants.TRIGGER_DURATION_MIN, getTriggerDurationMin(templateContext));
         processTriggerDuration(templateContext);
+
+        //repair the old display_url and record_url
+        RepairErrorUrlUtils.modifyMetricEvent(value.getMetricEvent());
 
         String displayUrl = value.getMetricEvent().getTags().get(AlertConstants.DISPLAY_URL);
         if (displayUrl != null) {
