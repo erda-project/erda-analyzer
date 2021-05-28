@@ -16,6 +16,7 @@ package cloud.erda.analyzer.errorInsight.functions;
 
 import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.models.MetricEvent;
+import cloud.erda.analyzer.common.utils.StringUtil;
 import cloud.erda.analyzer.errorInsight.model.ErrorCountState;
 import org.apache.flink.api.common.functions.MapFunction;
 
@@ -38,7 +39,8 @@ public class ErrorCountMetricMapper implements MapFunction<ErrorCountState, Metr
         tags.put(ErrorConstants.CLUSTER_NAME, errorCountState.getClusterName());
         tags.put(ErrorConstants.TERMINUS_KEY, errorCountState.getTerminusKey());
         tags.put(ErrorConstants.SERVICE_NAME, errorCountState.getServiceName());
-        tags.put(ErrorConstants.SERVICE_ID, errorCountState.getServiceId());
+        String serviceId = StringUtil.isEmpty(errorCountState.getServiceId()) ? spliceServiceId(errorCountState) : errorCountState.getServiceId();
+        tags.put(ErrorConstants.SERVICE_ID, serviceId);
         tags.put(ErrorConstants.RUNTIME_NAME, errorCountState.getRuntimeName());
         tags.put(ErrorConstants.RUNTIME_ID, errorCountState.getRuntimeId());
         tags.put(ErrorConstants.EXCEPTION, errorCountState.getException());
@@ -57,4 +59,15 @@ public class ErrorCountMetricMapper implements MapFunction<ErrorCountState, Metr
         metricEvent.setFields(fields);
         return metricEvent;
     }
+
+    public String spliceServiceId(ErrorCountState errorCountState) {
+        if (StringUtil.isEmpty(errorCountState.getApplicationId())) {
+            if (StringUtil.isEmpty(errorCountState.getRuntimeName())) {
+                return errorCountState.getServiceName();
+            }
+            return errorCountState.getRuntimeName() + "_" + errorCountState.getServiceName();
+        }
+        return errorCountState.getApplicationId() + "_" + errorCountState.getRuntimeName() + "_" + errorCountState.getServiceName();
+    }
+
 }
