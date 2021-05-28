@@ -55,16 +55,4 @@ public class ErrorCountState {
 
     private long count;
 
-    public String getServiceId() {
-        if (this.serviceId != null) {
-            return this.serviceId;
-        }
-        if (this.applicationId == null || this.applicationId.equals("")) {
-            if (this.runtimeName == null || this.runtimeName.equals("")) {
-                return this.serviceName;
-            }
-            return this.runtimeName + "_" + this.serviceName;
-        }
-        return this.applicationId + "_" + this.runtimeName + "_" + this.serviceName;
-    }
 }
