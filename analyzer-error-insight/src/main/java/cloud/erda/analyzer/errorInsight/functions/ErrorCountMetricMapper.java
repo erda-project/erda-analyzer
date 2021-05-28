@@ -38,7 +38,8 @@ public class ErrorCountMetricMapper implements MapFunction<ErrorCountState, Metr
         tags.put(ErrorConstants.CLUSTER_NAME, errorCountState.getClusterName());
         tags.put(ErrorConstants.TERMINUS_KEY, errorCountState.getTerminusKey());
         tags.put(ErrorConstants.SERVICE_NAME, errorCountState.getServiceName());
-        tags.put(ErrorConstants.SERVICE_ID, errorCountState.getServiceId());
+        String serviceId = errorCountState.getServiceId() == null ? spliceServiceId(errorCountState) : errorCountState.getServiceId();
+        tags.put(ErrorConstants.SERVICE_ID, serviceId);
         tags.put(ErrorConstants.RUNTIME_NAME, errorCountState.getRuntimeName());
         tags.put(ErrorConstants.RUNTIME_ID, errorCountState.getRuntimeId());
         tags.put(ErrorConstants.EXCEPTION, errorCountState.getException());
@@ -56,5 +57,15 @@ public class ErrorCountMetricMapper implements MapFunction<ErrorCountState, Metr
         metricEvent.setTags(tags);
         metricEvent.setFields(fields);
         return metricEvent;
+    }
+
+    public String spliceServiceId(ErrorCountState errorCountState) {
+        if (errorCountState.getApplicationId() == null || errorCountState.getApplicationId().equals("")) {
+            if (errorCountState.getRuntimeName() == null || errorCountState.getRuntimeName().equals("")) {
+                return errorCountState.getServiceName();
+            }
+            return errorCountState.getRuntimeName() + "_" + errorCountState.getServiceName();
+        }
+        return errorCountState.getApplicationId() + "_" + errorCountState.getRuntimeName() + "_" + errorCountState.getServiceName();
     }
 }
