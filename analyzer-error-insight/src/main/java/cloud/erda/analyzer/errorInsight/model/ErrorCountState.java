@@ -54,4 +54,5 @@ public class ErrorCountState {
     private long timestamp;
 
     private long count;
+
 }
