@@ -56,6 +56,9 @@ public class ErrorCountState {
     private long count;
 
     public String getServiceId() {
+        if (this.serviceId != null) {
+            return this.serviceId;
+        }
         if (this.applicationId == null || this.applicationId.equals("")) {
             if (this.runtimeName == null || this.runtimeName.equals("")) {
                 return this.serviceName;
