@@ -17,8 +17,8 @@ package cloud.erda.analyzer.errorInsight.functions;
 import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.utils.StringUtil;
-import cloud.erda.analyzer.errorInsight.model.ErrorCountState;
 import cloud.erda.analyzer.errorInsight.model.ErrorInfo;
+import cloud.erda.analyzer.errorInsight.utils.MetricServiceId;
 import org.apache.flink.api.common.functions.MapFunction;
 
 import java.util.HashMap;
@@ -37,7 +37,10 @@ public class ErrorAlertMapper implements MapFunction<ErrorInfo, MetricEvent> {
         tags.put(ErrorConstants.ERROR_ID, errorInfo.getErrorId());
         tags.put(ErrorConstants.TERMINUS_KEY, errorInfo.getTerminusKey());
         tags.put(ErrorConstants.SERVICE_NAME, errorInfo.getServiceName());
-        String serviceId = StringUtil.isEmpty(errorInfo.getServiceId()) ? spliceServiceId(errorInfo) : errorInfo.getServiceId();
+        String serviceId = errorInfo.getServiceId();
+        if (StringUtil.isEmpty(serviceId)) {
+            serviceId = MetricServiceId.spliceServiceId(errorInfo.getApplicationId(),errorInfo.getRuntimeName(),errorInfo.getServiceName());
+        }
         tags.put(ErrorConstants.SERVICE_ID, serviceId);
         tags.put(Constants.META, String.valueOf(true));
         tags.put(Constants.SCOPE, Constants.MICRO_SERVICE);
@@ -50,18 +53,7 @@ public class ErrorAlertMapper implements MapFunction<ErrorInfo, MetricEvent> {
         metricEvent.setTimestamp(errorInfo.getTimestamp());
         metricEvent.setTags(tags);
         metricEvent.setFields(fields);
-        System.out.println("------------"+metricEvent.getTags().get("service_id"));
         return metricEvent;
-    }
-
-    public String spliceServiceId(ErrorInfo errorInfo) {
-        if (StringUtil.isEmpty(errorInfo.getApplicationId())) {
-            if (StringUtil.isEmpty(errorInfo.getRuntimeName())) {
-                return errorInfo.getServiceName();
-            }
-            return errorInfo.getRuntimeName() + "_" + errorInfo.getServiceName();
-        }
-        return errorInfo.getApplicationId() + "_" + errorInfo.getRuntimeName() + "_" + errorInfo.getServiceName();
     }
 
 }
