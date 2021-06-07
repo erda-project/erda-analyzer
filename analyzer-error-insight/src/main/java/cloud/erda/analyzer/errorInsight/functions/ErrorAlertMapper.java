@@ -18,7 +18,7 @@ import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.utils.StringUtil;
 import cloud.erda.analyzer.errorInsight.model.ErrorInfo;
-import cloud.erda.analyzer.errorInsight.utils.MetricServiceId;
+import cloud.erda.analyzer.errorInsight.utils.MetricServiceIdUtils;
 import org.apache.flink.api.common.functions.MapFunction;
 
 import java.util.HashMap;
@@ -39,7 +39,7 @@ public class ErrorAlertMapper implements MapFunction<ErrorInfo, MetricEvent> {
         tags.put(ErrorConstants.SERVICE_NAME, errorInfo.getServiceName());
         String serviceId = errorInfo.getServiceId();
         if (StringUtil.isEmpty(serviceId)) {
-            serviceId = MetricServiceId.spliceServiceId(errorInfo.getApplicationId(),errorInfo.getRuntimeName(),errorInfo.getServiceName());
+            serviceId = MetricServiceIdUtils.spliceServiceId(errorInfo.getApplicationId(),errorInfo.getRuntimeName(),errorInfo.getServiceName());
         }
         tags.put(ErrorConstants.SERVICE_ID, serviceId);
         tags.put(Constants.META, String.valueOf(true));

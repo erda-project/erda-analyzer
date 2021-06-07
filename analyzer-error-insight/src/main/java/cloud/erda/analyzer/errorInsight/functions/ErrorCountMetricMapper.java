@@ -18,7 +18,7 @@ import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.utils.StringUtil;
 import cloud.erda.analyzer.errorInsight.model.ErrorCountState;
-import cloud.erda.analyzer.errorInsight.utils.MetricServiceId;
+import cloud.erda.analyzer.errorInsight.utils.MetricServiceIdUtils;
 import org.apache.flink.api.common.functions.MapFunction;
 
 import java.util.HashMap;
@@ -42,7 +42,7 @@ public class ErrorCountMetricMapper implements MapFunction<ErrorCountState, Metr
         tags.put(ErrorConstants.SERVICE_NAME, errorCountState.getServiceName());
         String serviceId = errorCountState.getServiceId();
         if (StringUtil.isEmpty(serviceId)) {
-            serviceId = MetricServiceId.spliceServiceId(errorCountState.getApplicationId(),errorCountState.getRuntimeName(),errorCountState.getServiceName());
+            serviceId = MetricServiceIdUtils.spliceServiceId(errorCountState.getApplicationId(),errorCountState.getRuntimeName(),errorCountState.getServiceName());
         }
         tags.put(ErrorConstants.SERVICE_ID, serviceId);
         tags.put(ErrorConstants.RUNTIME_NAME, errorCountState.getRuntimeName());
