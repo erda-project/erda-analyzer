@@ -16,6 +16,7 @@ package cloud.erda.analyzer.errorInsight.functions;
 
 import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.models.MetricEvent;
+import cloud.erda.analyzer.common.utils.StringUtil;
 import cloud.erda.analyzer.errorInsight.model.ErrorInfo;
 import org.apache.flink.api.common.functions.MapFunction;
 
@@ -35,7 +36,7 @@ public class ErrorAlertMapper implements MapFunction<ErrorInfo, MetricEvent> {
         tags.put(ErrorConstants.ERROR_ID, errorInfo.getErrorId());
         tags.put(ErrorConstants.TERMINUS_KEY, errorInfo.getTerminusKey());
         tags.put(ErrorConstants.SERVICE_NAME, errorInfo.getServiceName());
-        tags.put(ErrorConstants.SERVICE_ID, errorInfo.getServiceId());
+        tags.put(ErrorConstants.SERVICE_ID, setServiceId(errorInfo));
         tags.put(Constants.META, String.valueOf(true));
         tags.put(Constants.SCOPE, Constants.MICRO_SERVICE);
         tags.put(Constants.SCOPE_ID, errorInfo.getTerminusKey());
@@ -49,5 +50,19 @@ public class ErrorAlertMapper implements MapFunction<ErrorInfo, MetricEvent> {
         metricEvent.setTags(tags);
         metricEvent.setFields(fields);
         return metricEvent;
+    }
+
+    public String setServiceId(ErrorInfo info) {
+        if (StringUtil.isEmpty(info.getServiceId())) {
+            String runtimeName = info.getTags().getOrDefault(ErrorConstants.RUNTIME_NAME, "");
+            if (StringUtil.isEmpty(info.getApplicationId())) {
+                if (StringUtil.isEmpty(runtimeName)) {
+                    return info.getServiceName();
+                }
+                return runtimeName + "_" + info.getServiceName();
+            }
+            return info.getApplicationId() + "_" + runtimeName + "_" + info.getServiceName();
+        }
+        return info.getServiceId();
     }
 }
