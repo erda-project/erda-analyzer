@@ -16,7 +16,9 @@ package cloud.erda.analyzer.errorInsight.functions;
 
 import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.models.MetricEvent;
+import cloud.erda.analyzer.common.utils.StringUtil;
 import cloud.erda.analyzer.errorInsight.model.ErrorInfo;
+import cloud.erda.analyzer.errorInsight.utils.MetricServiceIdUtils;
 import org.apache.flink.api.common.functions.MapFunction;
 
 import java.util.HashMap;
@@ -35,14 +37,17 @@ public class ErrorAlertMapper implements MapFunction<ErrorInfo, MetricEvent> {
         tags.put(ErrorConstants.ERROR_ID, errorInfo.getErrorId());
         tags.put(ErrorConstants.TERMINUS_KEY, errorInfo.getTerminusKey());
         tags.put(ErrorConstants.SERVICE_NAME, errorInfo.getServiceName());
-        tags.put(ErrorConstants.SERVICE_ID, errorInfo.getServiceId());
+        String serviceId = errorInfo.getServiceId();
+        if (StringUtil.isEmpty(serviceId)) {
+            serviceId = MetricServiceIdUtils.spliceServiceId(errorInfo.getApplicationId(),errorInfo.getRuntimeName(),errorInfo.getServiceName());
+        }
+        tags.put(ErrorConstants.SERVICE_ID, serviceId);
         tags.put(Constants.META, String.valueOf(true));
         tags.put(Constants.SCOPE, Constants.MICRO_SERVICE);
         tags.put(Constants.SCOPE_ID, errorInfo.getTerminusKey());
 
         HashMap<String, Object> fields = new HashMap<>();
         fields.put(ErrorConstants.COUNT, 1);
-
         MetricEvent metricEvent = new MetricEvent();
         metricEvent.setName(ErrorConstants.ERROR_ALERT_NAME);
         metricEvent.setTimestamp(errorInfo.getTimestamp());
@@ -50,4 +55,5 @@ public class ErrorAlertMapper implements MapFunction<ErrorInfo, MetricEvent> {
         metricEvent.setFields(fields);
         return metricEvent;
     }
+
 }

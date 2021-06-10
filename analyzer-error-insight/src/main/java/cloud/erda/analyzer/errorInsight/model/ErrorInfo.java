@@ -37,4 +37,6 @@ public class ErrorInfo {
     private long timestamp;
 
     private Map<String, String> tags;
+
+    private String runtimeName;
 }
