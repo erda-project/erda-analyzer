@@ -37,7 +37,7 @@ public class ErrorInfoMapper implements MapFunction<ErrorEvent, ErrorInfo> {
         errorInfo.setServiceId(eventTags.getOrDefault(ErrorConstants.SERVICE_ID, ""));
         errorInfo.setTerminusKey(eventTags.getOrDefault(ErrorConstants.TERMINUS_KEY, ""));
         errorInfo.setApplicationId(eventTags.getOrDefault(ErrorConstants.APPLICATION_ID, ""));
-        errorInfo.setRuntimeName(eventTags.getOrDefault(ErrorConstants.RUNTIME_NAME,""));
+        errorInfo.setRuntimeName(eventTags.getOrDefault(ErrorConstants.RUNTIME_NAME, ""));
         val tags = new HashMap<String, String>();
         tags.putAll(errorEvent.getMetaData());
         tags.putAll(eventTags);
