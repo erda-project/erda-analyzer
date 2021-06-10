@@ -57,7 +57,7 @@ public class RepairErrorUrlUtils {
         String host = u.getHost();
         StringBuffer stringBuffer = new StringBuffer(url);
         String head = protocol + "://" + host + "/";
-        String subString = url.substring(head.length() - 1, url.length() - head.length() - 1);
+        String subString = url.substring(head.length());
         String[] elements = subString.split("/");
         if (!elements[0].equals(orgName)) {
             stringBuffer.insert(head.length(), orgName + "/");
