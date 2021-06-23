@@ -36,8 +36,6 @@ services:
       max_mem: 1024
     deployments:
       replicas: 1
-      labels:
-        GROUP: spot-analyzer
     health_check:
       http:
         port: 8081
@@ -73,8 +71,6 @@ services:
       max_mem: 2048
     deployments:
       replicas: 2
-      labels:
-        GROUP: spot-analyzer
     ports:
       - 6121
       - 6122
@@ -98,8 +94,6 @@ services:
       max_mem: 1024
     deployments:
       replicas: 1
-      labels:
-        GROUP: spot-analyzer
     health_check:
       http:
         port: 8081
@@ -134,8 +128,6 @@ services:
       max_mem: 2048
     deployments:
       replicas: 1
-      labels:
-        GROUP: spot-analyzer
     ports:
       - 6121
       - 6122
@@ -159,8 +151,6 @@ services:
       max_mem: 2048
     deployments:
       replicas: 1
-      labels:
-        GROUP: spot-analyzer
     health_check:
       http:
         port: 8081
@@ -191,8 +181,6 @@ services:
       max_mem: 2048
     deployments:
       replicas: 1
-      labels:
-        GROUP: spot-analyzer
     ports:
       - 6121
       - 6122
