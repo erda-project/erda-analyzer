@@ -1,5 +1,5 @@
 ARG DOCKER_REGISTRY
-FROM ${DOCKER_REGISTRY}/erda-flink-1.12.2:20210317-54929f2
+FROM ${DOCKER_REGISTRY}/dice-flink-1.12.2:20210707-949b0c9
 
 RUN echo "Asia/Shanghai" | tee /etc/timezone
 
