@@ -1,5 +1,4 @@
-ARG DOCKER_REGISTRY
-FROM ${DOCKER_REGISTRY}/erda/erda-flink-1.12.2:20210317-54929f2
+FROM registry.erda.cloud/erda/erda-flink-1.12.4:20210707-090efe2
 
 RUN echo "Asia/Shanghai" | tee /etc/timezone
 

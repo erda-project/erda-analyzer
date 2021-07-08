@@ -21,7 +21,6 @@ docker build -t "${image}" \
     --label "commit=$(git rev-parse HEAD)" \
     --label "build-time=$(date '+%Y-%m-%d %T%z')" \
     --build-arg APP=$1 \
-    --build-arg DOCKER_REGISTRY=${DOCKER_REGISTRY} \
     -f Dockerfile .
 
 docker push "${image}"
