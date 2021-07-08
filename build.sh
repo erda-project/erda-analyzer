@@ -8,7 +8,7 @@ sed -i 's^{{BP_NEXUS_URL}}^'"${BP_NEXUS_URL}"'^g' /root/.m2/settings.xml
 sed -i 's^{{BP_NEXUS_USERNAME}}^'"${BP_NEXUS_USERNAME}"'^g' /root/.m2/settings.xml
 sed -i 's^{{BP_NEXUS_PASSWORD}}^'"${BP_NEXUS_PASSWORD}"'^g' /root/.m2/settings.xml
 
-image="${DOCKER_REGISTRY}/terminus/erda-$1:${v}"
+image="${DOCKER_REGISTRY}/${DOCKER_REGISTRY_DIR}/erda-$1:${v}"
 
 mvn clean package -pl $1 -am -B -DskipTests
 
