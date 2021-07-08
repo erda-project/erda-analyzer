@@ -12,6 +12,8 @@ image="${DOCKER_REGISTRY}/${DOCKER_REGISTRY_DIR}/erda-$1:${v}"
 
 mvn clean package -pl $1 -am -B -DskipTests
 
+echo "${image}"
+
 docker login -u "${DOCKER_REGISTRY_USERNAME}" -p "${DOCKER_REGISTRY_PASSWORD}" ${DOCKER_REGISTRY}
 
 docker build -t "${image}" \
