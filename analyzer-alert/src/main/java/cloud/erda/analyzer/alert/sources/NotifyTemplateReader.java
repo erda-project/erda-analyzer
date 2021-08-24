@@ -65,7 +65,7 @@ public class NotifyTemplateReader implements DataRowReader<AlertNotifyTemplate> 
             checkNotNull(notifyTemplate.getTemplate(), "Template cannot be null");
             notifyTemplate.setProcessingTime(System.currentTimeMillis());
             notifyTemplate.setVariable(templateVariable);
-            log.info("Read sp_alert_notify_template {} data: {}",notifyTemplate.getId(), GsonUtil.toJson(notifyTemplate));
+            log.info("Read alert notify template {} data: {}",notifyTemplate.getId(), GsonUtil.toJson(notifyTemplate));
             return notifyTemplate;
         } catch (Exception ex) {
             log.warn("Read or deserialize id {} Custom AlertNotifyTemplate error.", resultSet.getLong("id"), ex);
