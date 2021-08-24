@@ -16,6 +16,9 @@ package cloud.erda.analyzer.alert.utils;
 
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
+import cloud.erda.analyzer.common.*;
+import cloud.erda.analyzer.common.utils.StringUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,25 +30,26 @@ import java.util.regex.Pattern;
 // Due to the change of access rules, the organization
 // name needs to be added after the domain name.
 
+@Slf4j
 public class RepairErrorUrlUtils {
+    private static String DataCenter = "dataCenter", WorkBench = "workBench", MicroService = "microService";
+
     private static String pattern = "(.*)-org.*";
     private static Pattern p = Pattern.compile(pattern);
 
     public static MetricEvent modifyMetricEvent(MetricEvent metricEvent) throws MalformedURLException {
-        String orgName = metricEvent.getTags().get(AlertConstants.ORG_NAME);
         String displayUrl = metricEvent.getTags().get(AlertConstants.DISPLAY_URL);
         String recordUrl = metricEvent.getTags().get(AlertConstants.RECORD_URL);
-        if (orgName == null) {
-            orgName = getOrgName(displayUrl,recordUrl);
-        }
-        if (orgName != null) {
+        String url = StringUtil.isEmpty(displayUrl) ? recordUrl : displayUrl;
+        if (matchOldUrl(url).find()) {
+            String orgName = getOrgName(url);
             if (displayUrl != null) {
-                displayUrl = modifyUrl(orgName,displayUrl);
-                metricEvent.getTags().put(AlertConstants.DISPLAY_URL,displayUrl);
+                displayUrl = modifyUrl(orgName, displayUrl);
+                metricEvent.getTags().put(AlertConstants.DISPLAY_URL, displayUrl);
             }
             if (recordUrl != null) {
-                recordUrl = modifyUrl(orgName,recordUrl);
-                metricEvent.getTags().put(AlertConstants.RECORD_URL,recordUrl);
+                recordUrl = modifyUrl(orgName, recordUrl);
+                metricEvent.getTags().put(AlertConstants.RECORD_URL, recordUrl);
             }
         }
         return metricEvent;
@@ -59,21 +63,26 @@ public class RepairErrorUrlUtils {
         String head = protocol + "://" + host + "/";
         String subString = url.substring(head.length());
         String[] elements = subString.split("/");
+        if (!elements[0].equals(DataCenter) && !elements[0].equals(WorkBench) && !elements[0].equals(MicroService)) {
+            return url;
+        }
         if (!elements[0].equals(orgName)) {
+            log.info("the old url is: " + url);
             stringBuffer.insert(head.length(), orgName + "/");
             return stringBuffer.toString();
         }
         return url;
     }
 
-    public static String getOrgName(String displayUrl,String recordUrl) throws MalformedURLException {
-        if (displayUrl == null || recordUrl == null) {
-            return null;
-        }
-        String url = displayUrl == null ? recordUrl : displayUrl;
+    public static Matcher matchOldUrl(String url) throws MalformedURLException {
         URL u = new URL(url);
         String host = u.getHost();
         Matcher matcher = p.matcher(host);
+        return matcher;
+    }
+
+    public static String getOrgName(String url) throws MalformedURLException {
+        Matcher matcher = matchOldUrl(url);
         if (matcher.find()) {
             return matcher.group(1);
         }
