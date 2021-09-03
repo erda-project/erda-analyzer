@@ -63,6 +63,8 @@ services:
       GROUP_ID: "spot-analyzer-metrics"
 
   analyzer-metrics-task:
+    labels:
+      cpu_bound: "true"
     cmd: flink-entrypoint.sh taskmanager
     resources:
       cpu: ${reqeust_cpu:1}
