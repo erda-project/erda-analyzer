@@ -32,7 +32,7 @@ public class MetricTagConstants {
     public static final String PROJECT_ID = "project_id";
     public static final String REQUEST_ID = "request_id";
     public static final String SERVICE_NAME = "service_name";
-    public static final String METRIC_NAME = "metric_name";
+    public static final String METRIC_NAME = "_metric_name";
     public static final String KEY = "key";
     public static final String LEVEL = "level";
     public static final String SOURCE = "source";
