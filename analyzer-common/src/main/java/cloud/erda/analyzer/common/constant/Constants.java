@@ -34,6 +34,7 @@ public class Constants {
     public static final String TOPIC_JOB_LOG = "kafka.topic.log.job";
     public static final String TOPIC_ALERT = "kafka.topic.alert";
     public static final String TOPIC_NOTIFY = "kafka.topic.notify";
+    public static final String TOPIC_OAP_TRACE = "kafka.topic.oap_trace";
 
     public static final String TOPIC_METRICS_TEMP = "kafka.topic.metrics_temp";
 

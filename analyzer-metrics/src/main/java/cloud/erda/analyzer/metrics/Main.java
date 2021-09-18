@@ -148,7 +148,7 @@ public class Main {
                 .assignTimestampsAndWatermarks(new KeyedMetricWatermarkExtractor())
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .keyBy(new MetricGroupProcessFunction())
-                .window(new KeyedMetricWindowAssigner()).allowedLateness(Time.minutes(3))
+                .window(new KeyedMetricWindowAssigner())
                 .aggregate(new MetricAggregateProcessFunction(), new MetricOperatorProcessFunction())
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .name("Process expression group and functions for late-data");
