@@ -88,7 +88,7 @@ services:
       TASK_MANAGER_MEMORY_PROCESS_SIZE: 1843m
 
   analyzer-tracing:
-    cmd: flink-entrypoint.sh jobcluster --job-classname cloud.erda.analyzer.metrics.Main
+    cmd: flink-entrypoint.sh jobcluster --job-classname cloud.erda.analyzer.tracing.Main
     resources:
       cpu: ${request_cpu:0.5}
       max_cpu: 0.5
