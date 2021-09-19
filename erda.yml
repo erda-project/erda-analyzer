@@ -25,6 +25,7 @@ envs:
   ANALYZER_METRICS_ADDR: "analyzer-metrics:8081"
   ANALYZER_ALERT_ADDR: "analyzer-alert:8081"
   ANALYZER_ERROR_INSIGHT_ADDR: "analyzer-error-insight:8081"
+  ANALYZER_TRACING_ADDR: "analyzer-tracing:8081"
 
 services:
   analyzer-metrics:
