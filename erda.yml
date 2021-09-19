@@ -107,7 +107,7 @@ services:
       - 6124
       - 6125
     binds:
-      - ${nfs_root:/netdata}/spot-v2/analyzer/metrics:/data:rw
+      - ${nfs_root:/netdata}/spot-v2/analyzer/tracing:/data:rw
     envs:
       SELF_ADDR: "analyzer-tracing:8081"
       JOB_MANAGER_NAME: self
