@@ -51,30 +51,32 @@ public class TransactionAnalysisFunction extends ProcessWindowFunction<Span, Met
             switch (layer) {
                 case SpanConstants.SPAN_LAYER_HTTP:
                     if (SpanConstants.SPAN_KIND_SERVER.equals(kind)) {
-                        metricEvent = createHttpServerMetrics(spans, span);
+                        metricEvent = createServerMetrics(spans, span, SpanConstants.APPLICATION_HTTP);
                     }
                     if (SpanConstants.SPAN_KIND_CLIENT.equals(kind)) {
-                        metricEvent = createHttpClientMetrics(span);
+                        metricEvent = createClientMetrics(span, SpanConstants.APPLICATION_HTTP);
                     }
                     break;
                 case SpanConstants.SPAN_LAYER_RPC:
                     if (SpanConstants.SPAN_KIND_SERVER.equals(kind)) {
-                        metricEvent = createRpcServerMetrics(spans, span);
+                        metricEvent = createServerMetrics(spans, span, SpanConstants.APPLICATION_RPC);
                     }
                     if (SpanConstants.SPAN_KIND_CLIENT.equals(kind)) {
-                        metricEvent = createRpcClientMetrics(span);
+                        metricEvent = createClientMetrics(span, SpanConstants.APPLICATION_RPC);
                     }
                     break;
                 case SpanConstants.SPAN_LAYER_CACHE:
+                    metricEvent = createClientMetrics(span, SpanConstants.SPAN_LAYER_CACHE);
+                    break;
                 case SpanConstants.SPAN_LAYER_DB:
-                    metricEvent = createCacheAndSQLMetrics(spans, span);
+                    metricEvent = createClientMetrics(span, SpanConstants.APPLICATION_DB);
                     break;
                 case SpanConstants.SPAN_LAYER_MQ:
                     if (SpanConstants.SPAN_KIND_PRODUCER.equals(kind)) {
-                        metricEvent = createMQProducerMetrics(spans, span);
+                        metricEvent = createClientMetrics(span, SpanConstants.APPLICATION_MQ);
                     }
                     if (SpanConstants.SPAN_KIND_CONSUMER.equals(kind)) {
-                        metricEvent = createMQConsumerMetrics(spans, span);
+                        metricEvent = createServerMetrics(spans, span, SpanConstants.APPLICATION_MQ);
                     }
                     break;
             }
@@ -87,13 +89,14 @@ public class TransactionAnalysisFunction extends ProcessWindowFunction<Span, Met
         }
     }
 
-    private MetricEvent createHttpServerMetrics(Map<String, Span> spans, Span span) {
+    private MetricEvent createServerMetrics(Map<String, Span> spans, Span span, String metricName) {
         MetricEvent metricEvent = new MetricEvent();
-        metricEvent.setName(SpanConstants.APPLICATION_HTTP);
+        metricEvent.setName(metricName);
         metricEvent.addTag(SpanConstants.TARGET_SERVICE_ID, getAttribute(span, SpanConstants.SERVICE_ID));
         metricEvent.addTag(SpanConstants.TARGET_SERVICE_NAME, getAttribute(span, SpanConstants.SERVICE_NAME));
         metricEvent.addTag(SpanConstants.TARGET_MSP_ENV_ID, getAttribute(span, SpanConstants.MSP_ENV_ID));
         metricEvent.addTag(SpanConstants.TARGET_TERMINUS_KEY, getAttribute(span, SpanConstants.TERMINUS_KEY));
+        metricEvent.addTag(SpanConstants.TARGET_SERVICE_INSTANCE_ID, getAttribute(span, SpanConstants.SERVICE_INSTANCE_ID));
         String parentSpanId = span.getParentSpanID();
         if (StringUtil.isNotEmpty(parentSpanId)) {
             Span parentSpan = spans.get(parentSpanId);
@@ -102,6 +105,7 @@ public class TransactionAnalysisFunction extends ProcessWindowFunction<Span, Met
                 metricEvent.addTag(SpanConstants.SOURCE_SERVICE_NAME, getAttribute(parentSpan, SpanConstants.SERVICE_NAME));
                 metricEvent.addTag(SpanConstants.SOURCE_TERMINUS_KEY, getAttribute(parentSpan, SpanConstants.MSP_ENV_ID));
                 metricEvent.addTag(SpanConstants.SOURCE_MSP_ENV_ID, getAttribute(parentSpan, SpanConstants.TERMINUS_KEY));
+                metricEvent.addTag(SpanConstants.SOURCE_SERVICE_INSTANCE_ID, getAttribute(parentSpan, SpanConstants.SERVICE_INSTANCE_ID));
             }
         }
         try {
@@ -112,28 +116,15 @@ public class TransactionAnalysisFunction extends ProcessWindowFunction<Span, Met
         return metricEvent;
     }
 
-    private MetricEvent createHttpClientMetrics(Span span) {
-        return null;
-    }
-
-    private MetricEvent createRpcServerMetrics(Map<String, Span> spans, Span span) {
-        return null;
-    }
-
-    private MetricEvent createRpcClientMetrics(Span span) {
-        return null;
-    }
-
-    private MetricEvent createCacheAndSQLMetrics(Map<String, Span> spans, Span span) {
-        return null;
-    }
-
-    private MetricEvent createMQProducerMetrics(Map<String, Span> spans, Span span) {
-        return null;
-    }
-
-    private MetricEvent createMQConsumerMetrics(Map<String, Span> spans, Span span) {
-        return null;
+    private MetricEvent createClientMetrics(Span span, String metricName) {
+        MetricEvent metricEvent = new MetricEvent();
+        metricEvent.setName(metricName);
+        metricEvent.addTag(SpanConstants.SOURCE_SERVICE_ID, getAttribute(span, SpanConstants.SERVICE_ID));
+        metricEvent.addTag(SpanConstants.SOURCE_SERVICE_NAME, getAttribute(span, SpanConstants.SERVICE_NAME));
+        metricEvent.addTag(SpanConstants.SOURCE_TERMINUS_KEY, getAttribute(span, SpanConstants.MSP_ENV_ID));
+        metricEvent.addTag(SpanConstants.SOURCE_MSP_ENV_ID, getAttribute(span, SpanConstants.TERMINUS_KEY));
+        metricEvent.addTag(SpanConstants.SOURCE_SERVICE_INSTANCE_ID, getAttribute(span, SpanConstants.SERVICE_INSTANCE_ID));
+        return metricEvent;
     }
 
     private String getAttribute(Span span, String key) {

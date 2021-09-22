@@ -18,8 +18,6 @@ package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.tracing.model.Span;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
-import org.apache.flink.api.common.eventtime.TimestampAssigner;
-import org.apache.flink.api.common.eventtime.TimestampAssignerSupplier;
 
 /**
  * @author liuhaoyang

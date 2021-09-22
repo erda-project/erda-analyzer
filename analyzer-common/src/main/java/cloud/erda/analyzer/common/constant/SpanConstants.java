@@ -110,6 +110,14 @@ public class SpanConstants {
 
     public static final String APPLICATION_HTTP = "application_http";
 
+    public static final String APPLICATION_RPC = "application_rpc";
+
+    public static final String APPLICATION_CACHE = "application_cache";
+
+    public static final String APPLICATION_DB = "application_db";
+
+    public static final String APPLICATION_MQ = "application_mq";
+
     public static final String TARGET_SERVICE_ID = "target_service_id";
 
     public static final String TARGET_SERVICE_NAME = "target_service_name";
@@ -137,4 +145,8 @@ public class SpanConstants {
     public static final String METRIC_SCOPE_MICRO_SERVICE = "micro_service";
 
     public static final String META_TRUE = String.valueOf(true);
+
+    public static final String SOURCE_SERVICE_INSTANCE_ID = "source_service_instance_id";
+
+    public static final String TARGET_SERVICE_INSTANCE_ID = "target_service_instance_id";
 }
