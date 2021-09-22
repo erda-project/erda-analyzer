@@ -15,7 +15,7 @@
 package cloud.erda.analyzer.runtime.expression.functions.operators;
 
 import cloud.erda.analyzer.runtime.models.AggregateResult;
-import cloud.erda.analyzer.runtime.utils.ConvertUtils;
+import cloud.erda.analyzer.common.utils.ConvertUtils;
 
 import static cloud.erda.analyzer.runtime.expression.functions.operators.FunctionOperatorDefine.lessThan;
 

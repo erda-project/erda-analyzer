@@ -18,27 +18,20 @@ package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.constant.SpanConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
-import cloud.erda.analyzer.tracing.model.Span;
-import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
-import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
-import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author liuhaoyang
- * @date 2021/9/18 14:06
+ * @date 2021/9/22 13:27
  */
-public class TraceAnalysisProcessFunction extends ProcessWindowFunction<Span, MetricEvent, String, TimeWindow> {
-
+public class MetricMetaFunction implements FlatMapFunction<MetricEvent, MetricEvent> {
     @Override
-    public void process(String s, ProcessWindowFunction<Span, MetricEvent, String, TimeWindow>.Context context, Iterable<Span> iterable, Collector<MetricEvent> collector) throws Exception {
-        Map<String, Span> spans = new HashMap<>();
-        for (Span span : iterable) {
-            spans.put(span.getSpanID(), span);
-        }
+    public void flatMap(MetricEvent metricEvent, Collector<MetricEvent> collector) throws Exception {
 
+        metricEvent.addTag(SpanConstants.META, SpanConstants.META_TRUE);
+        metricEvent.addTag(SpanConstants.METRIC_SCOPE, SpanConstants.METRIC_SCOPE_MICRO_SERVICE);
+        metricEvent.addTag(SpanConstants.METRIC_SCOPE_ID, metricEvent.getTags().get(SpanConstants.MSP_ENV_ID));
+        collector.collect(metricEvent);
     }
 }

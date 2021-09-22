@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package cloud.erda.analyzer.tracing.schemas;
+package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.tracing.model.Span;
 import com.google.gson.Gson;

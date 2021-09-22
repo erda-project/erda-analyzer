@@ -27,7 +27,7 @@ import java.util.Map;
  * @author liuhaoyang
  * @date 2021/9/17 22:12
  */
-public class SpanMetricCompatibleMapper implements MapFunction<Span, MetricEvent> {
+public class SpanMetricCompatibleFunction implements MapFunction<Span, MetricEvent> {
 
     @Override
     public MetricEvent map(Span span) throws Exception {

@@ -61,4 +61,80 @@ public class SpanConstants {
     public static final String DB_TYPE_REDIS = "redis";
 
     public static final String PEER_SERVICE = "peer_service";
+
+    public static final String SERVICE_NAME = "service_name";
+
+    public static final String SERVICE_ID = "service_id";
+
+    public static final String SERVICE_INSTANCE_IP = "service_instance_ip";
+
+    public static final String MSP_ENV_ID = "msp_env_id";
+
+    public static final String SERVICE_INSTANCE_ID = "service_instance_id";
+
+    public static final String SERVICE_INSTANCE_STARTED_AT = "service_instance_started_at";
+
+    public static final String PROJECT_NAME = "project_name";
+
+    public static final String WORKSPACE = "workspace";
+
+    public static final String JAEGER_VERSION = "jaeger_version";
+
+    public static final String JAEGER = "jaeger";
+
+    public static final String SERVER = "server";
+
+    public static final String SPAN_KIND = "span_kind";
+
+    public static final String SPAN_KIND_SERVER = "server";
+
+    public static final String SPAN_KIND_CLIENT = "client";
+
+    public static final String SPAN_KIND_PRODUCER = "producer";
+
+    public static final String SPAN_KIND_CONSUMER = "consumer";
+
+    public static final String APPLICATION_SERVICE_NODE = "application_service_node";
+
+    public static final String START_TIME_MEAN = "start_time_mean";
+
+    public static final String START_TIME_COUNT = "start_time_count";
+
+    public static final String INSTRUMENTATION_LIBRARY = "instrumentation_library";
+
+    public static final String INSTRUMENTATION_LIBRARY_VERSION = "instrumentation_library_version";
+
+    public static final String TERMINUS_KEY = "terminus_key";
+
+    public static final String ELAPSED = "elapsed";
+
+    public static final String APPLICATION_HTTP = "application_http";
+
+    public static final String TARGET_SERVICE_ID = "target_service_id";
+
+    public static final String TARGET_SERVICE_NAME = "target_service_name";
+
+    public static final String TARGET_TERMINUS_KEY = "target_terminus_key";
+
+    public static final String TARGET_MSP_ENV_ID = "target_msp_env_id";
+
+    public static final String SOURCE_SERVICE_ID = "source_service_id";
+
+    public static final String SOURCE_SERVICE_NAME = "source_service_name";
+
+    public static final String SOURCE_TERMINUS_KEY = "source_terminus_key";
+
+    public static final String SOURCE_MSP_ENV_ID = "source_msp_env_id";
+
+    public static final String HTTP_STATUS_CODE = "http_status_code";
+
+    public static final String META = "_meta";
+
+    public static final String METRIC_SCOPE = "_metric_scope";
+
+    public static final String METRIC_SCOPE_ID = "_metric_scope_id";
+
+    public static final String METRIC_SCOPE_MICRO_SERVICE = "micro_service";
+
+    public static final String META_TRUE = String.valueOf(true);
 }

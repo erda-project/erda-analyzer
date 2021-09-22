@@ -18,11 +18,8 @@ package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.constant.SpanConstants;
 import cloud.erda.analyzer.tracing.model.Span;
-import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
-
-import java.util.Map;
 
 /**
  * @author liuhaoyang
@@ -41,28 +38,27 @@ public class SpanCorrectFunction implements FlatMapFunction<Span, Span> {
     }
 
     private String getSpanLayer(Span span) {
-        String httpUrl = span.getAttributes().get(SpanConstants.TAG_HTTP_URL);
-        if (httpUrl != null) {
+        if (span.getAttributes().containsKey(SpanConstants.TAG_HTTP_URL)) {
             return SpanConstants.SPAN_LAYER_HTTP;
         }
 
-        for (Map.Entry<String, String> tag : span.getAttributes().entrySet()) {
-            if (SpanConstants.TAG_HTTP_URL.equals(tag.getKey())) {
-
-            }
-            if (SpanConstants.MESSAGE_BUS_DESTINATION.equals(tag.getKey())) {
-                return SpanConstants.SPAN_LAYER_MQ;
-            }
-            if (SpanConstants.DB_TYPE.equals(tag.getKey())) {
-                if (SpanConstants.DB_TYPE_REDIS.equalsIgnoreCase(tag.getValue())) {
-                    return SpanConstants.SPAN_LAYER_CACHE;
-                }
-                return SpanConstants.SPAN_LAYER_DB;
-            }
-            if (SpanConstants.PEER_SERVICE.equals(tag.getKey())) {
-                return SpanConstants.SPAN_LAYER_RPC;
-            }
+        if (span.getAttributes().containsKey(SpanConstants.MESSAGE_BUS_DESTINATION)) {
+            return SpanConstants.SPAN_LAYER_MQ;
         }
+
+        String dbType = span.getAttributes().get(SpanConstants.DB_TYPE);
+        if (dbType != null) {
+            if (SpanConstants.DB_TYPE_REDIS.equalsIgnoreCase(dbType)) {
+                return SpanConstants.SPAN_LAYER_CACHE;
+            }
+            return SpanConstants.SPAN_LAYER_DB;
+        }
+
+        if (span.getAttributes().containsKey(SpanConstants.PEER_SERVICE)
+                && SpanConstants.SERVER.equals(span.getAttributes().get(SpanConstants.SPAN_KIND))) {
+            return SpanConstants.SPAN_LAYER_RPC;
+        }
+
         return SpanConstants.SPAN_LAYER_UNKNOWN;
     }
 }
