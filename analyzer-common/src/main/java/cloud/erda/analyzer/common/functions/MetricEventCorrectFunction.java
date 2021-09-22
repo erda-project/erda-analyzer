@@ -38,13 +38,7 @@ public class MetricEventCorrectFunction implements FlatMapFunction<MetricEvent, 
             if (metricEvent.getTimestamp() > currentTimestamp) {
                 metricEvent.setTimestamp(currentTimestamp);
             }
-            if (metricEvent.getName().equals("span")) {
-                if ("0451334824ea33478ddba7acc7c85e0f".equals(metricEvent.getTags().get("terminus_key"))) {
-                    collector.collect(metricEvent);
-                }
-
-            }
-
+            collector.collect(metricEvent);
         }
     }
 }

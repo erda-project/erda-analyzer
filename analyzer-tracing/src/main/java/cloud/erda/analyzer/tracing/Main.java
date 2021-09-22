@@ -94,7 +94,8 @@ public class Main {
 
         SingleOutputStreamOperator<MetricEvent> tranMetricStream = spanStream
                 .keyBy(Span::getTraceID)
-                .window(EventTimeSessionWindows.withGap(Time.minutes(1)))
+                .window(TumblingEventTimeWindows.of(Time.seconds(60)))
+                .allowedLateness(Time.minutes(1))
                 .trigger(new FixedEventTimeTrigger())
                 .process(new TransactionAnalysisFunction())
                 .name("trace analysis windows process")
