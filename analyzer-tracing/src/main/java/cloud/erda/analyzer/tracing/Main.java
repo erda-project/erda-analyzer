@@ -118,9 +118,9 @@ public class Main {
                 .name("send trace metrics to kafka")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT));
 
-        tranMetricStream.print();
-        serviceStream.print();
-        spanStream.print();
+//        tranMetricStream.print();
+//        serviceStream.print();
+//        spanStream.print();
 
         log.info(env.getExecutionPlan());
         env.execute();
