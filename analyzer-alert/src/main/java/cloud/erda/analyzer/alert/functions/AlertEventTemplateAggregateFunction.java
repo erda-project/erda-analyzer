@@ -58,6 +58,14 @@ public class AlertEventTemplateAggregateFunction extends ProcessWindowFunction<R
                     out.collect(result);
                 }
             }
+            if (count != 0) {
+                result.setId(renderedAlertEvent.getId());
+                result.setTitle(renderedAlertEvent.getTitle());
+                result.setMetricEvent(renderedAlertEvent.getMetricEvent());
+                result.setNotifyTarget(renderedAlertEvent.getNotifyTarget());
+                result.setTemplateTarget(renderedAlertEvent.getTemplateTarget());
+                out.collect(result);
+            }
         }
     }
 }
