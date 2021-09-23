@@ -19,12 +19,16 @@ package cloud.erda.analyzer.tracing.functions;
 import cloud.erda.analyzer.common.constant.SpanConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.tracing.model.Span;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.functions.MapFunction;
+
+import java.util.Date;
 
 /**
  * @author liuhaoyang
  * @date 2021/9/21 00:59
  */
+@Slf4j
 public class SpanToServiceMetricFunction implements MapFunction<Span, MetricEvent> {
 
     @Override
@@ -56,6 +60,7 @@ public class SpanToServiceMetricFunction implements MapFunction<Span, MetricEven
             metricEvent.addField(SpanConstants.START_TIME_MEAN, startAt);
         }
         metricEvent.addField(SpanConstants.START_TIME_COUNT, startTimeCount);
+        log.info("Map reduced span to service metric. now: {} spanEndTime: {}", new Date(), new Date(metricEvent.getTimestamp() / 1000000));
         return metricEvent;
     }
 
