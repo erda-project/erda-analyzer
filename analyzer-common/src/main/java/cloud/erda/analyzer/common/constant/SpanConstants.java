@@ -144,9 +144,15 @@ public class SpanConstants {
 
     public static final String METRIC_SCOPE_MICRO_SERVICE = "micro_service";
 
-    public static final String META_TRUE = String.valueOf(true);
+    public static final String TRUE = String.valueOf(true);
 
     public static final String SOURCE_SERVICE_INSTANCE_ID = "source_service_instance_id";
 
     public static final String TARGET_SERVICE_INSTANCE_ID = "target_service_instance_id";
+
+    public static final String REQUEST_ID = "request_id";
+
+    public static final String TRACE_SAMPLED = "trace_sampled";
+
+    public static final String ERROR = "error";
 }

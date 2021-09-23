@@ -84,6 +84,9 @@ public class TransactionAnalysisFunction extends ProcessWindowFunction<Span, Met
                 metricEvent.setTimestamp(span.getEndTimeUnixNano());
                 metricEvent.addField(SpanConstants.ELAPSED, span.getEndTimeUnixNano() - span.getStartTimeUnixNano());
                 metricEvent.getTags().putAll(span.getAttributes());
+                metricEvent.addTag(SpanConstants.TRACE_ID, span.getTraceID());
+                metricEvent.addTag(SpanConstants.REQUEST_ID, span.getTraceID());
+                metricEvent.addTag(SpanConstants.TRACE_SAMPLED, SpanConstants.TRUE);
                 collector.collect(metricEvent);
             }
         }

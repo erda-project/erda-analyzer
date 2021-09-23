@@ -29,7 +29,7 @@ public class MetricMetaFunction implements FlatMapFunction<MetricEvent, MetricEv
     @Override
     public void flatMap(MetricEvent metricEvent, Collector<MetricEvent> collector) throws Exception {
 
-        metricEvent.addTag(SpanConstants.META, SpanConstants.META_TRUE);
+        metricEvent.addTag(SpanConstants.META, SpanConstants.TRUE);
         metricEvent.addTag(SpanConstants.METRIC_SCOPE, SpanConstants.METRIC_SCOPE_MICRO_SERVICE);
         metricEvent.addTag(SpanConstants.METRIC_SCOPE_ID, metricEvent.getTags().get(SpanConstants.MSP_ENV_ID));
         collector.collect(metricEvent);
