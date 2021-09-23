@@ -83,8 +83,8 @@ public class Main {
                 .name("check whether the tag of the service exists")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .keyBy(new SpanServiceGroupFunction())
-                .window(TumblingEventTimeWindows.of(Time.seconds(30)))
-                .trigger(new FixedEventTimeTrigger())
+                .window(TumblingEventTimeWindows.of(Time.seconds(10)))
+//                .trigger(new FixedEventTimeTrigger())
                 .reduce(new SpanServiceReduceFunction())
                 .name("reduce span service")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
@@ -96,7 +96,7 @@ public class Main {
                 .keyBy(Span::getTraceID)
                 .window(TumblingEventTimeWindows.of(Time.seconds(60)))
                 .allowedLateness(Time.minutes(1))
-                .trigger(new FixedEventTimeTrigger())
+//                .trigger(new FixedEventTimeTrigger())
                 .process(new TransactionAnalysisFunction())
                 .name("trace analysis windows process")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
@@ -104,8 +104,8 @@ public class Main {
                 .name("slow or error metric process")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .keyBy(new MetricTagGroupFunction())
-                .window(TumblingEventTimeWindows.of(Time.seconds(30)))
-                .trigger(new FixedEventTimeTrigger())
+                .window(TumblingEventTimeWindows.of(Time.seconds(10)))
+//                .trigger(new FixedEventTimeTrigger())
                 .aggregate(new MetricFieldAggregateFunction())
                 .name("Aggregate metrics field process")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
@@ -122,8 +122,8 @@ public class Main {
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT));
 
         tranMetricStream.print();
-//        serviceStream.print();
-//        spanStream.print();
+        serviceStream.print();
+//      spanStream.print();
 
         log.info(env.getExecutionPlan());
         env.execute();
