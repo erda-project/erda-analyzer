@@ -51,7 +51,7 @@ public class Main {
         ParameterTool parameterTool = ExecutionEnv.createParameterTool(args);
         StreamExecutionEnvironment env = ExecutionEnv.prepare(parameterTool);
 
-//        env.getConfig().setAutoWatermarkInterval(Time.seconds(10).toMilliseconds());
+        env.getConfig().setAutoWatermarkInterval(Time.seconds(10).toMilliseconds());
 
         SingleOutputStreamOperator<Span> spanStream = env.addSource(new FlinkKafkaConsumer<>(
                         parameterTool.getRequired(Constants.TOPIC_OAP_TRACE),
