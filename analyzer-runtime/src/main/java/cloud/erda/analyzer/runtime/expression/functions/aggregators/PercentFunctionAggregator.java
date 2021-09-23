@@ -15,7 +15,7 @@
 package cloud.erda.analyzer.runtime.expression.functions.aggregators;
 
 import cloud.erda.analyzer.runtime.utils.PercentUtils;
-import cloud.erda.analyzer.runtime.utils.ConvertUtils;
+import cloud.erda.analyzer.common.utils.ConvertUtils;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -34,6 +34,7 @@ public class Constants {
     public static final String TOPIC_JOB_LOG = "kafka.topic.log.job";
     public static final String TOPIC_ALERT = "kafka.topic.alert";
     public static final String TOPIC_NOTIFY = "kafka.topic.notify";
+    public static final String TOPIC_OAP_TRACE = "kafka.topic.oap_trace";
 
     public static final String TOPIC_METRICS_TEMP = "kafka.topic.metrics_temp";
 
@@ -193,4 +194,17 @@ public class Constants {
     public static final String SCOPE_ID = "_metric_scope_id";
 
     public static final String MICRO_SERVICE = "micro_service";
+
+    /**
+     * tracing
+     */
+    public static final String APPLICATION_SLOW_HTTP = "application.slow.http";
+
+    public static final String APPLICATION_SLOW_RPC = "application.slow.rpc";
+
+    public static final String APPLICATION_SLOW_CACHE = "application.slow.cache";
+
+    public static final String APPLICATION_SLOW_DB = "application.slow.db";
+
+    public static final String APPLICATION_SLOW_DEFAULT = "application.slow.default";
 }

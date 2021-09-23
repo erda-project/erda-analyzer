@@ -36,7 +36,6 @@ public class MetricConstants {
     public static final String SPOT = "spot";
     public static final String TYPE_ID = "type_id";
 
-
     //type
     public static final String TYPE_STATUS = "status";
     public static final String TYPE_MACHINE = "machine";

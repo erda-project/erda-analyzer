@@ -14,6 +14,7 @@
         <module>analyzer-metrics</module>
         <module>analyzer-alert</module>
         <module>analyzer-error-insight</module>
+        <module>analyzer-tracing</module>
     </modules>
     <properties>
         <compiler.version>1.8</compiler.version>

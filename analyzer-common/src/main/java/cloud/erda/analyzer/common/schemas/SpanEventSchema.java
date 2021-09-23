@@ -19,13 +19,16 @@ import cloud.erda.analyzer.common.models.SpanEvent;
 import com.google.gson.Gson;
 import lombok.val;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
+import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 
-public class SpanEventSchema implements DeserializationSchema<SpanEvent> {
+public class SpanEventSchema implements DeserializationSchema<SpanEvent>, SerializationSchema<SpanEvent> {
 
     private final static Logger logger = LoggerFactory.getLogger(SpanEventSchema.class);
     private final static Gson gson = new Gson();
@@ -34,7 +37,7 @@ public class SpanEventSchema implements DeserializationSchema<SpanEvent> {
     public SpanEvent deserialize(byte[] bytes) throws IOException {
         try {
             val metric = gson.fromJson(new String(bytes), MetricEvent.class);
-            if(metric.getName() == null || metric.getName().length() <= 0) return null;
+            if (metric.getName() == null || metric.getName().length() <= 0) return null;
             SpanEvent span = new SpanEvent();
             span.setTags(metric.getTags());
             span.setTraceId(metric.getTags().get("trace_id"));
@@ -58,5 +61,10 @@ public class SpanEventSchema implements DeserializationSchema<SpanEvent> {
     @Override
     public TypeInformation<SpanEvent> getProducedType() {
         return TypeInformation.of(SpanEvent.class);
+    }
+
+    @Override
+    public byte[] serialize(SpanEvent spanEvent) {
+        return gson.toJson(spanEvent).getBytes(Charset.forName("UTF-8"));
     }
 }
