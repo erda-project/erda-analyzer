@@ -33,6 +33,7 @@ import java.util.Iterator;
  **/
 @Slf4j
 public class AlertEventTemplateAggregateFunction extends ProcessWindowFunction<RenderedAlertEvent, RenderedAlertEvent, String, TimeWindow> {
+    private static final String space = "\n\n&nbsp;\n\n";
 
     @Override
     public void process(String s, Context context, Iterable<RenderedAlertEvent> elements, Collector<RenderedAlertEvent> out) throws Exception {
@@ -53,20 +54,21 @@ public class AlertEventTemplateAggregateFunction extends ProcessWindowFunction<R
                 String content = renderedAlertEvent.getContent();
                 while (iterator.hasNext()) {
                     renderedAlertEvent = iterator.next();
-                    if ((content + "\n\n&nbsp;\n\n" + renderedAlertEvent.getContent()).length() > dingLength) {
-                        setResult(result,renderedAlertEvent,content);
+                    if ((content + space + renderedAlertEvent.getContent()).length() > dingLength) {
+                        setResult(result, renderedAlertEvent, content);
                         content = renderedAlertEvent.getContent();
                         out.collect(result);
                     } else {
-                        content = content + "\n\n&nbsp;\n\n" + renderedAlertEvent.getContent();
+                        content = content + space + renderedAlertEvent.getContent();
                     }
                 }
-                setResult(result,renderedAlertEvent,content);
+                setResult(result, renderedAlertEvent, content);
                 out.collect(result);
             }
         }
     }
-    public void setResult (RenderedAlertEvent result,RenderedAlertEvent renderedAlertEvent,String content) {
+
+    public void setResult(RenderedAlertEvent result, RenderedAlertEvent renderedAlertEvent, String content) {
         result.setContent(content);
         result.setId(renderedAlertEvent.getId());
         result.setTitle(renderedAlertEvent.getTitle());
