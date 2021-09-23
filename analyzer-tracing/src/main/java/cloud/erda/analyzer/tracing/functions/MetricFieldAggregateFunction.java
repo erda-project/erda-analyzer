@@ -19,9 +19,11 @@ package cloud.erda.analyzer.tracing.functions;
 import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.utils.ConvertUtils;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.functions.AggregateFunction;
 import scala.concurrent.java8.FuturesConvertersImpl;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +31,7 @@ import java.util.Map;
  * @author liuhaoyang
  * @date 2021/9/22 01:42
  */
+@Slf4j
 public class MetricFieldAggregateFunction implements AggregateFunction<MetricEvent, MetricFieldAggregateFunction.StatsAccumulator, MetricEvent> {
 
     @Override
@@ -54,6 +57,7 @@ public class MetricFieldAggregateFunction implements AggregateFunction<MetricEve
             metricEvent.addField(aggregator.getName() + "_min", aggregator.getMin());
             metricEvent.addField(aggregator.getName() + "_max", aggregator.getMax());
         }
+        log.info("Aggregate metric. now: {} spanEndTime: {}", new Date(), new Date(metricEvent.getTimestamp() / 1000000));
         return metricEvent;
     }
 

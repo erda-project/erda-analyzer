@@ -95,7 +95,6 @@ public class Main {
         SingleOutputStreamOperator<MetricEvent> tranMetricStream = spanStream
                 .keyBy(Span::getTraceID)
                 .window(TumblingEventTimeWindows.of(Time.seconds(60)))
-                .allowedLateness(Time.minutes(1))
 //                .trigger(new FixedEventTimeTrigger())
                 .process(new TransactionAnalysisFunction())
                 .name("trace analysis windows process")
@@ -121,9 +120,9 @@ public class Main {
                 .name("send trace metrics to kafka")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT));
 
-        tranMetricStream.print();
-        serviceStream.print();
-//      spanStream.print();
+//        tranMetricStream.print();
+//        serviceStream.print();
+//        spanStream.print();
 
         log.info(env.getExecutionPlan());
         env.execute();
