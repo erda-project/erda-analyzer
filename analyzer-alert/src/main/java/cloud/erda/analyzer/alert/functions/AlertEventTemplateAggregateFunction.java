@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
+import scala.collection.convert.Wrappers;
 
 import java.util.Iterator;
 
@@ -36,7 +37,7 @@ public class AlertEventTemplateAggregateFunction extends ProcessWindowFunction<R
     public void process(String s, Context context, Iterable<RenderedAlertEvent> elements, Collector<RenderedAlertEvent> out) throws Exception {
         // TODO 广发使用外部API (WEBHOOK) 方式进行告警，不进行聚合。这里先对 WEBHOOK 的告警简单的特殊处理，后面要优化重构掉。
         RenderedAlertEvent result = null;
-        RenderedAlertEvent renderedAlertEvent = null;
+        RenderedAlertEvent renderedAlertEvent;
         int dingLength = 20000;
         Iterator<RenderedAlertEvent> iterator = elements.iterator();
         if (iterator.hasNext()) {
@@ -52,19 +53,24 @@ public class AlertEventTemplateAggregateFunction extends ProcessWindowFunction<R
                 while (iterator.hasNext()) {
                     renderedAlertEvent = iterator.next();
                     if ((content + "\n\n&nbsp;\n\n" + renderedAlertEvent.getContent()).length() > dingLength) {
-                        result.setContent(content);
-                        result.setId(renderedAlertEvent.getId());
-                        result.setTitle(renderedAlertEvent.getTitle());
-                        result.setMetricEvent(renderedAlertEvent.getMetricEvent());
-                        result.setNotifyTarget(renderedAlertEvent.getNotifyTarget());
-                        result.setTemplateTarget(renderedAlertEvent.getTemplateTarget());
+                        setResult(result,renderedAlertEvent,content);
                         content = renderedAlertEvent.getContent();
                         out.collect(result);
                     } else {
                         content = content + "\n\n&nbsp;\n\n" + renderedAlertEvent.getContent();
                     }
                 }
+                setResult(result,renderedAlertEvent,content);
+                out.collect(result);
             }
         }
+    }
+    public void setResult (RenderedAlertEvent result,RenderedAlertEvent renderedAlertEvent,String content) {
+        result.setContent(content);
+        result.setId(renderedAlertEvent.getId());
+        result.setTitle(renderedAlertEvent.getTitle());
+        result.setMetricEvent(renderedAlertEvent.getMetricEvent());
+        result.setNotifyTarget(renderedAlertEvent.getNotifyTarget());
+        result.setTemplateTarget(renderedAlertEvent.getTemplateTarget());
     }
 }
