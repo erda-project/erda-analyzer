@@ -16,6 +16,7 @@ package cloud.erda.analyzer.common.models;
 
 import lombok.Data;
 import lombok.val;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,6 +50,13 @@ public class MetricEvent {
         if (key == null || "".equals(key)) return this;
         if (val == null || "".equals(val)) return this;
         tags.put(key, val);
+        return this;
+    }
+
+    public MetricEvent addField(String key, Object val) {
+        if (key == null || "".equals(key)) return this;
+        if (val == null) return this;
+        fields.put(key, val);
         return this;
     }
 }

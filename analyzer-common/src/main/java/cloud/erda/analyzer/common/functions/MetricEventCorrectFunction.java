@@ -18,6 +18,8 @@ import cloud.erda.analyzer.common.models.MetricEvent;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
 
+import java.util.Objects;
+
 /**
  * @author liuhaoyang
  * @date 2020/9/25 17:23

@@ -14,7 +14,7 @@
 
 package cloud.erda.analyzer.runtime.expression.functions.aggregators;
 
-import cloud.erda.analyzer.runtime.utils.ConvertUtils;
+import cloud.erda.analyzer.common.utils.ConvertUtils;
 
 public class MinFunctionAggregator implements FunctionAggregator {
 

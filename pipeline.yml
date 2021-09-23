@@ -21,6 +21,11 @@ stages:
       commands:
       - cd ..
       - repo/build.sh analyzer-error-insight
+  - custom-script:
+      alias: tracing
+      commands:
+        - cd ..
+        - repo/build.sh analyzer-tracing
 - stage:
   - release:
       alias: dicehub
@@ -31,6 +36,8 @@ stages:
         image:
           analyzer-metrics: ${metrics:OUTPUT:image}
           analyzer-metrics-task: ${metrics:OUTPUT:image}
+          analyzer-tracing: ${tracing:OUTPUT:image}
+          analyzer-tracing-task: ${tracing:OUTPUT:image}
           analyzer-alert: ${alert:OUTPUT:image}
           analyzer-alert-task: ${alert:OUTPUT:image}
           analyzer-error-insight: ${error-insight:OUTPUT:image}

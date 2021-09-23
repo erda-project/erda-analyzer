@@ -2,7 +2,7 @@
 
 set -o errexit -o nounset -o pipefail
 
-v="$(head -n 1 VERSION)-$(date '+%Y%m%d')-$(git rev-parse --short HEAD)"
+v="$(./make-version.sh tag)"
 
 sed -i 's^{{BP_NEXUS_URL}}^'"${BP_NEXUS_URL}"'^g' /root/.m2/settings.xml
 sed -i 's^{{BP_NEXUS_USERNAME}}^'"${BP_NEXUS_USERNAME}"'^g' /root/.m2/settings.xml
