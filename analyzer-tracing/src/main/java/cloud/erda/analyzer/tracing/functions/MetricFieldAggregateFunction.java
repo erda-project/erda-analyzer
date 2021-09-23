@@ -18,11 +18,13 @@ package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.utils.ConvertUtils;
+import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.functions.AggregateFunction;
 import scala.concurrent.java8.FuturesConvertersImpl;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,7 +70,7 @@ public class MetricFieldAggregateFunction implements AggregateFunction<MetricEve
     }
 
     @Getter
-    public static class StatsAccumulator {
+    public static class StatsAccumulator implements Serializable {
 
         private MetricEvent lastMetric;
 
@@ -83,10 +85,10 @@ public class MetricFieldAggregateFunction implements AggregateFunction<MetricEve
         }
     }
 
-    @Getter
-    public static class FieldAggregator {
+    @Data
+    public static class FieldAggregator implements Serializable {
 
-        private final String name;
+        private String name;
 
         private Long count;
 
