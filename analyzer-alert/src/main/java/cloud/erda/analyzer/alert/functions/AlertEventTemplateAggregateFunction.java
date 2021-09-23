@@ -23,6 +23,8 @@ import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 
+import java.util.Iterator;
+
 /**
  * @author: liuhaoyang
  * @create: 2020-01-06 00:53
@@ -33,38 +35,35 @@ public class AlertEventTemplateAggregateFunction extends ProcessWindowFunction<R
     @Override
     public void process(String s, Context context, Iterable<RenderedAlertEvent> elements, Collector<RenderedAlertEvent> out) throws Exception {
         // TODO 广发使用外部API (WEBHOOK) 方式进行告警，不进行聚合。这里先对 WEBHOOK 的告警简单的特殊处理，后面要优化重构掉。
-        RenderedAlertEvent result = new RenderedAlertEvent();
+        RenderedAlertEvent result = null;
         RenderedAlertEvent renderedAlertEvent = null;
-        if (elements.iterator().hasNext()) {
-            renderedAlertEvent = elements.iterator().next();
-        }
-        if (renderedAlertEvent.getTemplateTarget().equals(AlertConstants.ALERT_TEMPLATE_TARGET_WEBHOOK)) {
-            if (elements.iterator().hasNext()) {
-                out.collect(elements.iterator().next());
-            }
-        } else {
-            int count = 0;
-            if (elements.iterator().hasNext()) {
-                renderedAlertEvent = elements.iterator().next();
-                result.setContent(StringUtil.isEmpty(result.getContent()) ? renderedAlertEvent.getContent() : result.getContent() + "\n\n&nbsp;\n\n" + renderedAlertEvent.getContent());
-                count++;
-                if (count == 10) {
-                    count = 0;
-                    result.setId(renderedAlertEvent.getId());
-                    result.setTitle(renderedAlertEvent.getTitle());
-                    result.setMetricEvent(renderedAlertEvent.getMetricEvent());
-                    result.setNotifyTarget(renderedAlertEvent.getNotifyTarget());
-                    result.setTemplateTarget(renderedAlertEvent.getTemplateTarget());
-                    out.collect(result);
+        int dingLength = 20000;
+        Iterator<RenderedAlertEvent> iterator = elements.iterator();
+        if (iterator.hasNext()) {
+            renderedAlertEvent = iterator.next();
+            if (renderedAlertEvent.getTemplateTarget().equals(AlertConstants.ALERT_TEMPLATE_TARGET_WEBHOOK)) {
+                out.collect(renderedAlertEvent);
+                while (iterator.hasNext()) {
+                    renderedAlertEvent = iterator.next();
+                    out.collect(renderedAlertEvent);
                 }
-            }
-            if (count != 0) {
-                result.setId(renderedAlertEvent.getId());
-                result.setTitle(renderedAlertEvent.getTitle());
-                result.setMetricEvent(renderedAlertEvent.getMetricEvent());
-                result.setNotifyTarget(renderedAlertEvent.getNotifyTarget());
-                result.setTemplateTarget(renderedAlertEvent.getTemplateTarget());
-                out.collect(result);
+            } else {
+                String content = renderedAlertEvent.getContent();
+                while (iterator.hasNext()) {
+                    renderedAlertEvent = iterator.next();
+                    if ((content + "\n\n&nbsp;\n\n" + renderedAlertEvent.getContent()).length() > dingLength) {
+                        result.setContent(content);
+                        result.setId(renderedAlertEvent.getId());
+                        result.setTitle(renderedAlertEvent.getTitle());
+                        result.setMetricEvent(renderedAlertEvent.getMetricEvent());
+                        result.setNotifyTarget(renderedAlertEvent.getNotifyTarget());
+                        result.setTemplateTarget(renderedAlertEvent.getTemplateTarget());
+                        content = renderedAlertEvent.getContent();
+                        out.collect(result);
+                    } else {
+                        content = content + "\n\n&nbsp;\n\n" + renderedAlertEvent.getContent();
+                    }
+                }
             }
         }
     }
