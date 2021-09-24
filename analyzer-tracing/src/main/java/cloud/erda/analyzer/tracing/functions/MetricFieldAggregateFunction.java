@@ -17,19 +17,18 @@
 package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.models.MetricEvent;
-import cloud.erda.analyzer.common.utils.ConvertUtils;
-import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.functions.AggregateFunction;
-import scala.concurrent.java8.FuturesConvertersImpl;
 
-import java.util.HashMap;
+import java.util.Date;
 import java.util.Map;
 
 /**
  * @author liuhaoyang
  * @date 2021/9/22 01:42
  */
-public class MetricFieldAggregateFunction implements AggregateFunction<MetricEvent, MetricFieldAggregateFunction.StatsAccumulator, MetricEvent> {
+@Slf4j
+public class MetricFieldAggregateFunction implements AggregateFunction<MetricEvent, StatsAccumulator, MetricEvent> {
 
     @Override
     public StatsAccumulator createAccumulator() {
@@ -46,14 +45,15 @@ public class MetricFieldAggregateFunction implements AggregateFunction<MetricEve
     public MetricEvent getResult(StatsAccumulator statsAccumulator) {
         MetricEvent metricEvent = statsAccumulator.getLastMetric().copy();
         metricEvent.getFields().clear();
-        for (Map.Entry<String, FieldAggregator> entry : statsAccumulator.getAggregators().entrySet()) {
-            FieldAggregator aggregator = entry.getValue();
+        for (Map.Entry<String, StatsAccumulator.FieldAggregator> entry : statsAccumulator.getAggregators().entrySet()) {
+            StatsAccumulator.FieldAggregator aggregator = entry.getValue();
             metricEvent.addField(aggregator.getName() + "_mean", aggregator.getMean());
             metricEvent.addField(aggregator.getName() + "_count", aggregator.getCount());
             metricEvent.addField(aggregator.getName() + "_sum", aggregator.getSum());
             metricEvent.addField(aggregator.getName() + "_min", aggregator.getMin());
             metricEvent.addField(aggregator.getName() + "_max", aggregator.getMax());
         }
+        log.info("Aggregate metric. now: {} spanEndTime: {}", new Date(), new Date(metricEvent.getTimestamp() / 1000000));
         return metricEvent;
     }
 
@@ -61,66 +61,5 @@ public class MetricFieldAggregateFunction implements AggregateFunction<MetricEve
     public StatsAccumulator merge(StatsAccumulator statsAccumulator, StatsAccumulator acc1) {
         // todo Merge
         return statsAccumulator;
-    }
-
-    @Getter
-    public static class StatsAccumulator {
-
-        private MetricEvent lastMetric;
-
-        private final Map<String, FieldAggregator> aggregators = new HashMap<>();
-
-        public void apply(MetricEvent metricEvent) {
-            lastMetric = metricEvent;
-            for (Map.Entry<String, Object> entry : metricEvent.getFields().entrySet()) {
-                FieldAggregator aggregator = aggregators.computeIfAbsent(entry.getKey(), FieldAggregator::new);
-                aggregator.apply(entry.getValue());
-            }
-        }
-    }
-
-    @Getter
-    public static class FieldAggregator {
-
-        private final String name;
-
-        private Long count;
-
-        private Double sum;
-
-        private Double min;
-
-        private Double max;
-
-        public FieldAggregator(String fieldName) {
-            name = fieldName;
-        }
-
-        public void apply(Object value) {
-            Double d = ConvertUtils.toDouble(value);
-            if (d == null) {
-                return;
-            }
-            if (count == null) {
-                count = 0L;
-                sum = 0D;
-                max = min = d;
-            }
-            count++;
-            sum += d;
-            if (d < min) {
-                min = d;
-            }
-            if (d > max) {
-                max = d;
-            }
-        }
-
-        public double getMean() {
-            if (sum == null || count == null) {
-                return 0;
-            }
-            return sum / count;
-        }
     }
 }
