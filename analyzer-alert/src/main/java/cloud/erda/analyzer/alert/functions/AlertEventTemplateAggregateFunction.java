@@ -52,16 +52,16 @@ public class AlertEventTemplateAggregateFunction extends ProcessWindowFunction<R
             for (RenderedAlertEvent element : elements) {
                 renderedAlertEvent = element;
                 if ((content + space + renderedAlertEvent.getContent()).getBytes("utf-8").length > dingLength) {
-                    if (content.equals("")) {
+                    if (StringUtil.isEmpty(content)) {
                         continue;
                     }
                     setResult(result, renderedAlertEvent, content);
                     out.collect(result);
                     content = "";
                 }
-                content += space + renderedAlertEvent.getContent();
+                content = StringUtil.isEmpty(content) ? renderedAlertEvent.getContent() : content + space + renderedAlertEvent.getContent();
             }
-            if (!content.equals("")) {
+            if (!StringUtil.isEmpty(content)) {
                 setResult(result, renderedAlertEvent, content);
                 out.collect(result);
             }
