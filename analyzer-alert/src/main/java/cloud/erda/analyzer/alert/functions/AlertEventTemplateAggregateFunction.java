@@ -17,10 +17,15 @@ package cloud.erda.analyzer.alert.functions;
 import cloud.erda.analyzer.alert.models.RenderedAlertEvent;
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.utils.StringUtil;
+import com.sun.org.apache.xpath.internal.axes.PredicatedNodeTest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
+import org.elasticsearch.search.aggregations.bucket.nested.ReverseNested;
+import scala.collection.convert.Wrappers;
+
+import java.util.Iterator;
 
 /**
  * @author: liuhaoyang
@@ -28,30 +33,47 @@ import org.apache.flink.util.Collector;
  **/
 @Slf4j
 public class AlertEventTemplateAggregateFunction extends ProcessWindowFunction<RenderedAlertEvent, RenderedAlertEvent, String, TimeWindow> {
+    private static final String space = "\n\n&nbsp;\n\n";
 
     @Override
     public void process(String s, Context context, Iterable<RenderedAlertEvent> elements, Collector<RenderedAlertEvent> out) throws Exception {
-        // TODO 广发使用外部API (WEBHOOK) 方式进行告警，不进行聚合。这里先对 WEBHOOK 的告警简单的特殊处理，后面要优化重构掉。
         RenderedAlertEvent result = new RenderedAlertEvent();
-        RenderedAlertEvent renderedAlertEvent = null;
-        for (RenderedAlertEvent element : elements) {
-            renderedAlertEvent = element;
-            result.setContent(StringUtil.isEmpty(result.getContent()) ? renderedAlertEvent.getContent() : result.getContent() + "\n\n&nbsp;\n\n" + renderedAlertEvent.getContent());
+        RenderedAlertEvent renderedAlertEvent = new RenderedAlertEvent();
+        int dingLength = 20000;
+        if (elements.iterator().hasNext()) {
+            renderedAlertEvent = elements.iterator().next();
         }
-        if (renderedAlertEvent != null) {
-            // 先不考虑执行效率，简单实现一下。。
-            if (renderedAlertEvent.getTemplateTarget().equals(AlertConstants.ALERT_TEMPLATE_TARGET_WEBHOOK)) {
-                for (RenderedAlertEvent element : elements) {
-                    out.collect(element);
+        if (renderedAlertEvent.getTemplateTarget().equals(AlertConstants.ALERT_TEMPLATE_TARGET_WEBHOOK)) {
+            for (RenderedAlertEvent element : elements) {
+                out.collect(element);
+            }
+        } else {
+            String content = "";
+            for (RenderedAlertEvent element : elements) {
+                renderedAlertEvent = element;
+                if ((content + space + renderedAlertEvent.getContent()).getBytes("utf-8").length > dingLength) {
+                    if (StringUtil.isEmpty(content)) {
+                        continue;
+                    }
+                    setResult(result, renderedAlertEvent, content);
+                    out.collect(result);
+                    content = "";
                 }
-            } else {
-                result.setId(renderedAlertEvent.getId());
-                result.setTitle(renderedAlertEvent.getTitle());
-                result.setMetricEvent(renderedAlertEvent.getMetricEvent());
-                result.setNotifyTarget(renderedAlertEvent.getNotifyTarget());
-                result.setTemplateTarget(renderedAlertEvent.getTemplateTarget());
+                content = StringUtil.isEmpty(content) ? renderedAlertEvent.getContent() : content + space + renderedAlertEvent.getContent();
+            }
+            if (!StringUtil.isEmpty(content)) {
+                setResult(result, renderedAlertEvent, content);
                 out.collect(result);
             }
         }
+    }
+
+    public void setResult(RenderedAlertEvent result, RenderedAlertEvent renderedAlertEvent, String content) {
+        result.setContent(content);
+        result.setId(renderedAlertEvent.getId());
+        result.setTitle(renderedAlertEvent.getTitle());
+        result.setMetricEvent(renderedAlertEvent.getMetricEvent());
+        result.setNotifyTarget(renderedAlertEvent.getNotifyTarget());
+        result.setTemplateTarget(renderedAlertEvent.getTemplateTarget());
     }
 }
