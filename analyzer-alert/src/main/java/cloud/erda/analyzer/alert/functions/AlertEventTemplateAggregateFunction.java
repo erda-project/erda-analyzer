@@ -37,31 +37,31 @@ public class AlertEventTemplateAggregateFunction extends ProcessWindowFunction<R
 
     @Override
     public void process(String s, Context context, Iterable<RenderedAlertEvent> elements, Collector<RenderedAlertEvent> out) throws Exception {
-        // TODO 广发使用外部API (WEBHOOK) 方式进行告警，不进行聚合。这里先对 WEBHOOK 的告警简单的特殊处理，后面要优化重构掉。
         RenderedAlertEvent result = new RenderedAlertEvent();
-        RenderedAlertEvent renderedAlertEvent;
+        RenderedAlertEvent renderedAlertEvent = new RenderedAlertEvent();
         int dingLength = 20000;
-        Iterator<RenderedAlertEvent> iterator = elements.iterator();
-        if (iterator.hasNext()) {
-            renderedAlertEvent = iterator.next();
-            if (renderedAlertEvent.getTemplateTarget().equals(AlertConstants.ALERT_TEMPLATE_TARGET_WEBHOOK)) {
-                out.collect(renderedAlertEvent);
-                while (iterator.hasNext()) {
-                    renderedAlertEvent = iterator.next();
-                    out.collect(renderedAlertEvent);
-                }
-            } else {
-                String content = renderedAlertEvent.getContent();
-                while (iterator.hasNext()) {
-                    renderedAlertEvent = iterator.next();
-                    if ((content + space + renderedAlertEvent.getContent()).length() > dingLength) {
-                        setResult(result, renderedAlertEvent, content);
-                        content = renderedAlertEvent.getContent();
-                        out.collect(result);
-                    } else {
-                        content = content + space + renderedAlertEvent.getContent();
+        if (elements.iterator().hasNext()) {
+            renderedAlertEvent = elements.iterator().next();
+        }
+        if (renderedAlertEvent.getTemplateTarget().equals(AlertConstants.ALERT_TEMPLATE_TARGET_WEBHOOK)) {
+            for (RenderedAlertEvent element : elements) {
+                out.collect(element);
+            }
+        } else {
+            String content = "";
+            for (RenderedAlertEvent element : elements) {
+                renderedAlertEvent = element;
+                if ((content + space + renderedAlertEvent.getContent()).getBytes("utf-8").length > dingLength) {
+                    if (content.equals("")) {
+                        continue;
                     }
+                    setResult(result, renderedAlertEvent, content);
+                    out.collect(result);
+                    content = "";
                 }
+                content += space + renderedAlertEvent.getContent();
+            }
+            if (!content.equals("")) {
                 setResult(result, renderedAlertEvent, content);
                 out.collect(result);
             }
