@@ -14,11 +14,13 @@
 
 package cloud.erda.analyzer.runtime.expression.functions.aggregators;
 
+import java.io.Serializable;
+
 /**
  * @author: liuhaoyang
  * @create: 2019-06-29 19:47
  **/
-public interface FunctionAggregator {
+public interface FunctionAggregator extends Serializable {
 
     String aggregator();
 

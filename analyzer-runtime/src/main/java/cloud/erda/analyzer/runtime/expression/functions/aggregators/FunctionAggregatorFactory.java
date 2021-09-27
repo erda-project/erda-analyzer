@@ -67,6 +67,9 @@ public class FunctionAggregatorFactory {
                 //百分位计算的按 p99 配置规则
                 aggregator = new PercentFunctionAggregator(function.getAggregator());
                 break;
+            case MEDIAN:
+                aggregator = new MedianFunctionAggregator();
+                break;
             default:
                 /**
                  * 如果用户定义了未实现的聚合器，默认使用空聚合器，业务容错避免抛出异常影响其他的表达式执行
