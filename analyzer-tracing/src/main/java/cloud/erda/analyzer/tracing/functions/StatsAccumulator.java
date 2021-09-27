@@ -20,8 +20,10 @@ import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.utils.ConvertUtils;
 import lombok.Data;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,14 +31,17 @@ import java.util.Map;
  * @author liuhaoyang
  * @date 2021/9/23 22:49
  */
-@Data
+@Slf4j
 public class StatsAccumulator implements Serializable {
 
     private MetricEvent lastMetric;
 
-    private final Map<String, FieldAggregator> aggregators = new HashMap<>();
+    private Map<String, FieldAggregator> aggregators = new HashMap<>();
 
     public void apply(MetricEvent metricEvent) {
+        if (metricEvent == null) {
+            return;
+        }
         lastMetric = metricEvent;
         for (Map.Entry<String, Object> entry : metricEvent.getFields().entrySet()) {
             FieldAggregator aggregator = aggregators.computeIfAbsent(entry.getKey(), FieldAggregator::new);
@@ -44,49 +49,22 @@ public class StatsAccumulator implements Serializable {
         }
     }
 
-    @Data
-    public static class FieldAggregator implements Serializable {
-
-        private String name;
-
-        private Long count;
-
-        private Double sum;
-
-        private Double min;
-
-        private Double max;
-
-        public FieldAggregator(String fieldName) {
-            name = fieldName;
+    public MetricEvent getResult() {
+        if (lastMetric == null) {
+            return null;
         }
-
-        public void apply(Object value) {
-            Double d = ConvertUtils.toDouble(value);
-            if (d == null) {
-                return;
-            }
-            if (count == null) {
-                count = 0L;
-                sum = 0D;
-                max = min = d;
-            }
-            count++;
-            sum += d;
-            if (d < min) {
-                min = d;
-            }
-            if (d > max) {
-                max = d;
-            }
+        MetricEvent metricEvent = lastMetric.copy();
+        metricEvent.getFields().clear();
+        for (Map.Entry<String, FieldAggregator> entry : aggregators.entrySet()) {
+            FieldAggregator aggregator = entry.getValue();
+            metricEvent.addField(aggregator.getName() + "_mean", aggregator.getMean());
+            metricEvent.addField(aggregator.getName() + "_count", aggregator.getCount());
+            metricEvent.addField(aggregator.getName() + "_sum", aggregator.getSum());
+            metricEvent.addField(aggregator.getName() + "_min", aggregator.getMin());
+            metricEvent.addField(aggregator.getName() + "_max", aggregator.getMax());
         }
-
-        public double getMean() {
-            if (sum == null || count == null) {
-                return 0;
-            }
-            return sum / count;
-        }
+        log.info("Aggregate metric. now: {} spanEndTime: {}", new Date(), new Date(metricEvent.getTimestamp() / 1000000));
+        return metricEvent;
     }
 }
 

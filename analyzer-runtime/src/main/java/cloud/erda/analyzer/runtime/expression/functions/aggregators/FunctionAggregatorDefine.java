@@ -47,4 +47,8 @@ public class FunctionAggregatorDefine {
     static final String P50 = "p50";
 
     static final String MERGE = "merge";
+
+    static final String MEDIAN = "median";
+
+    static final String MEAN = "mean";
 }

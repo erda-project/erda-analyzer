@@ -20,6 +20,7 @@ import cloud.erda.analyzer.common.models.MetricEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.functions.AggregateFunction;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
@@ -28,7 +29,7 @@ import java.util.Map;
  * @date 2021/9/22 01:42
  */
 @Slf4j
-public class MetricFieldAggregateFunction implements AggregateFunction<MetricEvent, StatsAccumulator, MetricEvent> {
+public class MetricFieldAggregateFunction implements AggregateFunction<MetricEvent, StatsAccumulator, MetricEvent>, Serializable {
 
     @Override
     public StatsAccumulator createAccumulator() {
@@ -43,18 +44,7 @@ public class MetricFieldAggregateFunction implements AggregateFunction<MetricEve
 
     @Override
     public MetricEvent getResult(StatsAccumulator statsAccumulator) {
-        MetricEvent metricEvent = statsAccumulator.getLastMetric().copy();
-        metricEvent.getFields().clear();
-        for (Map.Entry<String, StatsAccumulator.FieldAggregator> entry : statsAccumulator.getAggregators().entrySet()) {
-            StatsAccumulator.FieldAggregator aggregator = entry.getValue();
-            metricEvent.addField(aggregator.getName() + "_mean", aggregator.getMean());
-            metricEvent.addField(aggregator.getName() + "_count", aggregator.getCount());
-            metricEvent.addField(aggregator.getName() + "_sum", aggregator.getSum());
-            metricEvent.addField(aggregator.getName() + "_min", aggregator.getMin());
-            metricEvent.addField(aggregator.getName() + "_max", aggregator.getMax());
-        }
-        log.info("Aggregate metric. now: {} spanEndTime: {}", new Date(), new Date(metricEvent.getTimestamp() / 1000000));
-        return metricEvent;
+        return statsAccumulator.getResult();
     }
 
     @Override

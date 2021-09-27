@@ -83,7 +83,7 @@ public class Main {
                 .name("check whether the tag of the service exists")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .keyBy(new SpanServiceGroupFunction())
-                .window(TumblingEventTimeWindows.of(Time.seconds(10)))
+                .window(TumblingEventTimeWindows.of(Time.seconds(20)))
 //                .trigger(new FixedEventTimeTrigger())
                 .reduce(new SpanServiceReduceFunction())
                 .name("reduce span service")
@@ -103,9 +103,10 @@ public class Main {
                 .name("slow or error metric process")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .keyBy(new MetricTagGroupFunction())
-                .window(TumblingEventTimeWindows.of(Time.seconds(10)))
+                .window(TumblingEventTimeWindows.of(Time.seconds(20)))
 //                .trigger(new FixedEventTimeTrigger())
-                .aggregate(new MetricFieldAggregateFunction())
+//                .aggregate(new MetricFieldAggregateFunction())
+                .process(new MetricFieldProcessFunction())
                 .name("Aggregate metrics field process")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
 

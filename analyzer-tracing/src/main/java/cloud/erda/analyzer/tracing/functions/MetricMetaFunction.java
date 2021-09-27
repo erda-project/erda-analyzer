@@ -28,7 +28,9 @@ import org.apache.flink.util.Collector;
 public class MetricMetaFunction implements FlatMapFunction<MetricEvent, MetricEvent> {
     @Override
     public void flatMap(MetricEvent metricEvent, Collector<MetricEvent> collector) throws Exception {
-
+        if (metricEvent == null) {
+            return;
+        }
         metricEvent.addTag(SpanConstants.META, SpanConstants.TRUE);
         metricEvent.addTag(SpanConstants.METRIC_SCOPE, SpanConstants.METRIC_SCOPE_MICRO_SERVICE);
         metricEvent.addTag(SpanConstants.METRIC_SCOPE_ID, metricEvent.getTags().get(SpanConstants.MSP_ENV_ID));
