@@ -43,10 +43,13 @@ public class MetricFieldAggregateFunction implements AggregateFunction<MetricEve
 
     @Override
     public MetricEvent getResult(StatsAccumulator statsAccumulator) {
+        if (statsAccumulator.getLastMetric() == null) {
+            return null;
+        }
         MetricEvent metricEvent = statsAccumulator.getLastMetric().copy();
         metricEvent.getFields().clear();
-        for (Map.Entry<String, StatsAccumulator.FieldAggregator> entry : statsAccumulator.getAggregators().entrySet()) {
-            StatsAccumulator.FieldAggregator aggregator = entry.getValue();
+        for (Map.Entry<String, FieldAggregator> entry : statsAccumulator.getAggregators().entrySet()) {
+            FieldAggregator aggregator = entry.getValue();
             metricEvent.addField(aggregator.getName() + "_mean", aggregator.getMean());
             metricEvent.addField(aggregator.getName() + "_count", aggregator.getCount());
             metricEvent.addField(aggregator.getName() + "_sum", aggregator.getSum());

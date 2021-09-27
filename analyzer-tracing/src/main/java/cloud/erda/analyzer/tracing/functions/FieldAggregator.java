@@ -16,35 +16,56 @@
 
 package cloud.erda.analyzer.tracing.functions;
 
-import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.utils.ConvertUtils;
 import lombok.Data;
-import lombok.Getter;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author liuhaoyang
- * @date 2021/9/23 22:49
+ * @date 2021/9/27 09:30
  */
 @Data
-public class StatsAccumulator implements Serializable {
+public class FieldAggregator implements Serializable {
 
-    private MetricEvent lastMetric;
+    private String name;
 
-    private Map<String, FieldAggregator> aggregators = new HashMap<>();
+    private Long count;
 
-    public void apply(MetricEvent metricEvent) {
-        if (metricEvent == null) {
+    private Double sum;
+
+    private Double min;
+
+    private Double max;
+
+    public FieldAggregator(String fieldName) {
+        name = fieldName;
+    }
+
+    public void apply(Object value) {
+        Double d = ConvertUtils.toDouble(value);
+        if (d == null) {
             return;
         }
-        lastMetric = metricEvent;
-        for (Map.Entry<String, Object> entry : metricEvent.getFields().entrySet()) {
-            FieldAggregator aggregator = aggregators.computeIfAbsent(entry.getKey(), FieldAggregator::new);
-            aggregator.apply(entry.getValue());
+        if (count == null) {
+            count = 0L;
+            sum = 0D;
+            max = min = d;
+        }
+        count++;
+        sum += d;
+        if (d < min) {
+            min = d;
+        }
+        if (d > max) {
+            max = d;
         }
     }
-}
 
+    public double getMean() {
+        if (sum == null || count == null) {
+            return 0;
+        }
+        return sum / count;
+    }
+}
