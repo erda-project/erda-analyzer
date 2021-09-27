@@ -41,7 +41,9 @@ public class MetricTagGroupFunction implements KeySelector<MetricEvent, String> 
         }
         String series = sb.toString();
         String md5HexKey = DigestUtils.md5Hex(series);
-        log.info("metric series = {} . md5HexKey = {}", series, md5HexKey);
+        if (log.isDebugEnabled()) {
+            log.debug("metric series = {} . md5HexKey = {}", series, md5HexKey);
+        }
         return md5HexKey;
     }
 }
