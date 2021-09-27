@@ -21,7 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.flink.api.java.functions.KeySelector;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @author liuhaoyang
@@ -33,7 +35,8 @@ public class MetricTagGroupFunction implements KeySelector<MetricEvent, String> 
     public String getKey(MetricEvent metricEvent) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append(metricEvent.getName());
-        for (Map.Entry<String, String> tag : metricEvent.getTags().entrySet()) {
+        Map<String, String> sortedTags = new TreeMap<>(metricEvent.getTags());
+        for (Map.Entry<String, String> tag : sortedTags.entrySet()) {
             sb.append("_").append(tag.getKey()).append("_").append(tag.getValue());
         }
         String series = sb.toString();
