@@ -17,6 +17,7 @@
 package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.models.MetricEvent;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
@@ -25,10 +26,12 @@ import org.apache.flink.util.Collector;
  * @author liuhaoyang
  * @date 2021/9/27 11:30
  */
+@Slf4j
 public class MetricFieldProcessFunction extends ProcessWindowFunction<MetricEvent, MetricEvent, String, TimeWindow> {
 
     @Override
     public void process(String s, ProcessWindowFunction<MetricEvent, MetricEvent, String, TimeWindow>.Context context, Iterable<MetricEvent> iterable, Collector<MetricEvent> collector) throws Exception {
+        log.info("current key = {}", s);
         StatsAccumulator statsAccumulator = new StatsAccumulator();
         for (MetricEvent metricEvent : iterable) {
             statsAccumulator.apply(metricEvent);

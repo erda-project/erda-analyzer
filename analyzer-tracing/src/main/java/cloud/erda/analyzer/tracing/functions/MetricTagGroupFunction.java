@@ -17,6 +17,8 @@
 package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.models.MetricEvent;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.flink.api.java.functions.KeySelector;
 
 import java.util.Map;
@@ -25,6 +27,7 @@ import java.util.Map;
  * @author liuhaoyang
  * @date 2021/9/22 02:00
  */
+@Slf4j
 public class MetricTagGroupFunction implements KeySelector<MetricEvent, String> {
     @Override
     public String getKey(MetricEvent metricEvent) throws Exception {
@@ -33,6 +36,9 @@ public class MetricTagGroupFunction implements KeySelector<MetricEvent, String> 
         for (Map.Entry<String, String> tag : metricEvent.getTags().entrySet()) {
             sb.append("_").append(tag.getKey()).append("_").append(tag.getValue());
         }
-        return sb.toString();
+        String series = sb.toString();
+        String md5HexKey = DigestUtils.md5Hex(series);
+        log.info("metric series = {} . md5HexKey = {}", series, md5HexKey);
+        return md5HexKey;
     }
 }
