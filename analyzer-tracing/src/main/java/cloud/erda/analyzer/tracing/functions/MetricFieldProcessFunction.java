@@ -32,13 +32,13 @@ public class MetricFieldProcessFunction extends ProcessWindowFunction<MetricEven
     @Override
     public void process(String s, ProcessWindowFunction<MetricEvent, MetricEvent, String, TimeWindow>.Context context, Iterable<MetricEvent> iterable, Collector<MetricEvent> collector) throws Exception {
         log.info("current key = {}", s);
-        StatsAccumulator statsAccumulator = new StatsAccumulator();
-        for (MetricEvent metricEvent : iterable) {
-            statsAccumulator.apply(metricEvent);
-        }
-        MetricEvent result = statsAccumulator.getResult();
-        if (result != null) {
-            collector.collect(result);
-        }
+//        StatsAccumulator statsAccumulator = new StatsAccumulator();
+//        for (MetricEvent metricEvent : iterable) {
+//            statsAccumulator.apply(metricEvent);
+//        }
+//        MetricEvent result = statsAccumulator.getResult();
+//        if (result != null) {
+//            collector.collect(result);
+//        }
     }
 }
