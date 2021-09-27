@@ -20,8 +20,10 @@ import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.utils.ConvertUtils;
 import lombok.Data;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +31,7 @@ import java.util.Map;
  * @author liuhaoyang
  * @date 2021/9/23 22:49
  */
-@Data
+@Slf4j
 public class StatsAccumulator implements Serializable {
 
     private MetricEvent lastMetric;
@@ -45,6 +47,24 @@ public class StatsAccumulator implements Serializable {
             FieldAggregator aggregator = aggregators.computeIfAbsent(entry.getKey(), FieldAggregator::new);
             aggregator.apply(entry.getValue());
         }
+    }
+
+    public MetricEvent getResult() {
+        if (lastMetric == null) {
+            return null;
+        }
+        MetricEvent metricEvent = lastMetric.copy();
+        metricEvent.getFields().clear();
+        for (Map.Entry<String, FieldAggregator> entry : aggregators.entrySet()) {
+            FieldAggregator aggregator = entry.getValue();
+            metricEvent.addField(aggregator.getName() + "_mean", aggregator.getMean());
+            metricEvent.addField(aggregator.getName() + "_count", aggregator.getCount());
+            metricEvent.addField(aggregator.getName() + "_sum", aggregator.getSum());
+            metricEvent.addField(aggregator.getName() + "_min", aggregator.getMin());
+            metricEvent.addField(aggregator.getName() + "_max", aggregator.getMax());
+        }
+        log.info("Aggregate metric. now: {} spanEndTime: {}", new Date(), new Date(metricEvent.getTimestamp() / 1000000));
+        return metricEvent;
     }
 }
 

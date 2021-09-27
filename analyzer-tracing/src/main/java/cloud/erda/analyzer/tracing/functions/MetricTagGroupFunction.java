@@ -28,7 +28,6 @@ import java.util.Map;
 public class MetricTagGroupFunction implements KeySelector<MetricEvent, String> {
     @Override
     public String getKey(MetricEvent metricEvent) throws Exception {
-
         StringBuilder sb = new StringBuilder();
         sb.append(metricEvent.getName());
         for (Map.Entry<String, String> tag : metricEvent.getTags().entrySet()) {
