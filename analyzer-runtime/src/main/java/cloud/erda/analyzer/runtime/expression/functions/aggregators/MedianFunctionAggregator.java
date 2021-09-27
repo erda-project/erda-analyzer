@@ -18,25 +18,14 @@ package cloud.erda.analyzer.runtime.expression.functions.aggregators;
  * @author: liuhaoyang
  * @create: 2019-12-21 20:50
  **/
-public class MedianFunctionAggregator implements FunctionAggregator {
+public class MedianFunctionAggregator extends PercentFunctionAggregator  {
 
     @Override
     public String aggregator() {
-        return null;
+        return FunctionAggregatorDefine.MEDIAN;
     }
 
-    @Override
-    public Object value() {
-        return null;
-    }
-
-    @Override
-    public void apply(Object value) {
-        // todo
-    }
-
-    @Override
-    public void merge(FunctionAggregator other) {
-
+    public MedianFunctionAggregator() {
+        super("50");
     }
 }

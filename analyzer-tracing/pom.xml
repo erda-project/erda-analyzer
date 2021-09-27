@@ -22,6 +22,11 @@
             <artifactId>analyzer-common</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>cloud.erda</groupId>
+            <artifactId>analyzer-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

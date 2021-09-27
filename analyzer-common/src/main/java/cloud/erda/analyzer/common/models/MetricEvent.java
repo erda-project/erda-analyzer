@@ -17,11 +17,12 @@ package cloud.erda.analyzer.common.models;
 import lombok.Data;
 import lombok.val;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 @Data
-public class MetricEvent {
+public class MetricEvent implements Serializable {
 
     // measurement name
     private String name;
