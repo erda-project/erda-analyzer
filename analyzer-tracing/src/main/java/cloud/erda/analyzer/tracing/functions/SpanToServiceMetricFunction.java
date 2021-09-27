@@ -60,7 +60,9 @@ public class SpanToServiceMetricFunction implements MapFunction<Span, MetricEven
             metricEvent.addField(SpanConstants.START_TIME_MEAN, startAt);
         }
         metricEvent.addField(SpanConstants.START_TIME_COUNT, startTimeCount);
-        log.info("Map reduced span to service metric. now: {} spanEndTime: {}", new Date(), new Date(metricEvent.getTimestamp() / 1000000));
+        if (log.isDebugEnabled()) {
+            log.debug("Map reduced span to service metric. now: {} spanEndTime: {}", new Date(), new Date(metricEvent.getTimestamp() / 1000000));
+        }
         return metricEvent;
     }
 

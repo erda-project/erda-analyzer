@@ -88,7 +88,9 @@ public class TransactionAnalysisFunction extends ProcessWindowFunction<Span, Met
                 metricEvent.addTag(SpanConstants.TRACE_ID, span.getTraceID());
                 metricEvent.addTag(SpanConstants.REQUEST_ID, span.getTraceID());
                 metricEvent.addTag(SpanConstants.TRACE_SAMPLED, SpanConstants.TRUE);
-                log.info("Map span to transaction metric. now: {} spanEndTime: {}", new Date(), new Date(metricEvent.getTimestamp() / 1000000));
+                if (log.isDebugEnabled()) {
+                    log.debug("Map span to transaction metric. now: {} spanEndTime: {}", new Date(), new Date(metricEvent.getTimestamp() / 1000000));
+                }
                 collector.collect(metricEvent);
             }
         }
