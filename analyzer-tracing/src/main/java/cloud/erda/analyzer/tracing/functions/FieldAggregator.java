@@ -63,7 +63,7 @@ public class FieldAggregator implements Serializable {
     }
 
     public double getMean() {
-        if (sum == null || count == null) {
+        if (sum == null || count == null || count == 0) {
             return 0;
         }
         return sum / count;

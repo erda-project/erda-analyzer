@@ -17,6 +17,7 @@
 package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.models.MetricEvent;
+import cloud.erda.analyzer.common.utils.GsonUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
@@ -32,13 +33,14 @@ public class MetricFieldProcessFunction extends ProcessWindowFunction<MetricEven
     @Override
     public void process(String s, ProcessWindowFunction<MetricEvent, MetricEvent, String, TimeWindow>.Context context, Iterable<MetricEvent> iterable, Collector<MetricEvent> collector) throws Exception {
         log.info("current key = {}", s);
-//        StatsAccumulator statsAccumulator = new StatsAccumulator();
-//        for (MetricEvent metricEvent : iterable) {
-//            statsAccumulator.apply(metricEvent);
-//        }
-//        MetricEvent result = statsAccumulator.getResult();
-//        if (result != null) {
-//            collector.collect(result);
-//        }
+        StatsAccumulator statsAccumulator = new StatsAccumulator();
+        for (MetricEvent metricEvent : iterable) {
+            statsAccumulator.apply(metricEvent);
+        }
+        MetricEvent result = statsAccumulator.getResult();
+        if (result != null) {
+            log.info("StatsAccumulator result : {}", GsonUtil.toJson(result));
+            collector.collect(result);
+        }
     }
 }
