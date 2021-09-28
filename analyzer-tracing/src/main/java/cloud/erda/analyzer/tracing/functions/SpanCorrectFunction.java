@@ -38,7 +38,7 @@ public class SpanCorrectFunction implements FlatMapFunction<Span, Span> {
     }
 
     private String getSpanLayer(Span span) {
-        if (span.getAttributes().containsKey(SpanConstants.TAG_HTTP_URL)) {
+        if (span.getAttributes().containsKey(SpanConstants.TAG_HTTP_URL) || span.getAttributes().containsKey(SpanConstants.TAG_HTTP_PATH)) {
             return SpanConstants.SPAN_LAYER_HTTP;
         }
 
@@ -54,11 +54,10 @@ public class SpanCorrectFunction implements FlatMapFunction<Span, Span> {
             return SpanConstants.SPAN_LAYER_DB;
         }
 
-        if (span.getAttributes().containsKey(SpanConstants.PEER_SERVICE)
-                && SpanConstants.SERVER.equals(span.getAttributes().get(SpanConstants.SPAN_KIND))) {
+        if (span.getAttributes().containsKey(SpanConstants.PEER_SERVICE)) {
             return SpanConstants.SPAN_LAYER_RPC;
         }
 
-        return SpanConstants.SPAN_LAYER_UNKNOWN;
+        return SpanConstants.SPAN_LAYER_LOCAL;
     }
 }

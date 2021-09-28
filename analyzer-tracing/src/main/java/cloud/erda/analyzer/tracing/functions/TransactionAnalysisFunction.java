@@ -18,6 +18,7 @@ package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.constant.SpanConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
+import cloud.erda.analyzer.common.utils.GsonUtil;
 import cloud.erda.analyzer.common.utils.StringUtil;
 import cloud.erda.analyzer.tracing.model.Span;
 import lombok.extern.slf4j.Slf4j;
@@ -89,14 +90,14 @@ public class TransactionAnalysisFunction extends ProcessWindowFunction<Span, Met
                 metricEvent.addTag(SpanConstants.REQUEST_ID, span.getTraceID());
                 metricEvent.addTag(SpanConstants.TRACE_SAMPLED, SpanConstants.TRUE);
                 if (log.isDebugEnabled()) {
-                    log.debug("Map span to transaction metric. now: {} spanEndTime: {}", new Date(), new Date(metricEvent.getTimestamp() / 1000000));
+                    log.debug("Map span to transaction metric @SpanEndTime {}. {}", new Date(metricEvent.getTimestamp() / 1000000), GsonUtil.toJson(metricEvent));
                 }
                 collector.collect(metricEvent);
             }
         }
     }
 
-    private MetricEvent createServerMetrics(Map<String, Span> spans, Span span, String metricName) {
+    private MetricEvent createServerMetrics(Map<String, Span> traceSpans, Span span, String metricName) {
         MetricEvent metricEvent = new MetricEvent();
         metricEvent.setName(metricName);
         metricEvent.addTag(SpanConstants.TARGET_SERVICE_ID, getAttribute(span, SpanConstants.SERVICE_ID));
@@ -106,7 +107,7 @@ public class TransactionAnalysisFunction extends ProcessWindowFunction<Span, Met
         metricEvent.addTag(SpanConstants.TARGET_SERVICE_INSTANCE_ID, getAttribute(span, SpanConstants.SERVICE_INSTANCE_ID));
         String parentSpanId = span.getParentSpanID();
         if (StringUtil.isNotEmpty(parentSpanId)) {
-            Span parentSpan = spans.get(parentSpanId);
+            Span parentSpan = traceSpans.get(parentSpanId);
             if (parentSpan != null) {
                 metricEvent.addTag(SpanConstants.SOURCE_SERVICE_ID, getAttribute(parentSpan, SpanConstants.SERVICE_ID));
                 metricEvent.addTag(SpanConstants.SOURCE_SERVICE_NAME, getAttribute(parentSpan, SpanConstants.SERVICE_NAME));
