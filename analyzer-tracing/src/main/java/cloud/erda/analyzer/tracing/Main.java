@@ -84,7 +84,6 @@ public class Main {
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .keyBy(new SpanServiceGroupFunction())
                 .window(TumblingEventTimeWindows.of(Time.seconds(10)))
-//                .trigger(new FixedEventTimeTrigger())
                 .reduce(new SpanServiceReduceFunction())
                 .name("reduce span service")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
@@ -95,7 +94,6 @@ public class Main {
         SingleOutputStreamOperator<MetricEvent> tranMetricStream = spanStream
                 .keyBy(Span::getTraceID)
                 .window(TumblingEventTimeWindows.of(Time.seconds(60)))
-//                .trigger(new FixedEventTimeTrigger())
                 .process(new TransactionAnalysisFunction())
                 .name("trace analysis windows process")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
@@ -104,9 +102,7 @@ public class Main {
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .keyBy(new MetricTagGroupFunction())
                 .window(TumblingEventTimeWindows.of(Time.seconds(10)))
-//                .trigger(new FixedEventTimeTrigger())
                 .aggregate(new MetricFieldAggregateFunction())
-//                .process(new MetricFieldProcessFunction())
                 .name("Aggregate metrics field process")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
 
