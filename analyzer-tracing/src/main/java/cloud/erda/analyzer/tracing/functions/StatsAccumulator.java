@@ -18,6 +18,7 @@ package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.utils.ConvertUtils;
+import cloud.erda.analyzer.common.utils.GsonUtil;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -63,7 +64,9 @@ public class StatsAccumulator implements Serializable {
             metricEvent.addField(aggregator.getName() + "_min", aggregator.getMin());
             metricEvent.addField(aggregator.getName() + "_max", aggregator.getMax());
         }
-        log.info("Aggregate metric. now: {} spanEndTime: {}", new Date(), new Date(metricEvent.getTimestamp() / 1000000));
+        if (log.isDebugEnabled()) {
+            log.debug("transaction metric aggregate @SpanEndTime {} . {}", new Date(metricEvent.getTimestamp() / 1000000), GsonUtil.toJson(metricEvent));
+        }
         return metricEvent;
     }
 }

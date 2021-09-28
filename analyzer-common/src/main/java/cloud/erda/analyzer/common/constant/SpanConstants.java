@@ -155,4 +155,6 @@ public class SpanConstants {
     public static final String TRACE_SAMPLED = "trace_sampled";
 
     public static final String ERROR = "error";
+
+    public static final String TAG_HTTP_PATH = "http_path";
 }
