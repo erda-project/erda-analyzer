@@ -25,8 +25,9 @@ public class Constants {
      * kafka
      */
     public static final String TOPIC_ERROR = "kafka.topic.error";
-    public static final String TOPIC_TRACE = "kafka.topic.trace";
+    public static final String TOPIC_SPOT_TRACE = "kafka.topic.spot_trace";
     public static final String TOPIC_METRICS = "kafka.topic.metrics";
+    public static final String TOPIC_TRACING_METRICS = "kafka.topic.trace_metrics";
     public static final String METASERVER_TOPICS = "metaserver.topics";
     public static final String TOPIC_ANALYTICS = "kafka.topic.analytics";
     public static final String TOPIC_MARATHON = "kafka.topic.marathon";
