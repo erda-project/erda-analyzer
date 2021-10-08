@@ -15,6 +15,7 @@
 package cloud.erda.analyzer.metrics;
 
 import cloud.erda.analyzer.metrics.functions.*;
+import cloud.erda.analyzer.runtime.MetricRuntime;
 import cloud.erda.analyzer.runtime.functions.*;
 import cloud.erda.analyzer.runtime.models.*;
 import com.esotericsoftware.kryo.serializers.CompatibleFieldSerializer;
@@ -24,14 +25,10 @@ import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.schemas.MetricEventSchema;
 import cloud.erda.analyzer.common.utils.ExecutionEnv;
 import cloud.erda.analyzer.common.watermarks.MetricWatermarkExtractor;
-import cloud.erda.analyzer.metrics.functions.*;
-import cloud.erda.analyzer.metrics.sources.AlertExpressionMetadataReader;
-import cloud.erda.analyzer.metrics.sources.MetricExpressionMetadataReader;
+import cloud.erda.analyzer.runtime.sources.AlertExpressionMetadataReader;
+import cloud.erda.analyzer.runtime.sources.MetricExpressionMetadataReader;
 import cloud.erda.analyzer.runtime.sources.FlinkMysqlAppendSource;
 import cloud.erda.analyzer.runtime.utils.OutputTagUtils;
-import cloud.erda.analyzer.runtime.utils.StateDescriptorFactory;
-import cloud.erda.analyzer.runtime.windows.KeyedMetricWatermarkExtractor;
-import cloud.erda.analyzer.runtime.windows.KeyedMetricWindowAssigner;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -113,47 +110,9 @@ public class Main {
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .name("Push host_status to kafka");
 
-        // broadcast
-        DataStream<MetricEvent> filter = metrics.union(machineMetrics)
-                .connect(expressionQuery.broadcast(StateDescriptorFactory.MetricFilterState))
-                .process(new MetricNameFilterProcessFunction(StateDescriptorFactory.MetricFilterState))
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
-                .name("Pre process metrics name filter");
 
-        // broadcast
-        SingleOutputStreamOperator<KeyedMetricEvent> filteredMetrics = filter
-                .connect(expressionQuery.broadcast(StateDescriptorFactory.MetricKeyedMapState, StateDescriptorFactory.ExpressionState))
-                .process(new MetricFilterProcessFunction(parameterTool.getLong(Constants.METRIC_METADATA_TTL, 75000), StateDescriptorFactory.MetricKeyedMapState, StateDescriptorFactory.ExpressionState))
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
-                .name("Pre process metrics expression filters");
+        DataStream<AggregatedMetricEvent> aggregationMetricEvent = MetricRuntime.run(metrics.union(machineMetrics), expressionQuery, parameterTool);
 
-        SingleOutputStreamOperator<KeyedMetricEvent> exactlyNoneMetrics = filteredMetrics
-                .process(new WindowBehaviorOutputProcessFunction(OutputTagUtils.AllowedLatenessTag))
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
-                .name("Process window behavior");
-
-        // process none lateness metrics
-        SingleOutputStreamOperator<AggregatedMetricEvent> exactlyAggregationMetricEvent = exactlyNoneMetrics
-                .assignTimestampsAndWatermarks(new KeyedMetricWatermarkExtractor())
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
-                .keyBy(new MetricGroupProcessFunction())
-                .window(new KeyedMetricWindowAssigner())
-                .aggregate(new MetricAggregateProcessFunction(), new MetricOperatorProcessFunction())
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
-                .name("Process expression group and functions");
-
-        // process lateness metrics
-        SingleOutputStreamOperator<AggregatedMetricEvent> lateAggregationMetricEvent = exactlyNoneMetrics
-                .getSideOutput(OutputTagUtils.AllowedLatenessTag)
-                .assignTimestampsAndWatermarks(new KeyedMetricWatermarkExtractor())
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
-                .keyBy(new MetricGroupProcessFunction())
-                .window(new KeyedMetricWindowAssigner()).allowedLateness(Time.minutes(3))
-                .aggregate(new MetricAggregateProcessFunction(), new MetricOperatorProcessFunction())
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
-                .name("Process expression group and functions for late-data");
-
-        DataStream<AggregatedMetricEvent> aggregationMetricEvent = exactlyAggregationMetricEvent.union(lateAggregationMetricEvent);
 
         SingleOutputStreamOperator<AggregatedMetricEvent> outputMetrics = aggregationMetricEvent
                 .process(new MetricSelectOutputProcessFunction(OutputTagUtils.OutputMetricTag, OutputTagUtils.OutputMetricTempTag, OutputTagUtils.OutputAlertEventTag))

@@ -68,7 +68,7 @@ public class TransactionAnalysisFunction extends ProcessWindowFunction<Span, Met
                     }
                     break;
                 case SpanConstants.SPAN_LAYER_CACHE:
-                    metricEvent = createClientMetrics(span, SpanConstants.SPAN_LAYER_CACHE);
+                    metricEvent = createClientMetrics(span, SpanConstants.APPLICATION_CACHE);
                     break;
                 case SpanConstants.SPAN_LAYER_DB:
                     metricEvent = createClientMetrics(span, SpanConstants.APPLICATION_DB);

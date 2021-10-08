@@ -26,11 +26,11 @@ import org.apache.flink.util.OutputTag;
  */
 public class MetricSelectOutputProcessFunction extends ProcessFunction<AggregatedMetricEvent, AggregatedMetricEvent> {
 
-    private final OutputTag<AggregatedMetricEvent> metricTag;
+    private OutputTag<AggregatedMetricEvent> metricTag;
 
-    private final OutputTag<AggregatedMetricEvent> metricTempTag;
+    private OutputTag<AggregatedMetricEvent> metricTempTag;
 
-    private final OutputTag<AggregatedMetricEvent> alertEventTag;
+    private OutputTag<AggregatedMetricEvent> alertEventTag;
 
     public MetricSelectOutputProcessFunction(OutputTag<AggregatedMetricEvent> metricTag, OutputTag<AggregatedMetricEvent> metricTempTag, OutputTag<AggregatedMetricEvent> alertEventTag) {
         this.metricTag = metricTag;
@@ -40,13 +40,13 @@ public class MetricSelectOutputProcessFunction extends ProcessFunction<Aggregate
 
     @Override
     public void processElement(AggregatedMetricEvent element, Context context, Collector<AggregatedMetricEvent> collector) throws Exception {
-        if (element.getOutputs().contains(ExpressionConstants.OUTPUT_METRIC)) {
+        if (element.getOutputs().contains(ExpressionConstants.OUTPUT_METRIC) && metricTag != null) {
             context.output(metricTag, element);
         }
-        if (element.getOutputs().contains(ExpressionConstants.OUTPUT_TEMP_METRIC)) {
+        if (element.getOutputs().contains(ExpressionConstants.OUTPUT_TEMP_METRIC) && metricTempTag != null) {
             context.output(metricTempTag, element);
         }
-        if (element.getOutputs().contains(ExpressionConstants.OUTPUT_ALERT)) {
+        if (element.getOutputs().contains(ExpressionConstants.OUTPUT_ALERT) && alertEventTag != null) {
             context.output(alertEventTag, element);
         }
     }

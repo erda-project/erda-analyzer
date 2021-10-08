@@ -21,7 +21,6 @@ import cloud.erda.analyzer.common.utils.CassandraSinkUtils;
 import cloud.erda.analyzer.common.utils.ExecutionEnv;
 import cloud.erda.analyzer.common.watermarks.MetricWatermarkExtractor;
 import cloud.erda.analyzer.errorInsight.functions.*;
-import cloud.erda.analyzer.errorInsight.functions.*;
 import cloud.erda.analyzer.errorInsight.model.ErrorCountState;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
