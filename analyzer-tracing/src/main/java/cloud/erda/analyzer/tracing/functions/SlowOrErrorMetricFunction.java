@@ -54,7 +54,11 @@ public class SlowOrErrorMetricFunction implements FlatMapFunction<MetricEvent, M
     public void flatMap(MetricEvent metricEvent, Collector<MetricEvent> collector) throws Exception {
 
         long slowDefault = parameterTool.getLong(parmaKeys.get("default"));
-        long metricSlow = parameterTool.getLong(parmaKeys.get(metricEvent.getName()), slowDefault);
+        long metricSlow = slowDefault;
+
+        if (parmaKeys.containsKey(metricEvent.getName())) {
+            metricSlow = parameterTool.getLong(parmaKeys.get(metricEvent.getName()), slowDefault);
+        }
 
         if ((long) metricEvent.getFields().get(SpanConstants.ELAPSED) > metricSlow) {
             MetricEvent slowMetric = metricEvent.copy();
