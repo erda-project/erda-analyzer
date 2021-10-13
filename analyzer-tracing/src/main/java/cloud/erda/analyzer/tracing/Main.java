@@ -125,12 +125,14 @@ public class Main {
                 .returns(ExpressionMetadata.class)
                 .name("Query metric expression from mysql");
 
-        // metrics from kafka
+        // spot span from kafka
         DataStream<MetricEvent> spotSpan = env
                 .addSource(new FlinkKafkaConsumer<>(parameterTool.getRequired(Constants.TOPIC_SPOT_TRACE), new MetricEventSchema(), parameterTool.getProperties()))
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_INPUT))
                 .name("spot span consumer")
                 .flatMap(new MetricEventCorrectFunction())
+                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_INPUT))
+                .filter(new SpotSpanCorrectFunction())
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_INPUT))
                 .name("Filter spot span not null and correct timestamp")
                 .assignTimestampsAndWatermarks(new MetricWatermarkExtractor())
