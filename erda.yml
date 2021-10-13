@@ -31,7 +31,7 @@ services:
   analyzer-metrics:
     cmd: flink-entrypoint.sh jobcluster --job-classname cloud.erda.analyzer.metrics.Main
     resources:
-      cpu: ${request_cpu:0.5}
+      cpu: ${request_cpu:0.1}
       max_cpu: 0.5
       mem: ${request_mem:1024}
       max_mem: 1024
@@ -68,7 +68,7 @@ services:
       cpu_bound: "true"
     cmd: flink-entrypoint.sh taskmanager
     resources:
-      cpu: ${reqeust_cpu:1}
+      cpu: ${reqeust_cpu:0.5}
       max_cpu: 1
       mem: ${request_mem:2048}
       max_mem: 2048
@@ -91,7 +91,7 @@ services:
   analyzer-tracing:
     cmd: flink-entrypoint.sh jobcluster --job-classname cloud.erda.analyzer.tracing.Main
     resources:
-      cpu: ${request_cpu:0.5}
+      cpu: ${request_cpu:0.1}
       max_cpu: 0.5
       mem: ${request_mem:1024}
       max_mem: 1024
@@ -128,7 +128,7 @@ services:
       cpu_bound: "true"
     cmd: flink-entrypoint.sh taskmanager
     resources:
-      cpu: ${reqeust_cpu:1}
+      cpu: ${reqeust_cpu:0.5}
       max_cpu: 1
       mem: ${request_mem:2048}
       max_mem: 2048
@@ -151,7 +151,7 @@ services:
   analyzer-alert:
     cmd: flink-entrypoint.sh jobcluster --job-classname cloud.erda.analyzer.alert.Main
     resources:
-      cpu: ${request_cpu:0.5}
+      cpu: ${request_cpu:0.1}
       max_cpu: 0.5
       mem: ${request_mem:1024}
       max_mem: 1024
@@ -185,7 +185,7 @@ services:
   analyzer-alert-task:
     cmd: flink-entrypoint.sh taskmanager
     resources:
-      cpu: ${request_cpu:1}
+      cpu: ${request_cpu:0.1}
       max_cpu: 1
       mem: ${request_mem:2048}
       max_mem: 2048
@@ -208,8 +208,8 @@ services:
   analyzer-error-insight:
     cmd: flink-entrypoint.sh jobcluster --job-classname cloud.erda.analyzer.errorInsight.Main
     resources:
-      cpu: ${request_cpu:1}
-      max_cpu: 1
+      cpu: ${request_cpu:0.2}
+      max_cpu: 0.5
       mem: ${request_mem:2048}
       max_mem: 2048
     deployments:
@@ -238,7 +238,7 @@ services:
   analyzer-error-insight-task:
     cmd: flink-entrypoint.sh taskmanager
     resources:
-      cpu: ${request_cpu:1}
+      cpu: ${request_cpu:0.2}
       max_cpu: 1
       mem: ${request_mem:2048}
       max_mem: 2048
