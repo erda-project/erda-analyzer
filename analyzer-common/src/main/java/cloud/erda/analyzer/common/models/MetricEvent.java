@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-public class MetricEvent extends Object implements Serializable {
+public class MetricEvent implements Serializable {
 
     // measurement name
     private String name;
