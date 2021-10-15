@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 public class MetricEventSchema implements DeserializationSchema<MetricEvent>, SerializationSchema<MetricEvent> {
@@ -50,7 +51,12 @@ public class MetricEventSchema implements DeserializationSchema<MetricEvent>, Se
 
     @Override
     public byte[] serialize(MetricEvent metricEvent) {
-        return gson.toJson(metricEvent).getBytes(Charset.forName("UTF-8"));
+        try {
+            return gson.toJson(metricEvent).getBytes(StandardCharsets.UTF_8);
+        } catch (Exception exception) {
+            logger.error("Serialize metric event fail. {}", metricEvent.toString(), exception);
+            return null;
+        }
     }
 
     @Override

@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-public class MetricEvent implements Serializable {
+public class MetricEvent extends Object implements Serializable {
 
     // measurement name
     private String name;
@@ -59,5 +59,19 @@ public class MetricEvent implements Serializable {
         if (val == null) return this;
         fields.put(key, val);
         return this;
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(timestamp).append(" [Name=").append(name).append("] Tags[");
+        for (Map.Entry<String, String> tag : tags.entrySet()) {
+            sb.append(tag.getKey()).append("=").append(tag.getValue()).append(" ");
+        }
+        sb.append("] Fields[");
+        for (Map.Entry<String, Object> field : fields.entrySet()) {
+            sb.append(field.getKey()).append("=").append(field.getValue().toString()).append(" ");
+        }
+        sb.append("]");
+        return sb.toString();
     }
 }
