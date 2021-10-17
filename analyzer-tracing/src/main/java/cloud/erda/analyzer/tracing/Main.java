@@ -18,6 +18,8 @@ import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.functions.MetricEventCorrectFunction;
 import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.schemas.MetricEventSchema;
+import cloud.erda.analyzer.common.schemas.MetricEventSerializeFunction;
+import cloud.erda.analyzer.common.schemas.StringMetricEventSchema;
 import cloud.erda.analyzer.common.utils.ExecutionEnv;
 import cloud.erda.analyzer.common.watermarks.BoundedOutOfOrdernessWatermarkGenerator;
 import cloud.erda.analyzer.common.watermarks.MetricWatermarkExtractor;
@@ -111,10 +113,13 @@ public class Main {
                 .name("add metric meta")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT));
 
-        tracingMetrics.addSink(new FlinkKafkaProducer<>(
+        tracingMetrics
+                .flatMap(new MetricEventSerializeFunction())
+                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
+                .addSink(new FlinkKafkaProducer<>(
                         parameterTool.getRequired(Constants.KAFKA_BROKERS),
                         parameterTool.getRequired(Constants.TOPIC_TRACING_METRICS),
-                        new MetricEventSchema()))
+                        new StringMetricEventSchema()))
                 .name("send trace metrics to kafka")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT));
 
@@ -156,10 +161,12 @@ public class Main {
                 .flatMap(new MetricEventSelectFunction())
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .name("Map metric output to metricEvent")
+                .flatMap(new MetricEventSerializeFunction())
+                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .addSink(new FlinkKafkaProducer<>(
                         parameterTool.getRequired(Constants.KAFKA_BROKERS),
                         parameterTool.getRequired(Constants.TOPIC_METRICS),
-                        new MetricEventSchema()))
+                        new StringMetricEventSchema()))
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .name("Push metric output to kafka");
 
