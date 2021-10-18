@@ -38,6 +38,9 @@ public class SpanCorrectFunction implements FlatMapFunction<Span, Span> {
     }
 
     private String getSpanLayer(Span span) {
+        if (span.getAttributes().containsKey(SpanConstants.SPAN_LAYER)) {
+            return span.getAttributes().get(SpanConstants.SPAN_LAYER);
+        }
         if (span.getAttributes().containsKey(SpanConstants.TAG_HTTP_URL) || span.getAttributes().containsKey(SpanConstants.TAG_HTTP_PATH)) {
             return SpanConstants.SPAN_LAYER_HTTP;
         }
