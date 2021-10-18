@@ -160,12 +160,17 @@ public class Main {
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("broadcast alert notify");
 
+        DataStream<AlertEvent> levelMatchedAlertEventsWithNotify = alertEventsWithNotify
+                .filter(new AlertEventLevelFilterFunction())
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+                .name("filter event notify level");
+
         DataStream<NotifyEvent> notifyEventWithTemplate = notifyEventDataStream.connect(allUniversalTemplates.broadcast(StateDescriptors.notifyTemplate))
                 .process(new NotifyTemplateProcessFunction(parameterTool.getLong(METRIC_METADATA_TTL, 7500), StateDescriptors.notifyTemplate))
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("notify event with template");
 
-        DataStream<AlertEvent> alertEventsWithTemplate = alertEventsWithNotify
+        DataStream<AlertEvent> alertEventsWithTemplate = levelMatchedAlertEventsWithNotify
                 .connect(alertNotifyTemplateQuery.union(alertNotifyCustomTemplateQuery).broadcast(StateDescriptors.alertNotifyTemplateStateDescriptor))
                 .process(new AlertNotifyTemplateBroadcastProcessFunction(parameterTool.getLong(METRIC_METADATA_TTL,
                         75000), StateDescriptors.alertNotifyTemplateStateDescriptor))
