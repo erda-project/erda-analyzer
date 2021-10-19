@@ -13,6 +13,6 @@ public class AlertEventLevelFilterFunction implements FilterFunction<AlertEvent>
         String eventLevel = alertEvent.getMetricEvent().getTags().get(AlertConstants.ALERT_EXPRESSION_LEVEL);
         String[] notifyLevels = alertEvent.getAlertNotify().getNotifyTarget().getLevel();
         return eventLevel == null || notifyLevels == null || notifyLevels.length == 0
-                || Arrays.stream(notifyLevels).anyMatch(level -> level == eventLevel);
+                || Arrays.stream(notifyLevels).anyMatch(level -> eventLevel.equals(level));
     }
 }
