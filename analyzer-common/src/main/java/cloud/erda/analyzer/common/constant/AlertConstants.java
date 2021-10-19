@@ -43,6 +43,8 @@ public class AlertConstants {
 
     public static final String ALERT_EXPRESSION_ID = "expression_id";
 
+    public static final String ALERT_EXPRESSION_LEVEL = "level";
+
     public static final String ALERT_RULE_ID = "rule_id";
 
     public static final String ALERT_NOTIFY_TEMPLATE_ID = "notify_template_id";
