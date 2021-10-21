@@ -18,6 +18,7 @@ import cloud.erda.analyzer.alert.models.AlertHistory;
 import cloud.erda.analyzer.alert.models.RenderedAlertEvent;
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.models.EventKind;
+import cloud.erda.analyzer.common.models.EventNameConstants;
 import cloud.erda.analyzer.common.models.Relation;
 import cloud.erda.analyzer.common.models.RelationTypeConstants;
 import lombok.val;
@@ -37,7 +38,7 @@ public class AlertHistoryMapFunction implements MapFunction<RenderedAlertEvent, 
 
         history.setTimeUnixNano(metric.getTimestamp());
         history.setKind(EventKind.EVENT_KIND_ALERT);
-        history.setName(value.getTitle());
+        history.setName(EventNameConstants.ALERT);
         history.setMessage(value.getContent());
 
         Relation relation = new Relation();
@@ -46,6 +47,7 @@ public class AlertHistoryMapFunction implements MapFunction<RenderedAlertEvent, 
         history.setRelations(relation);
 
         HashMap<String, String> attributes = new HashMap<>();
+        attributes.put(AlertConstants.ALERT_TITLE, value.getTitle());
         attributes.put(AlertConstants.TRIGGER, metric.getTags().get(AlertConstants.TRIGGER));
         attributes.put(AlertConstants.DISPLAY_URL, metric.getTags().get(AlertConstants.DISPLAY_URL));
         attributes.put(AlertConstants.DICE_ORG_ID, metric.getTags().getOrDefault(AlertConstants.DICE_ORG_ID, AlertConstants.INVALID_ORG_ID));
