@@ -12,7 +12,16 @@ public class AlertEventLevelFilterFunction implements FilterFunction<AlertEvent>
     public boolean filter(AlertEvent alertEvent) throws Exception {
         String eventLevel = alertEvent.getMetricEvent().getTags().get(AlertConstants.ALERT_EXPRESSION_LEVEL);
         String[] notifyLevels = alertEvent.getAlertNotify().getNotifyTarget().getLevel();
-        return eventLevel == null || notifyLevels == null || notifyLevels.length == 0
-                || Arrays.stream(notifyLevels).anyMatch(level -> eventLevel.equals(level));
+
+        if (eventLevel == null || notifyLevels == null || notifyLevels.length == 0)
+            return true;
+
+        int len = notifyLevels.length;
+        for (int i = 0; i < len; i++) {
+            if (eventLevel.equals(notifyLevels[i]))
+                return true;
+        }
+
+        return false;
     }
 }
