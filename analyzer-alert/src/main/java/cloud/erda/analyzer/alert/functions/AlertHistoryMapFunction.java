@@ -50,6 +50,7 @@ public class AlertHistoryMapFunction implements MapFunction<RenderedAlertEvent, 
         attributes.put(AlertConstants.ALERT_TITLE, value.getTitle());
         attributes.put(AlertConstants.TRIGGER, metric.getTags().get(AlertConstants.TRIGGER));
         attributes.put(AlertConstants.DISPLAY_URL, metric.getTags().get(AlertConstants.DISPLAY_URL));
+        attributes.put(AlertConstants.ORG_NAME, metric.getTags().get(AlertConstants.ORG_NAME));
         attributes.put(AlertConstants.DICE_ORG_ID, metric.getTags().getOrDefault(AlertConstants.DICE_ORG_ID, AlertConstants.INVALID_ORG_ID));
         history.setAttributes(attributes);
 
