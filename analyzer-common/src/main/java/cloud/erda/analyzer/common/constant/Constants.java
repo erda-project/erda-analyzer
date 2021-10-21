@@ -43,6 +43,8 @@ public class Constants {
     public static final String TOPIC_RECORD_ALERT = "kafka.topic.alert.record";
     public static final String TOPIC_RECORD_NOTIFY = "kafka.topic.notify.record";
 
+    public static final String TOPIC_ALERT_HISTORY = "kafka.topic.alert.history";
+
     public static final String KAFKA_BROKERS = "bootstrap.servers";
 
     /**

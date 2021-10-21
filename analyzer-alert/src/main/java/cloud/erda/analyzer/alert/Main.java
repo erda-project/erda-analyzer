@@ -220,9 +220,16 @@ public class Main {
 //                .name("Store ticket alert metrics to kafka");
 
         // 存储告警历史
-        DataStream<AlertHistory> alertHistories = alertRender.map(new AlertHistoryMapFunction())
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR));
-        CassandraSinkUtils.addSink(alertHistories, env, parameterTool);
+        // 数据发送到 kafka，由 streaming 消费写入 ES
+        alertRender.map(new AlertHistoryMapFunction())
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+                .name("RenderedAlertEvent to history")
+                .addSink(new FlinkKafkaProducer<>(
+                    parameterTool.getRequired(KAFKA_BROKERS),
+                    parameterTool.getRequired(TOPIC_ALERT_HISTORY),
+                    new RecordSchema<>(AlertHistory.class)))
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
+                .name("push alert history output to kafka");
 
         // 告警静默
         DataStream<AlertEvent> alertEventsSilence = alertEventsWithTemplate

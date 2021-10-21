@@ -14,6 +14,7 @@
 
 package cloud.erda.analyzer.alert.models;
 
+import cloud.erda.analyzer.common.models.Event;
 import com.datastax.driver.mapping.annotations.ClusteringColumn;
 import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.PartitionKey;
@@ -25,27 +26,6 @@ import lombok.Data;
  * @author randomnil
  */
 @Data
-@Table(keyspace = "spot_prod", name = "alert_history")
-public class AlertHistory {
+public class AlertHistory extends Event {
 
-    @PartitionKey
-    @Column(name = "group_id")
-    private String groupId;
-
-    @ClusteringColumn
-    @ClusteringOrder(ClusteringOrder.Order.DESC)
-    @Column(name = "timestamp")
-    private Long timestamp;
-
-    @Column(name = "alert_state")
-    private String alertState;
-
-    @Column(name = "title")
-    private String title;
-
-    @Column(name = "content")
-    private String content;
-
-    @Column(name = "display_url")
-    private String displayUrl;
 }
