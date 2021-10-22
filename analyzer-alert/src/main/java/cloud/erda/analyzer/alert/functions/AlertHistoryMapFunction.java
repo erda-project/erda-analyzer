@@ -36,6 +36,7 @@ public class AlertHistoryMapFunction implements MapFunction<RenderedAlertEvent, 
         val metric = value.getMetricEvent();
         val history = new AlertHistory();
 
+        history.setEventID(value.getId());
         history.setTimeUnixNano(metric.getTimestamp());
         history.setKind(EventKind.EVENT_KIND_ALERT);
         history.setName(EventNameConstants.ALERT);
