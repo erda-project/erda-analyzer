@@ -224,6 +224,14 @@ public class Main {
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR));
         CassandraSinkUtils.addSink(alertHistories, env, parameterTool);
 
+        //根据level聚合收敛
+        DataStream<AlertEvent> alertEventLevel = alertEventsWithTemplate
+                .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
+                .keyBy(new AlertEventRuleFilterFunction())
+                .process(new AlertEventLevelFunction())
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+                .name("level state");
+
         // 告警静默
         DataStream<AlertEvent> alertEventsSilence = alertEventsWithTemplate
                 .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
