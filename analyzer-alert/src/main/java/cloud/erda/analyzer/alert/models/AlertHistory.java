@@ -26,6 +26,27 @@ import lombok.Data;
  * @author randomnil
  */
 @Data
-public class AlertHistory extends Event {
+@Table(keyspace = "spot_prod", name = "alert_history")
+public class AlertHistory {
 
+    @PartitionKey
+    @Column(name = "group_id")
+    private String groupId;
+
+    @ClusteringColumn
+    @ClusteringOrder(ClusteringOrder.Order.DESC)
+    @Column(name = "timestamp")
+    private Long timestamp;
+
+    @Column(name = "alert_state")
+    private String alertState;
+
+    @Column(name = "title")
+    private String title;
+
+    @Column(name = "content")
+    private String content;
+
+    @Column(name = "display_url")
+    private String displayUrl;
 }
