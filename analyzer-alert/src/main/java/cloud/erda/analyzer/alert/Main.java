@@ -27,6 +27,7 @@ import cloud.erda.analyzer.alert.watermarks.AlertEventWatermarkExtractor;
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.functions.MetricEventCorrectFunction;
+import cloud.erda.analyzer.common.models.Event;
 import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.schemas.MetricEventSchema;
 import cloud.erda.analyzer.common.utils.CassandraSinkUtils;
@@ -220,16 +221,22 @@ public class Main {
 //                .name("Store ticket alert metrics to kafka");
 
         // 存储告警历史
-        // 数据发送到 kafka，由 streaming 消费写入 ES
-        alertRender.map(new AlertHistoryMapFunction())
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-                .name("RenderedAlertEvent to history")
-                .addSink(new FlinkKafkaProducer<>(
-                    parameterTool.getRequired(KAFKA_BROKERS),
-                    parameterTool.getRequired(TOPIC_ALERT_HISTORY),
-                    new RecordSchema<>(AlertHistory.class)))
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
-                .name("push alert history output to kafka");
+        if(parameterTool.getBoolean(WRITE_EVENT_TO_ES_ENABLE)){
+            // 数据发送到 kafka，由 streaming 消费写入 ES
+            alertRender.map(new ErdaEventMapFunction())
+                    .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+                    .name("RenderedAlertEvent to history")
+                    .addSink(new FlinkKafkaProducer<>(
+                            parameterTool.getRequired(KAFKA_BROKERS),
+                            parameterTool.getRequired(TOPIC_ALERT_HISTORY),
+                            new RecordSchema<>(Event.class)))
+                    .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
+                    .name("push alert history output to kafka");
+        } else {
+            DataStream<AlertHistory> alertHistories = alertRender.map(new AlertHistoryMapFunction())
+                    .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR));
+            CassandraSinkUtils.addSink(alertHistories, env, parameterTool);
+        }
 
         // 告警静默
         DataStream<AlertEvent> alertEventsSilence = alertEventsWithTemplate

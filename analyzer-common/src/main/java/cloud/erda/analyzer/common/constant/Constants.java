@@ -210,4 +210,9 @@ public class Constants {
     public static final String APPLICATION_SLOW_DB = "application.slow.db";
 
     public static final String APPLICATION_SLOW_DEFAULT = "application.slow.default";
+
+    /**
+     * event
+     */
+    public static final String WRITE_EVENT_TO_ES_ENABLE = "write.event.to.es.enable";
 }

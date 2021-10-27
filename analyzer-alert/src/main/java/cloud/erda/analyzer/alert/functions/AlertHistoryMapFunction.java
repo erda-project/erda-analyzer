@@ -17,14 +17,8 @@ package cloud.erda.analyzer.alert.functions;
 import cloud.erda.analyzer.alert.models.AlertHistory;
 import cloud.erda.analyzer.alert.models.RenderedAlertEvent;
 import cloud.erda.analyzer.common.constant.AlertConstants;
-import cloud.erda.analyzer.common.models.EventKind;
-import cloud.erda.analyzer.common.models.EventNameConstants;
-import cloud.erda.analyzer.common.models.Relation;
-import cloud.erda.analyzer.common.models.RelationTypeConstants;
 import lombok.val;
 import org.apache.flink.api.common.functions.MapFunction;
-
-import java.util.HashMap;
 
 /**
  * @author randomnil
@@ -35,25 +29,12 @@ public class AlertHistoryMapFunction implements MapFunction<RenderedAlertEvent, 
     public AlertHistory map(RenderedAlertEvent value) throws Exception {
         val metric = value.getMetricEvent();
         val history = new AlertHistory();
-
-        history.setEventID(value.getId());
-        history.setTimeUnixNano(metric.getTimestamp());
-        history.setKind(EventKind.EVENT_KIND_ALERT);
-        history.setName(EventNameConstants.ALERT);
-        history.setMessage(value.getContent());
-
-        Relation relation = new Relation();
-        relation.setResID(metric.getTags().get(AlertConstants.ALERT_GROUP_ID));
-        relation.setResType(RelationTypeConstants.ALERT);
-        history.setRelations(relation);
-
-        HashMap<String, String> attributes = new HashMap<>();
-        attributes.put(AlertConstants.ALERT_TITLE, value.getTitle());
-        attributes.put(AlertConstants.TRIGGER, metric.getTags().get(AlertConstants.TRIGGER));
-        attributes.put(AlertConstants.DISPLAY_URL, metric.getTags().get(AlertConstants.DISPLAY_URL));
-        attributes.put(AlertConstants.ORG_NAME, metric.getTags().get(AlertConstants.ORG_NAME));
-        attributes.put(AlertConstants.DICE_ORG_ID, metric.getTags().getOrDefault(AlertConstants.DICE_ORG_ID, AlertConstants.INVALID_ORG_ID));
-        history.setAttributes(attributes);
+        history.setGroupId(metric.getTags().get(AlertConstants.ALERT_GROUP_ID));
+        history.setTimestamp(metric.getTimestamp() / (1000 * 1000));
+        history.setAlertState(metric.getTags().get(AlertConstants.TRIGGER));
+        history.setTitle(value.getTitle());
+        history.setContent(value.getContent());
+        history.setDisplayUrl(metric.getTags().get(AlertConstants.DISPLAY_URL));
 
         return history;
     }
