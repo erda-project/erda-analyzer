@@ -215,4 +215,13 @@ public class Constants {
      * event
      */
     public static final String WRITE_EVENT_TO_ES_ENABLE = "write.event.to.es.enable";
+
+
+    /**
+     * error
+     */
+    public static final String TOPIC_ERROR_EVENT = "kafka.topic.error_event";
+    public static final String TOPIC_ERROR_DESCRIPTION = "kafka.topic.error_description";
+    public static final String OUTPUT_BACKEND = "output.backend";
+
 }
