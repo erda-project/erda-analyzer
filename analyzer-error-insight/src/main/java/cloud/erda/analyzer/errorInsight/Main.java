@@ -130,15 +130,7 @@ public class Main {
                 .name("error-alert-metrics")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
 
-        if (parameterTool.getRequired(Constants.OUTPUT_BACKEND).contains("cassandra")) {
-            CassandraSinkUtils.addSink(eventStream, env, parameterTool);
-            CassandraSinkUtils.addSink(requestMappingStream, env, parameterTool);
-            CassandraSinkUtils.addSink(errorEventMappingStream, env, parameterTool);
-            CassandraSinkUtils.addSink(errorDescription, env, parameterTool);
-            CassandraSinkUtils.addSink(errorCountStream, env, parameterTool);
-        }
-
-        if (parameterTool.getRequired(Constants.OUTPUT_BACKEND).contains("kafka")) {
+        if (parameterTool.getBoolean(Constants.WRITE_EVENT_TO_ES_ENABLE)) {
             eventStream.map(ErrorEvent::toString).setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                     .addSink(new FlinkKafkaProducer<String>(
                             parameterTool.getRequired(Constants.KAFKA_BROKERS),
@@ -154,7 +146,12 @@ public class Main {
                             new SimpleStringSchema()))
                     .name("error-description-es-sink")
                     .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
-
+        } else {
+            CassandraSinkUtils.addSink(eventStream, env, parameterTool);
+            CassandraSinkUtils.addSink(requestMappingStream, env, parameterTool);
+            CassandraSinkUtils.addSink(errorEventMappingStream, env, parameterTool);
+            CassandraSinkUtils.addSink(errorDescription, env, parameterTool);
+            CassandraSinkUtils.addSink(errorCountStream, env, parameterTool);
         }
 
         log.info(env.getExecutionPlan());
