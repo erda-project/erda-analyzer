@@ -22,8 +22,11 @@ import cloud.erda.analyzer.common.utils.ExecutionEnv;
 import cloud.erda.analyzer.common.watermarks.MetricWatermarkExtractor;
 import cloud.erda.analyzer.errorInsight.functions.*;
 import cloud.erda.analyzer.errorInsight.model.ErrorCountState;
+import cloud.erda.analyzer.errorInsight.model.ErrorDescription;
+import cloud.erda.analyzer.errorInsight.model.ErrorEvent;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.flink.api.common.serialization.SimpleStringSchema;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
@@ -127,11 +130,29 @@ public class Main {
                 .name("error-alert-metrics")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
 
-        CassandraSinkUtils.addSink(eventStream, env, parameterTool);
-        CassandraSinkUtils.addSink(requestMappingStream, env, parameterTool);
-        CassandraSinkUtils.addSink(errorEventMappingStream, env, parameterTool);
-        CassandraSinkUtils.addSink(errorDescription, env, parameterTool);
-        CassandraSinkUtils.addSink(errorCountStream, env, parameterTool);
+        if (parameterTool.getBoolean(Constants.WRITE_EVENT_TO_ES_ENABLE)) {
+            eventStream.map(ErrorEvent::toString).setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
+                    .addSink(new FlinkKafkaProducer<String>(
+                            parameterTool.getRequired(Constants.KAFKA_BROKERS),
+                            parameterTool.getRequired(Constants.TOPIC_ERROR_EVENT),
+                            new SimpleStringSchema()))
+                    .name("error-event-es-sink")
+                    .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
+
+            errorDescription.map(ErrorDescription::toString).setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
+                    .addSink(new FlinkKafkaProducer<String>(
+                            parameterTool.getRequired(Constants.KAFKA_BROKERS),
+                            parameterTool.getRequired(Constants.TOPIC_ERROR_DESCRIPTION),
+                            new SimpleStringSchema()))
+                    .name("error-description-es-sink")
+                    .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
+        } else {
+            CassandraSinkUtils.addSink(eventStream, env, parameterTool);
+            CassandraSinkUtils.addSink(requestMappingStream, env, parameterTool);
+            CassandraSinkUtils.addSink(errorEventMappingStream, env, parameterTool);
+            CassandraSinkUtils.addSink(errorDescription, env, parameterTool);
+            CassandraSinkUtils.addSink(errorCountStream, env, parameterTool);
+        }
 
         log.info(env.getExecutionPlan());
 

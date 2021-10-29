@@ -52,6 +52,7 @@ public class ErrorCountMetricMapper implements MapFunction<ErrorCountState, Metr
         tags.put(Constants.META, String.valueOf(true));
         tags.put(Constants.SCOPE, Constants.MICRO_SERVICE);
         tags.put(Constants.SCOPE_ID, errorCountState.getTerminusKey());
+        tags.put(ErrorConstants.ERROR_ID, errorCountState.getErrorId());
 
         HashMap<String, Object> fields = new HashMap<>(1);
         fields.put(ErrorConstants.COUNT, errorCountState.getCount());
