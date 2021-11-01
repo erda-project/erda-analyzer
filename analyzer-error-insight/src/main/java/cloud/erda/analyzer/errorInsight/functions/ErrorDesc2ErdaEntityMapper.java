@@ -27,7 +27,7 @@ public class ErrorDesc2ErdaEntityMapper implements MapFunction<ErrorDescription,
         entity.setCreateTimeUnixNano(value.getTimestamp());
         entity.setUpdateTimeUnixNano(value.getTimestamp());
         entity.setEntityId("erdaError");
-        entity.setTable("error_from_exception");
+        entity.setTable("error_exception");
         entity.setRowId(value.getErrorId());
         entity.setRowData(value.getTags());
         Map<String, String> attributes = new HashedMap();
