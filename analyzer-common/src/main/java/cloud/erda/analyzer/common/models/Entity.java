@@ -15,11 +15,11 @@ import java.util.Map;
  **/
 @Data
 public class Entity {
-    private String entityId;
-    private String table;
-    private String rowId;
-    private Map<String, String> rowData;
-    private Map<String, String> attributes;
+    private String id;
+    private String type;
+    private String key;
+    private Map<String, String> values;
+    private Map<String, String> labels;
     private long createTimeUnixNano;
     private long updateTimeUnixNano;
 }

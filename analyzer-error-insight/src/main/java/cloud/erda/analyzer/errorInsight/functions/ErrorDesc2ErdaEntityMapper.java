@@ -26,15 +26,15 @@ public class ErrorDesc2ErdaEntityMapper implements MapFunction<ErrorDescription,
 
         entity.setCreateTimeUnixNano(value.getTimestamp());
         entity.setUpdateTimeUnixNano(value.getTimestamp());
-        entity.setEntityId("erdaError");
-        entity.setTable("error_exception");
-        entity.setRowId(value.getErrorId());
-        entity.setRowData(value.getTags());
+        entity.setId("erdaError");
+        entity.setType("error_exception");
+        entity.setKey(value.getErrorId());
+        entity.setValues(value.getTags());
         Map<String, String> attributes = new HashedMap();
         attributes.put("terminusKey", value.getTerminusKey());
         attributes.put("applicationId", value.getApplicationId());
         attributes.put("serviceName", value.getServiceName());
-        entity.setAttributes(attributes);
+        entity.setLabels(attributes);
 
         return entity;
     }
