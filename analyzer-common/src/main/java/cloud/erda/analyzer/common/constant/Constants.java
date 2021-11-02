@@ -43,6 +43,8 @@ public class Constants {
     public static final String TOPIC_RECORD_ALERT = "kafka.topic.alert.record";
     public static final String TOPIC_RECORD_NOTIFY = "kafka.topic.notify.record";
 
+    public static final String TOPIC_ALERT_HISTORY = "kafka.topic.alert.history";
+
     public static final String KAFKA_BROKERS = "bootstrap.servers";
 
     /**
@@ -208,4 +210,16 @@ public class Constants {
     public static final String APPLICATION_SLOW_DB = "application.slow.db";
 
     public static final String APPLICATION_SLOW_DEFAULT = "application.slow.default";
+
+    /**
+     * event
+     */
+    public static final String WRITE_EVENT_TO_ES_ENABLE = "write.event.to.es.enable";
+
+
+    /**
+     * error
+     */
+    public static final String TOPIC_ERROR_EVENT = "kafka.topic.error_event";
+    public static final String TOPIC_ERROR_DESCRIPTION = "kafka.topic.error_description";
 }

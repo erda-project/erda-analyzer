@@ -1,0 +1,12 @@
+package cloud.erda.analyzer.common.models;
+
+public enum EventKind {
+    EVENT_KIND_SYSTEM,
+    EVENT_KIND_KUBERNETES,
+    EVENT_KIND_CONTAINER,
+    EVENT_KIND_ERDA_PLATFORM,
+    EVENT_KIND_EXCEPTION,
+    EVENT_KIND_SPAN,
+    EVENT_KIND_ALERT,
+    EVENT_KIND_CUSTOM
+}

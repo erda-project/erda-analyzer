@@ -35,6 +35,7 @@ public class AlertHistoryMapFunction implements MapFunction<RenderedAlertEvent, 
         history.setTitle(value.getTitle());
         history.setContent(value.getContent());
         history.setDisplayUrl(metric.getTags().get(AlertConstants.DISPLAY_URL));
+
         return history;
     }
 }

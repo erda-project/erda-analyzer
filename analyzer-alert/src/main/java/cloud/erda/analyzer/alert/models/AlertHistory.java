@@ -14,6 +14,7 @@
 
 package cloud.erda.analyzer.alert.models;
 
+import cloud.erda.analyzer.common.models.Event;
 import com.datastax.driver.mapping.annotations.ClusteringColumn;
 import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.PartitionKey;
