@@ -42,6 +42,9 @@ public class NotifyReader implements DataRowReader<AlertNotify> {
             if (AlertConstants.ALERT_NOTIFY_TYPE_NOTIFY_GROUP.equals(notifyTarget.getType())) {
                 notifyTarget.setGroupTypes(notifyTarget.getGroupType().split(","));
             }
+            if (notifyTarget.getLevel() != null && !notifyTarget.getLevel().isEmpty()){
+                notifyTarget.setLevels(notifyTarget.getLevel().split(","));
+            }
             notify.setNotifyTarget(notifyTarget);
             notify.setSilence(resultSet.getLong("silence"));
             notify.setSilencePolicy(resultSet.getString("silence_policy"));

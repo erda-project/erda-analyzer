@@ -45,7 +45,9 @@ public class AlertNotifyTarget {
     @SerializedName(value = "dingding_url")
     private String dingdingUrl;
 
-    private String[] level;
+    private String level;
+
+    private String[] levels;
 
     private String[] groupTypes;
 }
