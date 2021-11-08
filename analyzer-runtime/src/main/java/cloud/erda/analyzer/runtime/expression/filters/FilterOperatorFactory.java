@@ -37,6 +37,8 @@ public class FilterOperatorFactory {
                 return NullFilterOperator.instance;
             case FilterOperatorDefine.In:
                 return InFilterOperator.instance;
+            case FilterOperatorDefine.NotIn:
+                return NotInFilterOperator.instance;
             case FilterOperatorDefine.Match:
                 return MatchFilterOperator.INSTANCE;
             case FilterOperatorDefine.NotMatch:

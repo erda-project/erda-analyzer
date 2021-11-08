@@ -32,6 +32,8 @@ public class FilterOperatorDefine {
 
     public static final String In = "in";
 
+    public static final String NotIn = "notIn";
+
     public static final String Script = "script";
 
     public static final String False = "false";
