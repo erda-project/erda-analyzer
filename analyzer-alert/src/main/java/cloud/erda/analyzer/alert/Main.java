@@ -243,16 +243,33 @@ public class Main {
             CassandraSinkUtils.addSink(alertHistories, env, parameterTool);
         }
 
-        //根据level聚合收敛
+        //根据level聚合收敛，先使用reduce算子获取到相同告警策略相同告警规则最大级别，
         DataStream<AlertEvent> alertEventLevel = alertEventsWithTemplate
                 .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
                 .keyBy(new AlertEventRuleFilterFunction())
-                .process(new AlertEventLevelFunction())
+                .reduce(new AlertEventLevelReduceFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-                .name("level state");
+                .name("max level");
+
+        //将最大level广播到下游/过滤
+        DataStream<AlertEvent> alertLevelFilter = alertEventsWithTemplate.
+                connect(alertEventLevel.broadcast(StateDescriptors.alertLevelStateDescriptor))
+                .process(new AlertLevelBroadcastProcessFunction(parameterTool.getLong(METRIC_METADATA_TTL,75000),StateDescriptors.alertLevelStateDescriptor))
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+                .name("broadcast level");
+//
+//        DataStream<AlertEvent> alertEventsSilence = alertEventLevel
+//                .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
+//                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+//                .keyBy(new AlertEventGroupFunction())
+//                .reduce(new AlertEventLevelReduceFunction())
+//                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+//                .name("silence alert");
+
 
         // 告警静默
-        DataStream<AlertEvent> alertEventsSilence = alertEventsWithTemplate
+//        DataStream<AlertEvent> alertEventsSilence = alertEventsWithTemplate
+        DataStream<AlertEvent> alertEventsSilence = alertLevelFilter
                 .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .keyBy(new AlertEventGroupFunction())
@@ -261,18 +278,18 @@ public class Main {
                 .name("silence alert");
 
         // ticket, history 不收敛聚合
-        //DataStream<RenderedAlertEvent> alertEventsDirect = alertEventsSilence
-        //        .filter(new AlertEventTargetFilterFunction(AlertConstants.ALERT_NOTIFY_TYPE_TICKET, AlertConstants.ALERT_NOTIFY_TYPE_HISTORY))
-        //        .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-        //        .map(new AlertEventTemplateRenderFunction())
-        //        .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-        //        .name("direct renderer");
-        //alertEventsDirect
-        //        .map(new AlertTargetToTicketMapFunction())
-        //        .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-        //        .addSink(new cloud.erda.analyzer.alert.sinks.TicketSink(parameterTool.getProperties()))
-        //        .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
-        //        .name("send alert message to ticket");
+        DataStream<RenderedAlertEvent> alertEventsDirect = alertEventsSilence
+                .filter(new AlertEventTargetFilterFunction(AlertConstants.ALERT_NOTIFY_TYPE_TICKET, AlertConstants.ALERT_NOTIFY_TYPE_HISTORY))
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+                .map(new AlertEventTemplateRenderFunction())
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+                .name("direct renderer");
+        alertEventsDirect
+                .map(new AlertTargetToTicketMapFunction())
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+                .addSink(new cloud.erda.analyzer.alert.sinks.TicketSink(parameterTool.getProperties()))
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
+                .name("send alert message to ticket");
 
         // dingding 和 notify_group 的消息1分钟内收敛聚合
         DataStream<RenderedAlertEvent> aggregatedAlertEvents = alertEventsSilence
