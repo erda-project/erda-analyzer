@@ -20,6 +20,7 @@ import cloud.erda.analyzer.alert.models.AlertEvent;
 import cloud.erda.analyzer.alert.models.AlertTrigger;
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.functions.FlatMapFunction;
@@ -77,7 +78,8 @@ public class AlertEventMapFunction implements FlatMapFunction<MetricEvent, Alert
             alertEvent.setAlertGroup(alertGroup);
             // 设置分组ID
             this.setGroupId(alertEvent);
-            System.out.println("collcollcoll"+alertEvent);
+            String json = JSONObject.toJSONString(alertEvent);
+            System.out.println("collcollcoll"+json);
             out.collect(alertEvent);
         } catch (Throwable t) {
             log.error("Map alert event fail.", t);

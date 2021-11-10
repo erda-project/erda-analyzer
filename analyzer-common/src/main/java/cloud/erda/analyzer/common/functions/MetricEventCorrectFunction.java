@@ -17,6 +17,7 @@ package cloud.erda.analyzer.common.functions;
 import cloud.erda.analyzer.common.models.MetricEvent;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
+import com.alibaba.fastjson.JSONObject;
 
 import java.util.Objects;
 
@@ -34,6 +35,8 @@ public class MetricEventCorrectFunction implements FlatMapFunction<MetricEvent, 
     @Override
     public void flatMap(MetricEvent metricEvent, Collector<MetricEvent> collector) throws Exception {
         if (metricEvent != null) {
+            String objStr = JSONObject.toJSONString(metricEvent);
+            System.out.println("metricmetricmetric the metricEvent is"+objStr);;
             long currentTimestamp = System.currentTimeMillis() * 1000 * 1000;
             if (metricEvent.getTimestamp() > currentTimestamp) {
                 metricEvent.setTimestamp(currentTimestamp);
