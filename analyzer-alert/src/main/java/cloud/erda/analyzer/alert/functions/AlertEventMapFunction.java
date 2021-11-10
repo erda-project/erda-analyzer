@@ -77,6 +77,7 @@ public class AlertEventMapFunction implements FlatMapFunction<MetricEvent, Alert
             alertEvent.setAlertGroup(alertGroup);
             // 设置分组ID
             this.setGroupId(alertEvent);
+            System.out.println("collcollcoll"+alertEvent);
             out.collect(alertEvent);
         } catch (Throwable t) {
             log.error("Map alert event fail.", t);
