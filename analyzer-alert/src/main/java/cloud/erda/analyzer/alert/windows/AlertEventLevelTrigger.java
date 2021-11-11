@@ -10,7 +10,7 @@ public class AlertEventLevelTrigger extends Trigger<AlertEvent, TimeWindow> {
     public TriggerResult onElement(AlertEvent alertEvent, long l, TimeWindow timeWindow, TriggerContext triggerContext) throws Exception {
         System.out.println("xxxssssssss"+timeWindow.maxTimestamp());
         System.out.println("dddddsssssss"+triggerContext.getCurrentWatermark());
-        if (timeWindow.maxTimestamp() <= triggerContext.getCurrentWatermark()) {
+        if (timeWindow.maxTimestamp() >= triggerContext.getCurrentWatermark()) {
             return TriggerResult.FIRE;
         } else {
             System.out.println("cccccccccccccccccccontinue");
