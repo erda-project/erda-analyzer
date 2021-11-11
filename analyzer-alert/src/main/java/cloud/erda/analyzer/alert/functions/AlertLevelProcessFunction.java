@@ -10,29 +10,48 @@ import org.apache.flink.util.Collector;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class AlertLevelProcessFunction extends ProcessWindowFunction<AlertEvent,AlertEvent,String, TimeWindow> {
+public class AlertLevelProcessFunction extends ProcessWindowFunction<AlertEvent, AlertEvent, String, TimeWindow> {
     @Override
-    public void process(String s, Context context, Iterable<AlertEvent> elements, Collector<AlertEvent> collector) throws Exception {
-        AlertLevel minLevel = AlertLevel.Light;
-        HashMap<AlertLevel, ArrayList<AlertEvent>> levelEventMap= new HashMap<>();
-        String levelJson = JSONObject.toJSONString(elements);
-        System.out.println("ppppppppppprocess alert event elements is "+levelJson);
-        for (AlertEvent element : elements) {
-            AlertLevel level = AlertLevel.valueOf(element.getMetricEvent().getTags().get("level"));
-            if (level.compareTo(minLevel) <= 0) {
-                minLevel = level;
-                ArrayList<AlertEvent> eventList = levelEventMap.get(minLevel);
-                if (eventList == null) {
-                    eventList = new ArrayList<>();
+    public void process(String s, Context context, Iterable<AlertEvent> iterable, Collector<AlertEvent> collector) throws Exception {
+        //    1.全是告警恢复，应该发送级别最低的恢复
+        //    2.有告警有恢复或者全是告警，发送级别最高的告警
+        if (iterable == null) {
+            return;
+        }
+        boolean allRecover = true;
+        AlertLevel maxLevel = AlertLevel.Light;
+        AlertLevel minLevel = AlertLevel.Breakdown;
+        AlertLevel level;
+        String trigger;
+        HashMap<AlertLevel, ArrayList<AlertEvent>> alertLevelEventMap = new HashMap<>();
+        AlertEvent recoverLevelEvent = new AlertEvent();
+        for (AlertEvent alertEvent : iterable) {
+            trigger = alertEvent.getMetricEvent().getTags().get("trigger");
+            if (trigger.equals("alert")) {
+                allRecover = false;
+                level = AlertLevel.valueOf(alertEvent.getMetricEvent().getTags().get("level"));
+                if (maxLevel.compareTo(level) >= 0) {
+                    maxLevel = level;
+                    ArrayList<AlertEvent> eventList = alertLevelEventMap.get(maxLevel);
+                    if (eventList == null) {
+                        eventList = new ArrayList<>();
+                    }
+                    eventList.add(alertEvent);
+                    alertLevelEventMap.put(maxLevel, eventList);
                 }
-                eventList.add(element);
-                levelEventMap.put(minLevel,eventList);
+            }
+            if (allRecover) {
+                if (minLevel.compareTo(AlertLevel.valueOf(trigger)) <= 0) {
+                    recoverLevelEvent = alertEvent;
+                }
             }
         }
-        for (AlertEvent alertEvent : levelEventMap.get(minLevel)) {
-            String json = JSONObject.toJSONString(alertEvent);
-            System.out.println("lllllllllllevel alert event is "+json);
-            collector.collect(alertEvent);
+        if (allRecover) {
+            collector.collect(recoverLevelEvent);
+        } else {
+            for (AlertEvent alertEvent : alertLevelEventMap.get(maxLevel)) {
+                collector.collect(alertEvent);
+            }
         }
     }
 }
