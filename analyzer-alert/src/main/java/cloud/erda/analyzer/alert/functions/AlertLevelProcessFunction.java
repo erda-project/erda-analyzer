@@ -16,7 +16,7 @@ public class AlertLevelProcessFunction extends ProcessWindowFunction<AlertEvent,
         AlertLevel minLevel = AlertLevel.Light;
         HashMap<AlertLevel, ArrayList<AlertEvent>> levelEventMap= new HashMap<>();
         String levelJson = JSONObject.toJSONString(elements);
-        System.out.println("process alert event elements is "+levelJson);
+        System.out.println("ppppppppppprocess alert event elements is "+levelJson);
         for (AlertEvent element : elements) {
             AlertLevel level = AlertLevel.valueOf(element.getMetricEvent().getTags().get("level"));
             if (level.compareTo(minLevel) <= 0) {
@@ -31,7 +31,7 @@ public class AlertLevelProcessFunction extends ProcessWindowFunction<AlertEvent,
         }
         for (AlertEvent alertEvent : levelEventMap.get(minLevel)) {
             String json = JSONObject.toJSONString(alertEvent);
-            System.out.println("level alert event is "+json);
+            System.out.println("lllllllllllevel alert event is "+json);
             collector.collect(alertEvent);
         }
     }
