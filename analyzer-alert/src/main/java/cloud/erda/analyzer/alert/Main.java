@@ -24,7 +24,6 @@ import cloud.erda.analyzer.alert.sources.NotifyTemplateReader;
 import cloud.erda.analyzer.alert.sources.SpotNotifyReader;
 import cloud.erda.analyzer.alert.utils.StateDescriptors;
 import cloud.erda.analyzer.alert.watermarks.AlertEventWatermarkExtractor;
-import cloud.erda.analyzer.alert.windows.AlertEventWindowAssigner;
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.functions.MetricEventCorrectFunction;
@@ -244,7 +243,6 @@ public class Main {
             CassandraSinkUtils.addSink(alertHistories, env, parameterTool);
         }
 
-        //根据level聚合收敛，先使用reduce算子获取到相同告警策略相同告警规则最大级别，
         DataStream<AlertEvent> alertEventLevel = alertEventsWithTemplate
                 .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
                 .keyBy(new AlertEventRuleFilterFunction())
