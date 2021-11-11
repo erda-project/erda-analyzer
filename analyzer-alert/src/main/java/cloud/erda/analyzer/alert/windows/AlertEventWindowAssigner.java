@@ -19,6 +19,7 @@ public class AlertEventWindowAssigner extends WindowAssigner<AlertEvent, TimeWin
     public Collection<TimeWindow> assignWindows(AlertEvent alertEvent, long timestamp, WindowAssignerContext windowAssignerContext) {
         long size = Time.minutes(Long.parseLong(alertEvent.getMetricEvent().getTags().get("window"))).toMilliseconds();
         if (timestamp > Long.MIN_VALUE) {
+            System.out.println("wwwwwwwwindowassigner");
             long start = TimeWindow.getWindowStartWithOffset(timestamp,0,size);
             return Collections.singletonList(new TimeWindow(start,start+size));
         }else {
