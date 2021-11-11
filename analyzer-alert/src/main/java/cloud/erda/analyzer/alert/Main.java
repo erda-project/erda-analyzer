@@ -248,8 +248,8 @@ public class Main {
         DataStream<AlertEvent> alertEventLevel = alertEventsWithTemplate
                 .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
                 .keyBy(new AlertEventRuleFilterFunction())
-//                .window(new AlertEventWindowAssigner())
-                .window(TumblingProcessingTimeWindows.of(Time.seconds(45)))
+                .window(new AlertEventWindowAssigner())
+//                .window(TumblingProcessingTimeWindows.of(Time.seconds(45)))
                 .process(new AlertLevelProcessFunction())
 //                .reduce(new AlertEventLevelReduceFunction())
 //                .reduce(new AlertEventLevelReduceFunction(),new AlertLevelProcessFunction())
