@@ -8,9 +8,12 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 public class AlertEventLevelTrigger extends Trigger<AlertEvent, TimeWindow> {
     @Override
     public TriggerResult onElement(AlertEvent alertEvent, long l, TimeWindow timeWindow, TriggerContext triggerContext) throws Exception {
+        System.out.println("xxxssssssss"+timeWindow.maxTimestamp());
+        System.out.println("dddddsssssss"+triggerContext.getCurrentWatermark());
         if (timeWindow.maxTimestamp() <= triggerContext.getCurrentWatermark()) {
             return TriggerResult.FIRE;
         } else {
+            System.out.println("cccccccccccccccccccontinue");
             triggerContext.registerEventTimeTimer(timeWindow.maxTimestamp());
             return TriggerResult.CONTINUE;
         }
