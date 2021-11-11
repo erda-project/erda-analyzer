@@ -9,7 +9,6 @@ public class AlertEventRuleFilterFunction implements KeySelector<AlertEvent, Str
         StringBuilder keyBuilder = new StringBuilder();
         keyBuilder.append("alert_id_").append(alertEvent.getAlertId())
                 .append("rule_alert_index_").append(alertEvent.getAlertNotifyTemplate().getAlertIndex());
-        System.out.println("keukeykeykey"+keyBuilder.toString());
         return keyBuilder.toString();
     }
 }

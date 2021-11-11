@@ -17,7 +17,6 @@ package cloud.erda.analyzer.common.functions;
 import cloud.erda.analyzer.common.models.MetricEvent;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
-import com.alibaba.fastjson.JSONObject;
 
 import java.util.Objects;
 
