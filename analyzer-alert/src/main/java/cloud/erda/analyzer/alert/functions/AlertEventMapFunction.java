@@ -78,8 +78,6 @@ public class AlertEventMapFunction implements FlatMapFunction<MetricEvent, Alert
             alertEvent.setAlertGroup(alertGroup);
             // 设置分组ID
             this.setGroupId(alertEvent);
-            String json = JSONObject.toJSONString(alertEvent);
-            System.out.println("collcollcoll"+json);
             out.collect(alertEvent);
         } catch (Throwable t) {
             log.error("Map alert event fail.", t);

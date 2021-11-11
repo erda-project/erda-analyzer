@@ -24,6 +24,7 @@ import cloud.erda.analyzer.alert.sources.NotifyTemplateReader;
 import cloud.erda.analyzer.alert.sources.SpotNotifyReader;
 import cloud.erda.analyzer.alert.utils.StateDescriptors;
 import cloud.erda.analyzer.alert.watermarks.AlertEventWatermarkExtractor;
+import cloud.erda.analyzer.alert.windows.AlertEventWindowAssigner;
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.functions.MetricEventCorrectFunction;
@@ -247,29 +248,17 @@ public class Main {
         DataStream<AlertEvent> alertEventLevel = alertEventsWithTemplate
                 .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
                 .keyBy(new AlertEventRuleFilterFunction())
-                .reduce(new AlertEventLevelReduceFunction())
+                .window(new AlertEventWindowAssigner())
+                .process(new AlertLevelProcessFunction())
+//                .reduce(new AlertEventLevelReduceFunction())
+//                .reduce(new AlertEventLevelReduceFunction(),new AlertLevelProcessFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("max level");
-
-        //将最大level广播到下游/过滤
-        DataStream<AlertEvent> alertLevelFilter = alertEventsWithTemplate.
-                connect(alertEventLevel.broadcast(StateDescriptors.alertLevelStateDescriptor))
-                .process(new AlertLevelBroadcastProcessFunction(parameterTool.getLong(METRIC_METADATA_TTL,75000),StateDescriptors.alertLevelStateDescriptor))
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-                .name("broadcast level");
-//
-//        DataStream<AlertEvent> alertEventsSilence = alertEventLevel
-//                .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
-//                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-//                .keyBy(new AlertEventGroupFunction())
-//                .reduce(new AlertEventLevelReduceFunction())
-//                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-//                .name("silence alert");
 
 
         // 告警静默
 //        DataStream<AlertEvent> alertEventsSilence = alertEventsWithTemplate
-        DataStream<AlertEvent> alertEventsSilence = alertLevelFilter
+        DataStream<AlertEvent> alertEventsSilence = alertEventLevel
                 .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .keyBy(new AlertEventGroupFunction())
@@ -278,18 +267,18 @@ public class Main {
                 .name("silence alert");
 
         // ticket, history 不收敛聚合
-        DataStream<RenderedAlertEvent> alertEventsDirect = alertEventsSilence
-                .filter(new AlertEventTargetFilterFunction(AlertConstants.ALERT_NOTIFY_TYPE_TICKET, AlertConstants.ALERT_NOTIFY_TYPE_HISTORY))
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-                .map(new AlertEventTemplateRenderFunction())
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-                .name("direct renderer");
-        alertEventsDirect
-                .map(new AlertTargetToTicketMapFunction())
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-                .addSink(new cloud.erda.analyzer.alert.sinks.TicketSink(parameterTool.getProperties()))
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
-                .name("send alert message to ticket");
+        //DataStream<RenderedAlertEvent> alertEventsDirect = alertEventsSilence
+        //        .filter(new AlertEventTargetFilterFunction(AlertConstants.ALERT_NOTIFY_TYPE_TICKET, AlertConstants.ALERT_NOTIFY_TYPE_HISTORY))
+        //        .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+        //        .map(new AlertEventTemplateRenderFunction())
+        //        .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+        //        .name("direct renderer");
+        //alertEventsDirect
+        //        .map(new AlertTargetToTicketMapFunction())
+        //        .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+        //        .addSink(new cloud.erda.analyzer.alert.sinks.TicketSink(parameterTool.getProperties()))
+        //        .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
+        //        .name("send alert message to ticket");
 
         // dingding 和 notify_group 的消息1分钟内收敛聚合
         DataStream<RenderedAlertEvent> aggregatedAlertEvents = alertEventsSilence

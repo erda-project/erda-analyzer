@@ -35,8 +35,6 @@ public class MetricEventCorrectFunction implements FlatMapFunction<MetricEvent, 
     @Override
     public void flatMap(MetricEvent metricEvent, Collector<MetricEvent> collector) throws Exception {
         if (metricEvent != null) {
-            String objStr = JSONObject.toJSONString(metricEvent);
-            System.out.println("metricmetricmetric the metricEvent is"+objStr);;
             long currentTimestamp = System.currentTimeMillis() * 1000 * 1000;
             if (metricEvent.getTimestamp() > currentTimestamp) {
                 metricEvent.setTimestamp(currentTimestamp);
