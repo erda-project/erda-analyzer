@@ -43,4 +43,6 @@ public class StateDescriptors {
     public static final MapStateDescriptor<String, Map<String, UniversalTemplate>> notifyTemplate =
             new MapStateDescriptor<>("notify_template_state", BasicTypeInfo.STRING_TYPE_INFO,
                     new MapTypeInfo<>(BasicTypeInfo.STRING_TYPE_INFO, TypeInformation.of(UniversalTemplate.class)));
+    public static final MapStateDescriptor<String, AlertEvent> alertLevelStateDescriptor =
+            new MapStateDescriptor<>("alert_level", BasicTypeInfo.STRING_TYPE_INFO, TypeInformation.of(AlertEvent.class));
 }

@@ -243,8 +243,18 @@ public class Main {
             CassandraSinkUtils.addSink(alertHistories, env, parameterTool);
         }
 
+        DataStream<AlertEvent> alertEventLevel = alertEventsWithTemplate
+                .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
+                .keyBy(new AlertEventRuleFilterFunction())
+                .window(TumblingProcessingTimeWindows.of(Time.seconds(45)))
+                .process(new AlertLevelProcessFunction())
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+                .name("max level");
+
+
         // 告警静默
-        DataStream<AlertEvent> alertEventsSilence = alertEventsWithTemplate
+//        DataStream<AlertEvent> alertEventsSilence = alertEventsWithTemplate
+        DataStream<AlertEvent> alertEventsSilence = alertEventLevel
                 .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .keyBy(new AlertEventGroupFunction())
