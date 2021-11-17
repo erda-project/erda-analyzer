@@ -32,7 +32,7 @@ public class NotMatchFilterOperator implements FilterOperator {
             return false;
         }
         String regex = String.valueOf(filter.getValue()).replace("*", ".*").replace("?", ".?");
-        return String.valueOf(value).matches(regex);
+        return !String.valueOf(value).matches(regex);
     }
 
     public static final FilterOperator INSTANCE = new MatchFilterOperator();
