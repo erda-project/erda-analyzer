@@ -32,6 +32,7 @@ public class FilterOperatorFactory {
             case FilterOperatorDefine.Like:
                 return LikeFilterOperator.instance;
             case FilterOperatorDefine.Any:
+            case FilterOperatorDefine.All:
                 return AnyFilterOperator.instance;
             case FilterOperatorDefine.Null:
                 return NullFilterOperator.instance;
@@ -45,8 +46,6 @@ public class FilterOperatorFactory {
                 return NotMatchFilterOperator.INSTANCE;
             case FilterOperatorDefine.Script:
                 return new ScriptFilterOperator(metadata.getId());
-            case FilterOperatorDefine.All:
-                return AllFilterOperator.INSTANCE;
             case FilterOperatorDefine.False:
             default:
                 return FalseFilterOperator.instance;
