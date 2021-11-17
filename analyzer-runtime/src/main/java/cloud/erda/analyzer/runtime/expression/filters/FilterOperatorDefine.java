@@ -42,5 +42,7 @@ public class FilterOperatorDefine {
 
     public static final String NotMatch = "notMatch";
 
+    public static final String All = "all";
+
     public static final String Default = False;
 }
