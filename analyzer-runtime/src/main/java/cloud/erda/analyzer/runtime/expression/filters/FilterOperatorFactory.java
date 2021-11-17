@@ -33,6 +33,8 @@ public class FilterOperatorFactory {
                 return LikeFilterOperator.instance;
             case FilterOperatorDefine.Any:
                 return AnyFilterOperator.instance;
+            case FilterOperatorDefine.All:
+                return AnyFilterOperator.instance;
             case FilterOperatorDefine.Null:
                 return NullFilterOperator.instance;
             case FilterOperatorDefine.In:
