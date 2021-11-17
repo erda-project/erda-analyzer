@@ -45,6 +45,8 @@ public class FilterOperatorFactory {
                 return NotMatchFilterOperator.INSTANCE;
             case FilterOperatorDefine.Script:
                 return new ScriptFilterOperator(metadata.getId());
+            case FilterOperatorDefine.All:
+                return AllFilterOperator.INSTANCE;
             case FilterOperatorDefine.False:
             default:
                 return FalseFilterOperator.instance;
