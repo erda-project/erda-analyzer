@@ -115,9 +115,11 @@ public class MetricTagConstants {
     public static final String ALERT = "alert";
     public static final String TRIGGER_DURATION = "trigger_duration";
     public static final String TRIGGER_COUNT = "trigger_count";
-
+    public static final String SILENCE_COUNT = "silence_count";
     public static final String SILENCE = "silence";
 
     public static final String LABELS = "labels";
     public static final String LABELS_OFFLINE = "offline";
+
+    public static final String METRIC_EXPRESSION_GROUP = "metric_expression_group";
 }

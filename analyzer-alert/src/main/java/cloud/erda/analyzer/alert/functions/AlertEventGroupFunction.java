@@ -18,6 +18,7 @@ import cloud.erda.analyzer.alert.templates.TemplateManager;
 import cloud.erda.analyzer.alert.templates.TemplateRenderer;
 import cloud.erda.analyzer.alert.models.AlertEvent;
 import cloud.erda.analyzer.common.constant.AlertConstants;
+import cloud.erda.analyzer.common.constant.MetricTagConstants;
 import org.apache.flink.api.java.functions.KeySelector;
 
 import java.util.HashMap;
@@ -28,19 +29,8 @@ import java.util.HashMap;
  **/
 public class AlertEventGroupFunction implements KeySelector<AlertEvent, String> {
 
-    private TemplateManager templateManager = new TemplateManager();
-
     @Override
     public String getKey(AlertEvent value) throws Exception {
-        StringBuilder keyBuilder = new StringBuilder();
-        keyBuilder.append("alert_id_").append(value.getAlertId()).append("_")
-                .append("notify_template_id_").append(value.getAlertNotifyTemplate().getId()).append("_")
-                .append("expression_id_").append(value.getMetricEvent().getTags().get(AlertConstants.ALERT_EXPRESSION_ID))
-                .append("_");
-        TemplateRenderer templateRenderer = templateManager.getRenderer(
-                AlertConstants.ALERT_GROUP_ID + value.getAlertGroup(), value.getAlertGroup(), value.getAlertNotifyTemplate().isVariable());
-        String alertGroupValue = templateRenderer.render(new HashMap<>(value.getMetricEvent().getTags()));
-        keyBuilder.append(alertGroupValue);
-        return keyBuilder.toString();
+        return value.getAlertGroup() + value.getAlertNotify().getId();
     }
 }
