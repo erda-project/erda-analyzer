@@ -14,10 +14,12 @@
 
 package cloud.erda.analyzer.alert.sources;
 
+import cloud.erda.analyzer.alert.models.AlertLevel;
 import cloud.erda.analyzer.alert.models.AlertNotify;
 import cloud.erda.analyzer.alert.models.AlertNotifyTarget;
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.StringUtil;
 import cloud.erda.analyzer.runtime.sources.DataRowReader;
 import lombok.extern.slf4j.Slf4j;
 
@@ -42,8 +44,15 @@ public class NotifyReader implements DataRowReader<AlertNotify> {
             if (AlertConstants.ALERT_NOTIFY_TYPE_NOTIFY_GROUP.equals(notifyTarget.getType())) {
                 notifyTarget.setGroupTypes(notifyTarget.getGroupType().split(","));
             }
-            if (notifyTarget.getLevel() != null && !notifyTarget.getLevel().isEmpty()){
-                notifyTarget.setLevels(notifyTarget.getLevel().split(","));
+            if (StringUtil.isNotEmpty(notifyTarget.getLevel())) {
+                String[] levelStrs = notifyTarget.getLevel().split(",");
+                AlertLevel[] levels = new AlertLevel[levelStrs.length];
+                for (int i = 0; i < levelStrs.length; i++) {
+                    levels[i] = AlertLevel.of(levelStrs[i]);
+                }
+                notifyTarget.setLevels(levels);
+            } else {
+                notifyTarget.setLevels(new AlertLevel[0]);
             }
             notify.setNotifyTarget(notifyTarget);
             notify.setSilence(resultSet.getLong("silence"));

@@ -178,14 +178,13 @@ public class Main {
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("broadcast alert notify template");
 
-        // ticket告警事件
-        DataStream<AlertEvent> ticketAlertEvents = alertEventsWithTemplate
+        // ticket告警事件和渲染
+        DataStream<RenderedAlertEvent> ticketAlertRender = alertEventsWithTemplate
                 .filter(new AlertEventTargetFilterFunction(AlertConstants.ALERT_NOTIFY_TYPE_TICKET))
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR));
-        // ticket告警渲染事件
-        DataStream<RenderedAlertEvent> alertRender = ticketAlertEvents
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .map(new AlertEventTemplateRenderFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR));
+
         //notify渲染事件
         DataStream<RenderedNotifyEvent> notifyRender = notifyEventWithTemplate
                 .map(new NotifyEventTemplateRenderFunction())
@@ -193,7 +192,7 @@ public class Main {
 
         // 存储告警记录
         //不进行数据存储操作，将数据发送到kafka中，由monitor读取再存入mysql中
-        alertRender.
+        ticketAlertRender.
                 map(new AlertRecordMapFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("RenderedAlertEvent to record")
@@ -228,7 +227,7 @@ public class Main {
         // 存储告警历史
         if(parameterTool.getBoolean(WRITE_EVENT_TO_ES_ENABLE)){
             // 数据发送到 kafka，由 streaming 消费写入 ES
-            alertRender.map(new ErdaEventMapFunction())
+            ticketAlertRender.map(new ErdaEventMapFunction())
                     .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                     .name("RenderedAlertEvent to history")
                     .addSink(new FlinkKafkaProducer<>(
@@ -238,19 +237,18 @@ public class Main {
                     .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
                     .name("push alert history output to kafka");
         } else {
-            DataStream<AlertHistory> alertHistories = alertRender.map(new AlertHistoryMapFunction())
+            DataStream<AlertHistory> alertHistories = ticketAlertRender.map(new AlertHistoryMapFunction())
                     .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR));
             CassandraSinkUtils.addSink(alertHistories, env, parameterTool);
         }
 
         DataStream<AlertEvent> alertEventLevel = alertEventsWithTemplate
                 .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
-                .keyBy(new AlertEventRuleFilterFunction())
-                .window(TumblingProcessingTimeWindows.of(Time.seconds(45)))
+                .keyBy(new AlertEventGroupFunction())
+                .window(TumblingProcessingTimeWindows.of(Time.seconds(15)))
                 .process(new AlertLevelProcessFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-                .name("max level");
-
+                .name("processing alert level merge");
 
         // 告警静默
 //        DataStream<AlertEvent> alertEventsSilence = alertEventsWithTemplate

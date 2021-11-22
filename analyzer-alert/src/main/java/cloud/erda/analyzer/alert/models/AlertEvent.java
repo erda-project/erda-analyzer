@@ -38,6 +38,8 @@ public class AlertEvent {
 
     private AlertTrigger trigger;
 
+    private AlertLevel level;
+
     private AlertNotify alertNotify;
 
     private AlertNotifyTemplate alertNotifyTemplate;
@@ -51,6 +53,7 @@ public class AlertEvent {
         alertEvent.setAlertType(alertType);
         alertEvent.setAlertIndex(alertIndex);
         alertEvent.setTrigger(trigger);
+        alertEvent.setLevel(level);
         alertEvent.setAlertNotify(alertNotify);
         alertEvent.setAlertNotifyTemplate(alertNotifyTemplate);
         return alertEvent;
