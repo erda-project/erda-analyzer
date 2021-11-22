@@ -50,7 +50,10 @@ public class MetricRuntime {
                 .connect(expressionStream.broadcast(StateDescriptorFactory.MetricKeyedMapState, StateDescriptorFactory.ExpressionState))
                 .process(new MetricFilterProcessFunction(parameterTool.getLong(Constants.METRIC_METADATA_TTL, 75000), StateDescriptorFactory.MetricKeyedMapState, StateDescriptorFactory.ExpressionState))
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
-                .name("Pre process metrics expression filters");
+                .name("Pre process metrics expression filters")
+                .map(new MetricGroupTagProcessFunction())
+                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
+                .name("map metric expression group tag");
 
         SingleOutputStreamOperator<KeyedMetricEvent> exactlyNoneMetrics = filteredMetrics
                 .process(new WindowBehaviorOutputProcessFunction(OutputTagUtils.AllowedLatenessTag))

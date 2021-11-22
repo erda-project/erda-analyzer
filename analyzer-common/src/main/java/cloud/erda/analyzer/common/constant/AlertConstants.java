@@ -80,4 +80,6 @@ public class AlertConstants {
     public static final String INVALID_ORG_ID = "-1";
 
     public static final String ALERT_TEMPLATE_TARGET_WEBHOOK = "webhook";
+
+    public static final String ALERT_LEVEL = "level";
 }

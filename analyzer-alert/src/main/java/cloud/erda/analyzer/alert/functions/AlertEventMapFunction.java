@@ -14,11 +14,13 @@
 
 package cloud.erda.analyzer.alert.functions;
 
+import cloud.erda.analyzer.alert.models.AlertLevel;
 import cloud.erda.analyzer.alert.templates.TemplateManager;
 import cloud.erda.analyzer.alert.templates.TemplateRenderer;
 import cloud.erda.analyzer.alert.models.AlertEvent;
 import cloud.erda.analyzer.alert.models.AlertTrigger;
 import cloud.erda.analyzer.common.constant.AlertConstants;
+import cloud.erda.analyzer.common.constant.MetricTagConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -70,13 +72,9 @@ public class AlertEventMapFunction implements FlatMapFunction<MetricEvent, Alert
             alertEvent.setAlertType(alertType);
             alertEvent.setAlertIndex(alertIndex);
             alertEvent.setTrigger(AlertTrigger.valueOf(trigger));
-            String alertGroup = tags.getOrDefault(AlertConstants.ALERT_GROUP, "");
-            if (StringUtils.isEmpty(alertGroup)) {
-                alertGroup = String.format("{{%s}}_{{%s}}", AlertConstants.ALERT_TYPE, AlertConstants.ALERT_INDEX);
-            }
-            alertEvent.setAlertGroup(alertGroup);
+            alertEvent.setLevel(AlertLevel.of(value));
             // 设置分组ID
-            this.setGroupId(alertEvent);
+            this.setGroupId(alertEvent, alertType, alertIndex);
             out.collect(alertEvent);
         } catch (Throwable t) {
             log.error("Map alert event fail.", t);
@@ -88,15 +86,21 @@ public class AlertEventMapFunction implements FlatMapFunction<MetricEvent, Alert
      *
      * @param value 告警事件
      */
-    private void setGroupId(AlertEvent value) {
-        TemplateRenderer renderer = templateManager.getRenderer(
-                AlertConstants.ALERT_GROUP_ID + value.getAlertGroup(), value.getAlertGroup(), false);
-        String alertGroupValue = renderer.render(new HashMap<>(value.getMetricEvent().getTags()));
+    private void setGroupId(AlertEvent value, String alertType, String alertIndex) {
+        String alertGroup = value.getMetricEvent().getTags().get(AlertConstants.ALERT_GROUP);
+        if (!StringUtils.isEmpty(alertGroup)) {
+            TemplateRenderer renderer = templateManager.getRenderer(
+                    AlertConstants.ALERT_GROUP_ID + alertGroup, alertGroup, false);
+            alertGroup = renderer.render(new HashMap<>(value.getMetricEvent().getTags()));
+        } else {
+            alertGroup = String.format("%s_%s_%s", alertType, alertIndex, value.getMetricEvent().getTags().get(MetricTagConstants.METRIC_EXPRESSION_GROUP));
+        }
         String groupId = value.getAlertId() + "_"
                 + value.getExpressionId() + "_"
-                + new String(Base64.getUrlEncoder().encode(alertGroupValue.getBytes()), StandardCharsets.UTF_8)
+                + new String(Base64.getUrlEncoder().encode(alertGroup.getBytes()), StandardCharsets.UTF_8)
                 .toLowerCase().replace("=", "");
+        value.setAlertGroup(groupId);
         value.getMetricEvent().getTags().put(AlertConstants.ALERT_GROUP_ID, groupId);
-        value.getMetricEvent().getTags().put(AlertConstants.ALERT_GROUP, alertGroupValue);
+        value.getMetricEvent().getTags().put(AlertConstants.ALERT_GROUP, alertGroup);
     }
 }
