@@ -14,6 +14,9 @@
 
 package cloud.erda.analyzer.runtime.functions;
 
+import cloud.erda.analyzer.common.constant.Constants;
+import cloud.erda.analyzer.common.constant.MetricConstants;
+import cloud.erda.analyzer.common.constant.MetricTagConstants;
 import cloud.erda.analyzer.runtime.models.KeyedMetricEvent;
 import org.apache.flink.api.java.functions.KeySelector;
 
@@ -41,14 +44,7 @@ public class MetricGroupProcessFunction implements KeySelector<KeyedMetricEvent,
     }
 
     private String key(KeyedMetricEvent event) {
-        StringBuilder keyBuilder = new StringBuilder();
-        keyBuilder.append(event.getMetadataId()).append("_alert_").append(event.getAttributes().get(ALERT_ID)).append("_");
-        for (String groupKey : event.getExpression().getGroup()) {
-            Map<String, String> tags = event.getMetric().getTags();
-            String value = tags.get(groupKey);
-            keyBuilder.append(groupKey).append("_").append(value).append("_");
-        }
-        keyBuilder.append("window_").append(event.getExpression().getWindow());
-        return keyBuilder.toString();
+        return event.getMetadataId() + "_" + event.getMetric().getTags().get(MetricTagConstants.METRIC_EXPRESSION_GROUP) +
+                "window_" + event.getExpression().getWindow();
     }
 }

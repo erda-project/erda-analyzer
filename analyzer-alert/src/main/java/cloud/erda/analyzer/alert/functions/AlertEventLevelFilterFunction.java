@@ -1,6 +1,7 @@
 package cloud.erda.analyzer.alert.functions;
 
 import cloud.erda.analyzer.alert.models.AlertEvent;
+import cloud.erda.analyzer.alert.models.AlertLevel;
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import org.apache.flink.api.common.functions.FilterFunction;
 
@@ -10,15 +11,16 @@ public class AlertEventLevelFilterFunction implements FilterFunction<AlertEvent>
 
     @Override
     public boolean filter(AlertEvent alertEvent) throws Exception {
-        String eventLevel = alertEvent.getMetricEvent().getTags().get(AlertConstants.ALERT_EXPRESSION_LEVEL);
-        String[] notifyLevels = alertEvent.getAlertNotify().getNotifyTarget().getLevels();
+        AlertLevel eventLevel = alertEvent.getLevel();
+        AlertLevel[] notifyLevels = alertEvent.getAlertNotify().getNotifyTarget().getLevels();
 
-        if (eventLevel == null || notifyLevels == null || notifyLevels.length == 0)
-            return true;
+        // compatible only when the get level fails (AlertLevel.UNKNOWN) and the notifyGroup's level is empty
+        if (AlertLevel.UNKNOWN.equals(eventLevel)) {
+            return notifyLevels.length == 0;
+        }
 
-        int len = notifyLevels.length;
-        for (int i = 0; i < len; i++) {
-            if (eventLevel.equals(notifyLevels[i]))
+        for (AlertLevel notifyLevel : notifyLevels) {
+            if (eventLevel.equals(notifyLevel))
                 return true;
         }
 

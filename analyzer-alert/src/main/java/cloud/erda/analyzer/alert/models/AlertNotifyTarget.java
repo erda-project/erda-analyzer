@@ -47,7 +47,7 @@ public class AlertNotifyTarget {
 
     private String level;
 
-    private String[] levels;
+    private AlertLevel[] levels;
 
     private String[] groupTypes;
 }

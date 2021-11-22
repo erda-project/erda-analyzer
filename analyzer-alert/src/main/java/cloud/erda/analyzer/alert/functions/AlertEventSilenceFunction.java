@@ -15,6 +15,7 @@
 package cloud.erda.analyzer.alert.functions;
 
 import cloud.erda.analyzer.alert.models.AlertEvent;
+import cloud.erda.analyzer.alert.models.AlertLevel;
 import cloud.erda.analyzer.alert.models.AlertTrigger;
 import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.constant.MetricTagConstants;
@@ -24,8 +25,6 @@ import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
-
-import static cloud.erda.analyzer.common.constant.MetricTagConstants.TRIGGER_DURATION;
 
 /**
  * @author: liuhaoyang
@@ -48,23 +47,37 @@ public class AlertEventSilenceFunction extends KeyedProcessFunction<String, Aler
             silence = new SilenceState();
             silence.setLastTimestamp(0);
             silence.setTrigger(AlertTrigger.alert);
-            silence.setCount(0);
-            silence.setEventCount(0);
+            silence.setTriggerCount(0);
+            silence.setSilenceCount(0);
             silence.setSilence(value.getAlertNotify().getSilence());
+            silence.setLastAlertLevel(value.getLevel());
             state.update(silence);
         }
 
-        if (silence.getTrigger().equals(value.getTrigger())) {
+        // process eventCount and silence
+        if (AlertTrigger.alert.equals(value.getTrigger())) {
             if (ctx.timestamp() - silence.getLastTimestamp() < silence.getSilence()) {
+                // If the alert level is higher than the alert level triggered last time, the alert event will continue to be process
+                if (silence.getLastAlertLevel().compareTo(value.getLevel()) <= 0) {
+                    silence.setSilenceCount(silence.getSilenceCount() + 1);
+                    return;
+                }
+            }
+            silence.setTriggerCount(silence.getTriggerCount() + 1);
+        } else {
+            silence.setTriggerCount(0);
+            silence.setSilence(value.getAlertNotify().getSilence());
+            silence.setSilenceCount(0);
+            // double check recover event
+            if (AlertTrigger.recover.equals(silence.getTrigger())) {
                 return;
             }
         }
 
         // set silence with doubled policy
         if (value.getAlertNotify().getSilencePolicy().equals(Constants.DoubledSilencePolicy)) {
-            if (value.getAlertNotify().getSilence() * Math.pow(2, silence.eventCount) < Constants.MaxSilence) {
-                silence.setSilence((long) (value.getAlertNotify().getSilence() * Math.pow(2, silence.eventCount)));
-                silence.setEventCount(silence.getEventCount() + 1);
+            if (value.getAlertNotify().getSilence() * Math.pow(2, silence.getTriggerCount()) < Constants.MaxSilence) {
+                silence.setSilence((long) (value.getAlertNotify().getSilence() * Math.pow(2, silence.getTriggerCount())));
             } else {
                 silence.setSilence(Constants.MaxSilence);
             }
@@ -72,20 +85,16 @@ public class AlertEventSilenceFunction extends KeyedProcessFunction<String, Aler
             silence.setSilence(value.getAlertNotify().getSilence());
         }
 
-        value.getMetricEvent().getFields().put(MetricTagConstants.TRIGGER_COUNT, silence.getCount());
+        value.getMetricEvent().getFields().put(MetricTagConstants.SILENCE_COUNT, silence.getSilenceCount());
+        value.getMetricEvent().getFields().put(MetricTagConstants.TRIGGER_COUNT, silence.getTriggerCount());
         value.getMetricEvent().getFields().put(MetricTagConstants.SILENCE, silence.silence);
-
-        // reset eventCount and silence when alert recover
-        if (value.getMetricEvent().getFields().containsKey(TRIGGER_DURATION)) {
-            silence.setEventCount(0);
-            silence.setSilence(value.getAlertNotify().getSilence());
-        }
 
         silence.setTrigger(value.getTrigger());
         silence.setLastTimestamp(ctx.timestamp());
-        silence.setCount(0);
-        out.collect(value);
+        silence.setLastAlertLevel(value.getLevel());
+
         state.update(silence);
+        out.collect(value);
     }
 
     @Data
@@ -93,12 +102,14 @@ public class AlertEventSilenceFunction extends KeyedProcessFunction<String, Aler
 
         private long lastTimestamp;
 
+        private AlertLevel lastAlertLevel;
+
         private AlertTrigger trigger;
 
-        private long count;
+        private long triggerCount;
 
         private long silence;
 
-        private long eventCount;
+        private long silenceCount;
     }
 }
