@@ -96,7 +96,7 @@ public class AlertEventMapFunction implements FlatMapFunction<MetricEvent, Alert
             alertGroup = String.format("%s_%s_%s", alertType, alertIndex, value.getMetricEvent().getTags().get(MetricTagConstants.METRIC_EXPRESSION_GROUP));
         }
         String groupId = value.getAlertId() + "_"
-                + value.getExpressionId() + "_"
+                + value.getAlertIndex() + "_"
                 + new String(Base64.getUrlEncoder().encode(alertGroup.getBytes()), StandardCharsets.UTF_8)
                 .toLowerCase().replace("=", "");
         value.setAlertGroup(groupId);
