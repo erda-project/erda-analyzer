@@ -14,7 +14,7 @@ public class AlertEventLevelFilterFunction implements FilterFunction<AlertEvent>
         AlertLevel eventLevel = alertEvent.getLevel();
         AlertLevel[] notifyLevels = alertEvent.getAlertNotify().getNotifyTarget().getLevels();
 
-        // compatible only when the get level fails (AlertLevel.UNKNOWN) and the notifyGroup's level is empty
+        // compatible only when the get level fails (AlertLevel.UNKNOWN) or the notifyGroup's level is empty
         if (AlertLevel.UNKNOWN.equals(eventLevel) || notifyLevels.length == 0) {
             return true;
         }
