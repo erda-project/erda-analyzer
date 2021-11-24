@@ -31,6 +31,8 @@ public class AlertEventGroupFunction implements KeySelector<AlertEvent, String> 
 
     @Override
     public String getKey(AlertEvent value) throws Exception {
-        return value.getAlertGroup() + value.getAlertNotify().getId();
+        return value.getAlertGroup() +
+                "_alert_notify_id_" + value.getAlertNotify().getId() +
+                "_notify_template_id_" + value.getAlertNotifyTemplate().getId();
     }
 }
