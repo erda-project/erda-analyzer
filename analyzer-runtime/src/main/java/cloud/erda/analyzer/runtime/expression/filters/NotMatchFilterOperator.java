@@ -35,6 +35,6 @@ public class NotMatchFilterOperator implements FilterOperator {
         return !String.valueOf(value).matches(regex);
     }
 
-    public static final FilterOperator INSTANCE = new MatchFilterOperator();
+    public static final FilterOperator INSTANCE = new NotMatchFilterOperator();
 }
 
