@@ -104,6 +104,10 @@ public class SpanConstants {
 
     public static final String INSTRUMENTATION_LIBRARY_VERSION = "instrumentation_library_version";
 
+    public static final String INSTRUMENT_SDK_VERSION = "instrument_sdk_version";
+
+    public static final String INSTRUMENT_SDK = "instrument_sdk";
+
     public static final String TERMINUS_KEY = "terminus_key";
 
     public static final String ELAPSED = "elapsed";
