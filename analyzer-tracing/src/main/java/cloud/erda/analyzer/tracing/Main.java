@@ -48,6 +48,8 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.List;
 
 import static cloud.erda.analyzer.common.constant.Constants.STREAM_PARALLELISM_INPUT;
 
@@ -65,8 +67,9 @@ public class Main {
         env.getConfig().registerTypeWithKryoSerializer(ExpressionFunction.class, CompatibleFieldSerializer.class);
         env.getConfig().setAutoWatermarkInterval(Time.seconds(10).toMilliseconds());
 
+        List<String> traceTopics = Arrays.asList(parameterTool.getRequired(Constants.TOPIC_OAP_TRACE).split(","));
         DataStream<Span> spanStream = env.addSource(new FlinkKafkaConsumer<>(
-                        parameterTool.getRequired(Constants.TOPIC_OAP_TRACE),
+                        traceTopics,
                         new SpanSchema(),
                         parameterTool.getProperties()))
                 .name("oap trace consumer")
