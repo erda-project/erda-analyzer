@@ -28,7 +28,7 @@ public class SpanServiceGroupFunction implements KeySelector<Span, String> {
 
     @Override
     public String getKey(Span span) throws Exception {
-        return span.getAttributes().get(SpanConstants.MSP_ENV_ID)
+        return span.getAttributes().get(SpanConstants.ENV_ID)
                 + ":"
                 + span.getAttributes().get(SpanConstants.SERVICE_ID)
                 + ":"

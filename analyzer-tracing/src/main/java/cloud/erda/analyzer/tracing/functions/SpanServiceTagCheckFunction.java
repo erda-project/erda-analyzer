@@ -19,7 +19,6 @@ package cloud.erda.analyzer.tracing.functions;
 import cloud.erda.analyzer.common.constant.SpanConstants;
 import cloud.erda.analyzer.tracing.model.Span;
 import org.apache.flink.api.common.functions.FilterFunction;
-import org.apache.kafka.common.protocol.types.Field;
 
 import java.util.Map;
 
@@ -32,7 +31,7 @@ public class SpanServiceTagCheckFunction implements FilterFunction<Span> {
     @Override
     public boolean filter(Span span) throws Exception {
         Map<String, String> attributes = span.getAttributes();
-        return attributes.containsKey(SpanConstants.MSP_ENV_ID)
+        return attributes.containsKey(SpanConstants.ENV_ID)
                 && attributes.containsKey(SpanConstants.SERVICE_ID)
                 && attributes.containsKey(SpanConstants.SERVICE_NAME);
     }

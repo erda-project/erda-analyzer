@@ -74,4 +74,14 @@ public class MetricEvent implements Serializable {
         sb.append("]");
         return sb.toString();
     }
+
+    public String getTag(String... keys) {
+        for (String key : keys) {
+            String val = tags.get(key);
+            if (val != null) {
+                return val;
+            }
+        }
+        return null;
+    }
 }

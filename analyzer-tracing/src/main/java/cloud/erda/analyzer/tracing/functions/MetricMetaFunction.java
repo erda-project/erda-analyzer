@@ -33,7 +33,7 @@ public class MetricMetaFunction implements FlatMapFunction<MetricEvent, MetricEv
         }
         metricEvent.addTag(SpanConstants.META, SpanConstants.TRUE);
         metricEvent.addTag(SpanConstants.METRIC_SCOPE, SpanConstants.METRIC_SCOPE_MICRO_SERVICE);
-        metricEvent.addTag(SpanConstants.METRIC_SCOPE_ID, metricEvent.getTags().get(SpanConstants.MSP_ENV_ID));
+        metricEvent.addTag(SpanConstants.METRIC_SCOPE_ID, metricEvent.getTag(SpanConstants.ENV_ID, SpanConstants.TERMINUS_KEY));
         collector.collect(metricEvent);
     }
 }

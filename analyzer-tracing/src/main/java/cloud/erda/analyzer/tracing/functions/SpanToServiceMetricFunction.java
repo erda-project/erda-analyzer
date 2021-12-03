@@ -37,8 +37,8 @@ public class SpanToServiceMetricFunction implements MapFunction<Span, MetricEven
         MetricEvent metricEvent = new MetricEvent();
         metricEvent.setTimestamp(span.getEndTimeUnixNano());
         metricEvent.setName(SpanConstants.APPLICATION_SERVICE_NODE);
-        metricEvent.addTag(SpanConstants.MSP_ENV_ID, span.getAttributes().get(SpanConstants.MSP_ENV_ID));
-        metricEvent.addTag(SpanConstants.TERMINUS_KEY, span.getAttributes().get(SpanConstants.MSP_ENV_ID));
+        metricEvent.addTag(SpanConstants.ENV_ID, span.getAttributes().get(SpanConstants.ENV_ID));
+        metricEvent.addTag(SpanConstants.TERMINUS_KEY, span.getAttributes().get(SpanConstants.ENV_ID));
         metricEvent.addTag(SpanConstants.SERVICE_ID, span.getAttributes().get(SpanConstants.SERVICE_ID));
         metricEvent.addTag(SpanConstants.SERVICE_NAME, span.getAttributes().get(SpanConstants.SERVICE_NAME));
         metricEvent.addTag(SpanConstants.SERVICE_INSTANCE_ID, span.getAttributes().get(SpanConstants.SERVICE_INSTANCE_ID));
