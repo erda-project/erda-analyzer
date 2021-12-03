@@ -42,11 +42,6 @@ public class SpanToServiceMetricFunction implements MapFunction<Span, MetricEven
         metricEvent.addTag(SpanConstants.SERVICE_ID, span.getAttributes().get(SpanConstants.SERVICE_ID));
         metricEvent.addTag(SpanConstants.SERVICE_NAME, span.getAttributes().get(SpanConstants.SERVICE_NAME));
         metricEvent.addTag(SpanConstants.SERVICE_INSTANCE_ID, span.getAttributes().get(SpanConstants.SERVICE_INSTANCE_ID));
-//        if (span.getAttributes().containsKey(SpanConstants.SERVICE_INSTANCE_ID)) {
-//            metricEvent.addTag(SpanConstants.SERVICE_INSTANCE_ID, span.getAttributes().get(SpanConstants.SERVICE_INSTANCE_ID));
-//        } else {
-//            metricEvent.addTag(SpanConstants.SERVICE_INSTANCE_ID, span.getAttributes().get(SpanConstants.SERVICE_INSTANCE_IP));
-//        }
         metricEvent.addTag(SpanConstants.SERVICE_INSTANCE_IP, span.getAttributes().get(SpanConstants.SERVICE_INSTANCE_IP));
         metricEvent.addTag(SpanConstants.PROJECT_NAME, span.getAttributes().get(SpanConstants.PROJECT_NAME));
         metricEvent.addTag(SpanConstants.WORKSPACE, span.getAttributes().get(SpanConstants.WORKSPACE));

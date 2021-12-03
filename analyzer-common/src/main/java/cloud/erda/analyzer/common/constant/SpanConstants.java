@@ -38,6 +38,8 @@ public class SpanConstants {
 
     public static final String TAG_HTTP_URL = "http_url";
 
+    public static final String TAG_HTTP_TARGET = "http_target";
+
     public static final String SPAN_LAYER = "span_layer";
 
     public static final String SPAN_LAYER_HTTP = "http";
@@ -57,6 +59,8 @@ public class SpanConstants {
     public static final String MESSAGE_BUS_DESTINATION = "message_bus_destination";
 
     public static final String DB_TYPE = "db_type";
+
+    public static final String DB_SYSTEM = "db_system";
 
     public static final String DB_TYPE_REDIS = "redis";
 
@@ -161,4 +165,14 @@ public class SpanConstants {
     public static final String ERROR = "error";
 
     public static final String TAG_HTTP_PATH = "http_path";
+
+    public static final String TAG_RPC_SERVICE = "rpc_service";
+
+    public static final String TAG_RPC_METHOD = "rpc_method";
+
+    public static final String TAG_RPC_SYSTEM = "rpc_system";
+
+    public static final String TAG_DUBBO_SERVICE = "dubbo_service";
+
+    public static final String TAG_DUBBO_METHOD = "dubbo_method";
 }
