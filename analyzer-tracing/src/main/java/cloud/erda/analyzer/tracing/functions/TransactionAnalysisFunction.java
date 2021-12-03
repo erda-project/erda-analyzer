@@ -102,7 +102,7 @@ public class TransactionAnalysisFunction extends ProcessWindowFunction<Span, Met
         metricEvent.setName(metricName);
         metricEvent.addTag(SpanConstants.TARGET_SERVICE_ID, getAttribute(span, SpanConstants.SERVICE_ID));
         metricEvent.addTag(SpanConstants.TARGET_SERVICE_NAME, getAttribute(span, SpanConstants.SERVICE_NAME));
-        metricEvent.addTag(SpanConstants.TARGET_MSP_ENV_ID, getAttribute(span, SpanConstants.MSP_ENV_ID));
+        metricEvent.addTag(SpanConstants.TARGET_ENV_ID, getAttribute(span, SpanConstants.ENV_ID));
         metricEvent.addTag(SpanConstants.TARGET_TERMINUS_KEY, getAttribute(span, SpanConstants.TERMINUS_KEY));
         metricEvent.addTag(SpanConstants.TARGET_SERVICE_INSTANCE_ID, getAttribute(span, SpanConstants.SERVICE_INSTANCE_ID));
         String parentSpanId = span.getParentSpanID();
@@ -111,8 +111,8 @@ public class TransactionAnalysisFunction extends ProcessWindowFunction<Span, Met
             if (parentSpan != null) {
                 metricEvent.addTag(SpanConstants.SOURCE_SERVICE_ID, getAttribute(parentSpan, SpanConstants.SERVICE_ID));
                 metricEvent.addTag(SpanConstants.SOURCE_SERVICE_NAME, getAttribute(parentSpan, SpanConstants.SERVICE_NAME));
-                metricEvent.addTag(SpanConstants.SOURCE_TERMINUS_KEY, getAttribute(parentSpan, SpanConstants.MSP_ENV_ID));
-                metricEvent.addTag(SpanConstants.SOURCE_MSP_ENV_ID, getAttribute(parentSpan, SpanConstants.TERMINUS_KEY));
+                metricEvent.addTag(SpanConstants.SOURCE_TERMINUS_KEY, getAttribute(parentSpan, SpanConstants.ENV_ID));
+                metricEvent.addTag(SpanConstants.SOURCE_ENV_ID, getAttribute(parentSpan, SpanConstants.TERMINUS_KEY));
                 metricEvent.addTag(SpanConstants.SOURCE_SERVICE_INSTANCE_ID, getAttribute(parentSpan, SpanConstants.SERVICE_INSTANCE_ID));
             }
         }
@@ -129,8 +129,8 @@ public class TransactionAnalysisFunction extends ProcessWindowFunction<Span, Met
         metricEvent.setName(metricName);
         metricEvent.addTag(SpanConstants.SOURCE_SERVICE_ID, getAttribute(span, SpanConstants.SERVICE_ID));
         metricEvent.addTag(SpanConstants.SOURCE_SERVICE_NAME, getAttribute(span, SpanConstants.SERVICE_NAME));
-        metricEvent.addTag(SpanConstants.SOURCE_TERMINUS_KEY, getAttribute(span, SpanConstants.MSP_ENV_ID));
-        metricEvent.addTag(SpanConstants.SOURCE_MSP_ENV_ID, getAttribute(span, SpanConstants.TERMINUS_KEY));
+        metricEvent.addTag(SpanConstants.SOURCE_TERMINUS_KEY, getAttribute(span, SpanConstants.ENV_ID));
+        metricEvent.addTag(SpanConstants.SOURCE_ENV_ID, getAttribute(span, SpanConstants.TERMINUS_KEY));
         metricEvent.addTag(SpanConstants.SOURCE_SERVICE_INSTANCE_ID, getAttribute(span, SpanConstants.SERVICE_INSTANCE_ID));
         return metricEvent;
     }

@@ -68,7 +68,7 @@ public class SpanConstants {
 
     public static final String SERVICE_INSTANCE_IP = "service_instance_ip";
 
-    public static final String MSP_ENV_ID = "msp_env_id";
+    public static final String ENV_ID = "env_id";
 
     public static final String SERVICE_INSTANCE_ID = "service_instance_id";
 
@@ -128,7 +128,7 @@ public class SpanConstants {
 
     public static final String TARGET_TERMINUS_KEY = "target_terminus_key";
 
-    public static final String TARGET_MSP_ENV_ID = "target_msp_env_id";
+    public static final String TARGET_ENV_ID = "target_env_id";
 
     public static final String SOURCE_SERVICE_ID = "source_service_id";
 
@@ -136,7 +136,7 @@ public class SpanConstants {
 
     public static final String SOURCE_TERMINUS_KEY = "source_terminus_key";
 
-    public static final String SOURCE_MSP_ENV_ID = "source_msp_env_id";
+    public static final String SOURCE_ENV_ID = "source_env_id";
 
     public static final String HTTP_STATUS_CODE = "http_status_code";
 
