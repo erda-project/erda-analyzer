@@ -17,6 +17,7 @@
 package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.constant.SpanConstants;
+import cloud.erda.analyzer.common.utils.MapUtils;
 import cloud.erda.analyzer.tracing.model.Span;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
@@ -38,27 +39,29 @@ public class SpanCorrectFunction implements FlatMapFunction<Span, Span> {
     }
 
     private String getSpanLayer(Span span) {
+
         if (span.getAttributes().containsKey(SpanConstants.SPAN_LAYER)) {
             return span.getAttributes().get(SpanConstants.SPAN_LAYER);
         }
-        if (span.getAttributes().containsKey(SpanConstants.TAG_HTTP_URL) || span.getAttributes().containsKey(SpanConstants.TAG_HTTP_PATH)) {
+
+        if (MapUtils.containsAnyKey(span.getAttributes(), SpanConstants.TAG_HTTP_PATH, SpanConstants.TAG_HTTP_URL, SpanConstants.TAG_HTTP_TARGET)) {
             return SpanConstants.SPAN_LAYER_HTTP;
         }
 
-        if (span.getAttributes().containsKey(SpanConstants.MESSAGE_BUS_DESTINATION)) {
+        if (MapUtils.containsAnyKey(span.getAttributes(), SpanConstants.TAG_RPC_SYSTEM, SpanConstants.TAG_RPC_SERVICE, SpanConstants.TAG_RPC_METHOD, SpanConstants.TAG_DUBBO_SERVICE, SpanConstants.TAG_DUBBO_METHOD)) {
+            return SpanConstants.SPAN_LAYER_RPC;
+        }
+
+        if (MapUtils.containsAnyKey(span.getAttributes(), SpanConstants.MESSAGE_BUS_DESTINATION)) {
             return SpanConstants.SPAN_LAYER_MQ;
         }
 
-        String dbType = span.getAttributes().get(SpanConstants.DB_TYPE);
+        String dbType = MapUtils.getByAnyKey(span.getAttributes(), SpanConstants.DB_SYSTEM, SpanConstants.DB_TYPE);
         if (dbType != null) {
             if (SpanConstants.DB_TYPE_REDIS.equalsIgnoreCase(dbType)) {
                 return SpanConstants.SPAN_LAYER_CACHE;
             }
             return SpanConstants.SPAN_LAYER_DB;
-        }
-
-        if (span.getAttributes().containsKey(SpanConstants.PEER_SERVICE)) {
-            return SpanConstants.SPAN_LAYER_RPC;
         }
 
         return SpanConstants.SPAN_LAYER_LOCAL;

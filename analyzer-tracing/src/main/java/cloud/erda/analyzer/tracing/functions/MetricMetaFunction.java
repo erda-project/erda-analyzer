@@ -18,6 +18,7 @@ package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.constant.SpanConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
+import cloud.erda.analyzer.common.utils.MapUtils;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
 
@@ -33,7 +34,7 @@ public class MetricMetaFunction implements FlatMapFunction<MetricEvent, MetricEv
         }
         metricEvent.addTag(SpanConstants.META, SpanConstants.TRUE);
         metricEvent.addTag(SpanConstants.METRIC_SCOPE, SpanConstants.METRIC_SCOPE_MICRO_SERVICE);
-        metricEvent.addTag(SpanConstants.METRIC_SCOPE_ID, metricEvent.getTag(SpanConstants.ENV_ID, SpanConstants.TERMINUS_KEY));
+        metricEvent.addTag(SpanConstants.METRIC_SCOPE_ID, MapUtils.getByAnyKey(metricEvent.getTags(), SpanConstants.ENV_ID, SpanConstants.TERMINUS_KEY));
         collector.collect(metricEvent);
     }
 }
