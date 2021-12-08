@@ -1,44 +1,68 @@
 version: "1.1"
+
+on:
+  push:
+    branches:
+      - release/*
+    tags:
+      - v*
+
 stages:
-- stage:
-  - git-checkout:
-      alias: repo
-      params:
-        depth: 1
-- stage:
-  - custom-script:
-      alias: metrics
-      commands:
-      - cd ..
-      - repo/build.sh analyzer-metrics
-  - custom-script:
-      alias: alert
-      commands:
-      - cd ..
-      - repo/build.sh analyzer-alert
-  - custom-script:
-      alias: error-insight
-      commands:
-      - cd ..
-      - repo/build.sh analyzer-error-insight
-  - custom-script:
-      alias: tracing
-      commands:
-        - cd ..
-        - repo/build.sh analyzer-tracing
-- stage:
-  - release:
-      alias: dicehub
-      params:
-        check_diceyml: false
-        dice_yml: ${repo}/dice.yml
-        release_id_path: dicehub
-        image:
-          analyzer-metrics: ${metrics:OUTPUT:image}
-          analyzer-metrics-task: ${metrics:OUTPUT:image}
-          analyzer-tracing: ${tracing:OUTPUT:image}
-          analyzer-tracing-task: ${tracing:OUTPUT:image}
-          analyzer-alert: ${alert:OUTPUT:image}
-          analyzer-alert-task: ${alert:OUTPUT:image}
-          analyzer-error-insight: ${error-insight:OUTPUT:image}
-          analyzer-error-insight-task: ${error-insight:OUTPUT:image}
+  - stage:
+      - git-checkout:
+          alias: erda-analyzer
+          params:
+            depth: 1
+  - stage:
+      - extract-repo-version:
+          params:
+            git_dir: ${{ dirs.erda-analyzer }}
+  - stage:
+      - custom-script:
+          alias: build-metrics
+          commands:
+            - cd ${erda-analyzer}
+            - ./build.sh analyzer-metrics
+          resources:
+            cpu: 2
+            mem: 2048
+      - custom-script:
+          alias: build-alert
+          commands:
+            - cd ${erda-analyzer}
+            - ./build.sh analyzer-alert
+          resources:
+            cpu: 2
+            mem: 2048
+      - custom-script:
+          alias: build-error-insight
+          commands:
+            - cd ${erda-analyzer}
+            - ./build.sh analyzer-error-insight
+          resources:
+            cpu: 2
+            mem: 2048
+      - custom-script:
+          alias: build-tracing
+          commands:
+            - cd ${erda-analyzer}
+            - ./build.sh analyzer-tracing
+          resources:
+            cpu: 2
+            mem: 2048
+  - stage:
+      - release:
+          alias: release-erda-analyzer
+          params:
+            tag_version: ${{ outputs.extract-repo-version.version }}
+            check_diceyml: false
+            dice_yml: ${erda-analyzer}/erda.yml
+            image:
+              analyzer-alert: ${{ outputs.build-alert.image }}
+              analyzer-alert-task: ${{ outputs.build-alert.image }}
+              analyzer-error-insight: ${{ outputs.build-error-insight.image }}
+              analyzer-error-insight-task: ${{ outputs.build-error-insight.image }}
+              analyzer-metrics: ${{ outputs.build-metrics.image }}
+              analyzer-metrics-task: ${{ outputs.build-metrics.image }}
+              analyzer-tracing: ${{ outputs.build-tracing.image }}
+              analyzer-tracing-task: ${{ outputs.build-tracing.image }}
