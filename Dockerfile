@@ -1,4 +1,4 @@
-FROM registry.erda.cloud/erda/erda-flink-1.12.5:20211109-6291618
+FROM registry.erda.cloud/erda/erda-flink-1.12.5:20211211-314239f
 
 RUN echo "Asia/Shanghai" | tee /etc/timezone
 
