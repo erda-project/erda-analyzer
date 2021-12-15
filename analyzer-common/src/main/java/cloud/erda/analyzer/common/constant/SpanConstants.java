@@ -62,6 +62,8 @@ public class SpanConstants {
 
     public static final String DB_SYSTEM = "db_system";
 
+    public static final String DB_STATEMENT = " db_statement";
+
     public static final String DB_TYPE_REDIS = "redis";
 
     public static final String PEER_SERVICE = "peer_service";
@@ -171,6 +173,8 @@ public class SpanConstants {
     public static final String TAG_RPC_METHOD = "rpc_method";
 
     public static final String TAG_RPC_SYSTEM = "rpc_system";
+
+    public static final String TAG_RPC_TARGET = "rpc_target";
 
     public static final String TAG_DUBBO_SERVICE = "dubbo_service";
 
