@@ -21,6 +21,7 @@ import cloud.erda.analyzer.common.schemas.MetricEventSchema;
 import cloud.erda.analyzer.common.schemas.MetricEventSerializeFunction;
 import cloud.erda.analyzer.common.schemas.StringMetricEventSchema;
 import cloud.erda.analyzer.common.utils.ExecutionEnv;
+import cloud.erda.analyzer.common.utils.StringUtil;
 import cloud.erda.analyzer.common.watermarks.BoundedOutOfOrdernessWatermarkGenerator;
 import cloud.erda.analyzer.common.watermarks.MetricWatermarkExtractor;
 import cloud.erda.analyzer.runtime.MetricRuntime;
@@ -42,6 +43,8 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.windowing.assigners.EventTimeSessionWindows;
+import org.apache.flink.streaming.api.windowing.assigners.SessionWindowTimeGapExtractor;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
@@ -98,8 +101,9 @@ public class Main {
 
         DataStream<MetricEvent> tranMetricStream = spanStream
                 .keyBy(Span::getTraceID)
-                .window(TumblingEventTimeWindows.of(Time.seconds(60)))
-                .process(new TransactionAnalysisFunction())
+                .window(EventTimeSessionWindows.withDynamicGap(new TraceAnalysisTimeGapExtractor()))
+//                .window(TumblingEventTimeWindows.of(Time.seconds(10)))
+                .process(new TraceAnalysisFunction())
                 .name("trace analysis windows process")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .flatMap(new SlowOrErrorMetricFunction(parameterTool))
