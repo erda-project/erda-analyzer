@@ -35,7 +35,7 @@ import java.util.Map;
  * @date 2021/9/18 14:06
  */
 @Slf4j
-public class TransactionAnalysisFunction extends ProcessWindowFunction<Span, MetricEvent, String, TimeWindow> {
+public class TraceAnalysisFunction extends ProcessWindowFunction<Span, MetricEvent, String, TimeWindow> {
 
     @Override
     public void process(String s, ProcessWindowFunction<Span, MetricEvent, String, TimeWindow>.Context context, Iterable<Span> iterable, Collector<MetricEvent> collector) throws Exception {

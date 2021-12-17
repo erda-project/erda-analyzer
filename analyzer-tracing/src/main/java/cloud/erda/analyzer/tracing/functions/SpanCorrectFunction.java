@@ -48,7 +48,7 @@ public class SpanCorrectFunction implements FlatMapFunction<Span, Span> {
             return SpanConstants.SPAN_LAYER_HTTP;
         }
 
-        if (MapUtils.containsAnyKey(span.getAttributes(), SpanConstants.TAG_RPC_SYSTEM, SpanConstants.TAG_RPC_SERVICE, SpanConstants.TAG_RPC_METHOD, SpanConstants.TAG_DUBBO_SERVICE, SpanConstants.TAG_DUBBO_METHOD)) {
+        if (MapUtils.containsAnyKey(span.getAttributes(), SpanConstants.TAG_RPC_TARGET, SpanConstants.TAG_RPC_SERVICE, SpanConstants.TAG_RPC_METHOD, SpanConstants.TAG_DUBBO_SERVICE, SpanConstants.TAG_DUBBO_METHOD)) {
             return SpanConstants.SPAN_LAYER_RPC;
         }
 
@@ -56,12 +56,14 @@ public class SpanCorrectFunction implements FlatMapFunction<Span, Span> {
             return SpanConstants.SPAN_LAYER_MQ;
         }
 
-        String dbType = MapUtils.getByAnyKey(span.getAttributes(), SpanConstants.DB_SYSTEM, SpanConstants.DB_TYPE);
-        if (dbType != null) {
-            if (SpanConstants.DB_TYPE_REDIS.equalsIgnoreCase(dbType)) {
-                return SpanConstants.SPAN_LAYER_CACHE;
+        if (MapUtils.containsAnyKey(span.getAttributes(), SpanConstants.DB_STATEMENT)) {
+            String dbType = MapUtils.getByAnyKey(span.getAttributes(), SpanConstants.DB_SYSTEM, SpanConstants.DB_TYPE);
+            if (dbType != null) {
+                if (SpanConstants.DB_TYPE_REDIS.equalsIgnoreCase(dbType)) {
+                    return SpanConstants.SPAN_LAYER_CACHE;
+                }
+                return SpanConstants.SPAN_LAYER_DB;
             }
-            return SpanConstants.SPAN_LAYER_DB;
         }
 
         return SpanConstants.SPAN_LAYER_LOCAL;
