@@ -11,6 +11,6 @@ public class EntityKafkaPartitioner extends FlinkKafkaPartitioner<Entity> {
         Preconditions.checkArgument(
                 partitions != null && partitions.length > 0,
                 "Partitions of the target topic is empty.");
-        return partitions[(entity.getType().hashCode() ^ entity.getKey().hashCode()) % partitions.length];
+        return partitions[(entity.getType().hashCode() ^ entity.getKey().hashCode() & Integer.MAX_VALUE) % partitions.length];
     }
 }
