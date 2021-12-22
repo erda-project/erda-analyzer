@@ -27,6 +27,6 @@ public class SpanTimestampAssigner implements SerializableTimestampAssigner<Span
 
     @Override
     public long extractTimestamp(Span span, long l) {
-        return span.getStartTimeUnixNano() / (1000 * 1000);
+        return span.getEndTimeUnixNano() / (1000 * 1000);
     }
 }

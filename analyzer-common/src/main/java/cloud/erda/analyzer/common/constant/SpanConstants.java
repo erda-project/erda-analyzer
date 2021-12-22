@@ -62,7 +62,7 @@ public class SpanConstants {
 
     public static final String DB_SYSTEM = "db_system";
 
-    public static final String DB_STATEMENT = " db_statement";
+    public static final String DB_STATEMENT = "db_statement";
 
     public static final String DB_TYPE_REDIS = "redis";
 
