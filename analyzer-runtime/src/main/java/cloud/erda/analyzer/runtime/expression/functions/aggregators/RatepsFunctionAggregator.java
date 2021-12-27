@@ -30,7 +30,7 @@ public class RatepsFunctionAggregator implements FunctionAggregator {
 
     public RatepsFunctionAggregator(long window) {
         sum = 0d;
-        interval = Time.minutes(window).toMilliseconds();
+        interval = window * 60;
     }
 
     @Override
