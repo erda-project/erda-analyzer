@@ -71,7 +71,7 @@ public class FunctionAggregatorFactory {
             case MEDIAN:
                 aggregator = new MedianFunctionAggregator();
                 break;
-            case RETEPS:
+            case RATEPS:
                 aggregator = new RatepsFunctionAggregator(expression.getWindow());
                 break;
             default:

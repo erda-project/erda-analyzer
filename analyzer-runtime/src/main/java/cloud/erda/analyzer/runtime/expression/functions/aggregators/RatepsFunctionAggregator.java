@@ -17,7 +17,6 @@
 package cloud.erda.analyzer.runtime.expression.functions.aggregators;
 
 import cloud.erda.analyzer.common.utils.ConvertUtils;
-import org.apache.flink.streaming.api.windowing.time.Time;
 
 /**
  * @author liuhaoyang
@@ -35,7 +34,7 @@ public class RatepsFunctionAggregator implements FunctionAggregator {
 
     @Override
     public String aggregator() {
-        return FunctionAggregatorDefine.RETEPS;
+        return FunctionAggregatorDefine.RATEPS;
     }
 
     @Override
