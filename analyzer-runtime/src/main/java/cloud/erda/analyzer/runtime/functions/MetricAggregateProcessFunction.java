@@ -48,21 +48,6 @@ public class MetricAggregateProcessFunction implements AggregateFunction<KeyedMe
 
     @Override
     public Accumulator add(KeyedMetricEvent value, Accumulator accumulator) {
-        /**
-         * 执行表达式中 function 的 aggregator
-         */
-        for (ExpressionFunction function : value.getExpression().getFunctions()) {
-            if (!ExpressionFunctionTrigger.applied.equals(function.getTrigger())) {
-                continue;
-            }
-            FunctionAggregator aggregator = accumulator.getMetricAggregator(function);
-            if (!(aggregator instanceof AppliedFunctionAggregator)) {
-                aggregator = new AppliedFunctionAggregator(aggregator);
-            }
-            Object v = getFieldValue(value.getMetric(), value.getMetadataId(), function);
-            aggregator.apply(v);
-            accumulator.setFunction(aggregator, function);
-        }
 
         if (!accumulator.initialized()) {
             accumulator.setMetadataId(value.getMetadataId());
@@ -81,6 +66,22 @@ public class MetricAggregateProcessFunction implements AggregateFunction<KeyedMe
 
         accumulator.setMetric(value.getMetric());
         accumulator.setKey(value.getKey());
+
+        /**
+         * 执行表达式中 function 的 aggregator
+         */
+        for (ExpressionFunction function : value.getExpression().getFunctions()) {
+            if (!ExpressionFunctionTrigger.applied.equals(function.getTrigger())) {
+                continue;
+            }
+            FunctionAggregator aggregator = accumulator.getMetricAggregator(function);
+            if (!(aggregator instanceof AppliedFunctionAggregator)) {
+                aggregator = new AppliedFunctionAggregator(aggregator);
+            }
+            Object v = getFieldValue(value.getMetric(), value.getMetadataId(), function);
+            aggregator.apply(v);
+            accumulator.setFunction(aggregator, function);
+        }
 
         return accumulator;
     }
