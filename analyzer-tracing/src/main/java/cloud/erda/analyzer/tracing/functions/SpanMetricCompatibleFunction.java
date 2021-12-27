@@ -33,7 +33,7 @@ public class SpanMetricCompatibleFunction implements MapFunction<Span, MetricEve
     public MetricEvent map(Span span) throws Exception {
         MetricEvent metricEvent = new MetricEvent();
         metricEvent.setName(SpanConstants.SPAN_METRIC_NAME);
-        metricEvent.setTimestamp(span.getStartTimeUnixNano());
+        metricEvent.setTimestamp(span.getEndTimeUnixNano());
         Map<String, String> tags = metricEvent.getTags();
         tags.put(SpanConstants.TRACE_ID, span.getTraceID());
         tags.put(SpanConstants.SPAN_ID, span.getSpanID());

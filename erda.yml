@@ -22,7 +22,7 @@ envs:
   TASK_MANAGER_MEMORY_JVM_METASPACE_SIZE: "256M"
   TASK_MANAGER_JVM_EXIT_OOM: "true"
 #  FLINK_ENV_JAVA_OPTS_TM: "-XX:+UseG1GC -XX:+TraceClassLoading -XX:+TraceClassUnloading -XX:+PrintGC -XX:+PrintGCDetails"
-  FLINK_ENV_JAVA_OPTS_TM: "-XX:+UseG1GC -XX:+PrintGC -XX:+PrintGCDetails"
+  FLINK_ENV_JAVA_OPTS_TM: "-XX:+UseG1GC"
   MONITOR_ADDR: "monitor:7096"
   EVENTBOX_ADDR: "eventbox:9528"
   ANALYZER_METRICS_ADDR: "analyzer-metrics:8081"
