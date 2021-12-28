@@ -81,11 +81,13 @@ public class Main {
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_INPUT))
                 .name("filter span not null")
                 .assignTimestampsAndWatermarks(WatermarkStrategy
-                        .forGenerator(new BoundedOutOfOrdernessWatermarkGenerator<Span>(Duration.ofSeconds(10)))
+                        .forGenerator(new BoundedOutOfOrdernessWatermarkGenerator<Span>(Duration.ofSeconds(1)))
                         .withTimestampAssigner(new SpanTimestampAssigner()))
                 .name("span consumer watermark")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_INPUT));
 
+        // Extract service from span
+        // TODO remove
         DataStream<MetricEvent> serviceStream = spanStream
                 .filter(new SpanServiceTagCheckFunction())
                 .name("check whether the tag of the service exists")
@@ -99,6 +101,7 @@ public class Main {
                 .name("map reduced span to service metric")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
 
+        // trace analysis
         DataStream<MetricEvent> tranMetricStream = spanStream
                 .keyBy(Span::getTraceID)
                 .window(EventTimeSessionWindows.withDynamicGap(new TraceAnalysisTimeGapExtractor()))
@@ -116,7 +119,7 @@ public class Main {
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
 
         DataStream<MetricEvent> tracingMetrics = serviceStream.union(tranMetricStream)
-                .flatMap(new MetricMetaFunction())
+                .map(new MetricMetaFunction())
                 .name("add metric meta")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT));
 
@@ -125,7 +128,7 @@ public class Main {
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .addSink(new FlinkKafkaProducer<>(
                         parameterTool.getRequired(Constants.KAFKA_BROKERS),
-                        parameterTool.getRequired(Constants.TOPIC_TRACING_METRICS),
+                        parameterTool.getRequired(Constants.TOPIC_METRICS),
                         new StringMetricEventSchema()))
                 .name("send trace metrics to kafka")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT));
@@ -151,12 +154,11 @@ public class Main {
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_INPUT))
                 .name("spot span consumer watermark");
 
-        DataStream<MetricEvent> spanMetrics = spanStream.map(new SpanMetricCompatibleFunction())
+        DataStream<MetricEvent> oapSpan = spanStream.map(new SpanMetricCompatibleFunction())
                 .name("map oap-span to spot span")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
 
-        DataStream<AggregatedMetricEvent> aggregationMetricEvent = MetricRuntime.run(spanMetrics.union(spotSpan).union(tracingMetrics), metricExpressionQuery, parameterTool);
-
+        DataStream<AggregatedMetricEvent> aggregationMetricEvent = MetricRuntime.run(oapSpan.union(spotSpan), metricExpressionQuery, parameterTool);
 
         SingleOutputStreamOperator<AggregatedMetricEvent> outputMetrics = aggregationMetricEvent
                 .process(new MetricSelectOutputProcessFunction(OutputTagUtils.OutputMetricTag, null, null))
@@ -172,7 +174,7 @@ public class Main {
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .addSink(new FlinkKafkaProducer<>(
                         parameterTool.getRequired(Constants.KAFKA_BROKERS),
-                        parameterTool.getRequired(Constants.TOPIC_METRICS),
+                        parameterTool.getRequired(Constants.TOPIC_TRACING_METRICS),
                         new StringMetricEventSchema()))
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .name("Push metric output to kafka");

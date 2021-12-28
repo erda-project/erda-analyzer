@@ -45,16 +45,12 @@ public class SpanToServiceMetricFunction implements MapFunction<Span, MetricEven
         metricEvent.addTag(SpanConstants.SERVICE_INSTANCE_IP, span.getAttributes().get(SpanConstants.SERVICE_INSTANCE_IP));
         metricEvent.addTag(SpanConstants.PROJECT_NAME, span.getAttributes().get(SpanConstants.PROJECT_NAME));
         metricEvent.addTag(SpanConstants.WORKSPACE, span.getAttributes().get(SpanConstants.WORKSPACE));
-        if (span.getAttributes().containsKey(SpanConstants.JAEGER_VERSION)) {
-            metricEvent.addTag(SpanConstants.INSTRUMENT_SDK, SpanConstants.JAEGER);
-            metricEvent.addTag(SpanConstants.INSTRUMENT_SDK_VERSION, span.getAttributes().get(SpanConstants.JAEGER_VERSION));
-        }
         int startTimeCount = 0;
-        Long startAt = getServiceInstanceStartedAt(span.getAttributes().get(SpanConstants.SERVICE_INSTANCE_STARTED_AT));
-        if (startAt != null) {
-            startTimeCount++;
-            metricEvent.addField(SpanConstants.START_TIME_MEAN, startAt);
-        }
+//        Long startAt = getServiceInstanceStartedAt(span.getAttributes().get(SpanConstants.SERVICE_INSTANCE_STARTED_AT));
+//        if (startAt != null) {
+//            startTimeCount++;
+//            metricEvent.addField(SpanConstants.START_TIME_MEAN, startAt);
+//        }
         metricEvent.addField(SpanConstants.START_TIME_COUNT, startTimeCount);
         if (log.isDebugEnabled()) {
             log.debug("Map reduced span to service metric @SpanEndTime {}. {} ", new Date(metricEvent.getTimestamp() / 1000000), GsonUtil.toJson(metricEvent));

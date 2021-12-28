@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class MapUtils {
 
-    public static <TKey, TValue> TValue getByAnyKey(Map<TKey, TValue> map, TKey... keys) {
+    public static <TKey, TValue> TValue getByAnyKeys(Map<TKey, TValue> map, TKey... keys) {
         for (TKey key : keys) {
             TValue value = map.get(key);
             if (value != null) {
@@ -34,12 +34,21 @@ public class MapUtils {
         return null;
     }
 
-    public static <TKey, TValue> boolean containsAnyKey(Map<TKey, TValue> map, TKey... keys) {
+    public static <TKey, TValue> boolean containsAnyKeys(Map<TKey, TValue> map, TKey... keys) {
         for (TKey key : keys) {
             if (map.containsKey(key)) {
                 return true;
             }
         }
         return false;
+    }
+
+    public static <TKey, TValue> boolean containsAllKeys(Map<TKey, TValue> map, TKey... keys) {
+        for (TKey key : keys) {
+            if (!map.containsKey(key)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

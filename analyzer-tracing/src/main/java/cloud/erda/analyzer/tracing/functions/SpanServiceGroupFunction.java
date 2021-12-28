@@ -17,8 +17,11 @@
 package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.constant.SpanConstants;
+import cloud.erda.analyzer.common.utils.StringBuilderUtils;
 import cloud.erda.analyzer.tracing.model.Span;
 import org.apache.flink.api.java.functions.KeySelector;
+
+import java.util.Map;
 
 /**
  * @author liuhaoyang
@@ -28,10 +31,11 @@ public class SpanServiceGroupFunction implements KeySelector<Span, String> {
 
     @Override
     public String getKey(Span span) throws Exception {
-        return span.getAttributes().get(SpanConstants.ENV_ID)
-                + ":"
-                + span.getAttributes().get(SpanConstants.SERVICE_ID)
-                + ":"
-                + span.getAttributes().get(SpanConstants.SERVICE_INSTANCE_ID);
+        Map<String, String> attributes = span.getAttributes();
+        StringBuilder sb = StringBuilderUtils.getCachedStringBuilder();
+        sb.append(attributes.get(SpanConstants.ENV_ID));
+        sb.append(attributes.get(SpanConstants.SERVICE_ID));
+        sb.append(attributes.get(SpanConstants.SERVICE_INSTANCE_ID));
+        return sb.toString();
     }
 }
