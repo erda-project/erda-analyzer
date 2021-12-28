@@ -14,6 +14,7 @@
 
 package cloud.erda.analyzer.runtime.expression.functions.aggregators;
 
+import cloud.erda.analyzer.runtime.models.Expression;
 import cloud.erda.analyzer.runtime.models.ExpressionFunction;
 import cloud.erda.analyzer.runtime.models.ExpressionFunctionTrigger;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +28,7 @@ import static cloud.erda.analyzer.runtime.expression.functions.aggregators.Funct
 @Slf4j
 public class FunctionAggregatorFactory {
 
-    public static FunctionAggregator create(ExpressionFunction function) {
+    public static FunctionAggregator create(Expression expression, ExpressionFunction function) {
 
         FunctionAggregator aggregator = null;
 
@@ -69,6 +70,9 @@ public class FunctionAggregatorFactory {
                 break;
             case MEDIAN:
                 aggregator = new MedianFunctionAggregator();
+                break;
+            case RATEPS:
+                aggregator = new RatepsFunctionAggregator(expression.getWindow());
                 break;
             default:
                 /**

@@ -57,7 +57,7 @@ public class DefaultAccumulator implements Accumulator {
 
     @Override
     public FunctionAggregator getMetricAggregator(ExpressionFunction function) {
-        return aggregators.computeIfAbsent(function.getField() + "_" + function.getAggregator(), k -> create(function));
+        return aggregators.computeIfAbsent(function.getField() + "_" + function.getAggregator(), k -> create(expression, function));
     }
 
     @Override
