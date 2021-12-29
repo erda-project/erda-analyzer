@@ -5,6 +5,7 @@ import cloud.erda.analyzer.alert.models.AlertNotifyTemplateData;
 import cloud.erda.analyzer.common.utils.GsonUtil;
 import cloud.erda.analyzer.common.utils.HttpUtils;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class AllNotifyAlertTemplates implements SourceFunction<AlertNotifyTempla
             String dataStr = HttpUtils.doGet(url);
             Map<String,Object> dataMap = GsonUtil.toMap(dataStr,String.class,Object.class);
             String data = JSON.toJSONString(dataMap.get("data"));
-            AlertNotifyTemplateData alertNotifyTemplateData = GsonUtil.toObject(data,AlertNotifyTemplateData.class);
+            AlertNotifyTemplateData alertNotifyTemplateData = JSONObject.parseObject(data,AlertNotifyTemplateData.class);
             for (AlertNotifyTemplate alertNotifyTemplate : alertNotifyTemplateData.getList()) {
                 checkNotNull(alertNotifyTemplate.getTitle(), "Title cannot be null");
                 checkNotNull(alertNotifyTemplate.getTemplate(), "Template cannot be null");

@@ -7,6 +7,7 @@ import cloud.erda.analyzer.common.utils.HttpUtils;
 import cloud.erda.analyzer.runtime.expression.filters.FilterOperatorDefine;
 import cloud.erda.analyzer.runtime.models.*;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class AllAlertExpressions implements SourceFunction<ExpressionMetadata> {
             String dataStr = HttpUtils.doGet(url);
             Map<String,Object> dataMap = GsonUtil.toMap(dataStr,String.class,Object.class);
             String data = JSON.toJSONString(dataMap.get("data"));
-            AlertExpression alertExpression = GsonUtil.toObject(data,AlertExpression.class);
+            AlertExpression alertExpression = JSONObject.parseObject(data,AlertExpression.class);
             for (ExpressionMetadata expressionMetadata : alertExpression.getList()) {
                 expressionMetadata.getAttributes().put("window", expressionMetadata.getExpression().getWindow().toString());
                 expressionMetadata.setProcessingTime(System.currentTimeMillis());

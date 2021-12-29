@@ -8,6 +8,7 @@ import cloud.erda.analyzer.common.utils.GsonUtil;
 import cloud.erda.analyzer.common.utils.HttpUtils;
 import cloud.erda.analyzer.common.utils.StringUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
@@ -36,7 +37,7 @@ public class AllAlertNotifies implements SourceFunction<AlertNotify> {
             String dataStr = HttpUtils.doGet(url);
             Map<String,Object> dataMap = GsonUtil.toMap(dataStr,String.class,Object.class);
             String data = JSON.toJSONString(dataMap.get("data"));
-            AlertNotifyData alertNotifyData = GsonUtil.toObject(data, AlertNotifyData.class);
+            AlertNotifyData alertNotifyData = JSONObject.parseObject(data, AlertNotifyData.class);
             for (AlertNotify alertNotify : alertNotifyData.getList()) {
                 if (AlertConstants.ALERT_NOTIFY_TYPE_NOTIFY_GROUP.equals(alertNotify.getNotifyTarget().getType())) {
                     alertNotify.getNotifyTarget().setGroupTypes((alertNotify.getNotifyTarget().getGroupType().split(",")));
