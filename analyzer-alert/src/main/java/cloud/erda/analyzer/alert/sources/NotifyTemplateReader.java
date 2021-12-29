@@ -44,7 +44,7 @@ public class NotifyTemplateReader implements DataRowReader<AlertNotifyTemplate> 
     public AlertNotifyTemplate read(ResultSet resultSet) throws Exception {
         try {
             AlertNotifyTemplate notifyTemplate = new AlertNotifyTemplate();
-            notifyTemplate.setId(resultSet.getLong("id"));
+//            notifyTemplate.setId(resultSet.getLong("id"));
             notifyTemplate.setName(resultSet.getString("name"));
             notifyTemplate.setAlertType(resultSet.getString("alert_type"));
             notifyTemplate.setAlertIndex(resultSet.getString("alert_index"));
@@ -65,7 +65,7 @@ public class NotifyTemplateReader implements DataRowReader<AlertNotifyTemplate> 
             checkNotNull(notifyTemplate.getTemplate(), "Template cannot be null");
             notifyTemplate.setProcessingTime(System.currentTimeMillis());
             notifyTemplate.setVariable(templateVariable);
-            log.info("Read alert notify template {} data: {}",notifyTemplate.getId(), GsonUtil.toJson(notifyTemplate));
+            log.info("Read alert notify template {} data: {}",notifyTemplate.getAlertIndex(), GsonUtil.toJson(notifyTemplate));
             return notifyTemplate;
         } catch (Exception ex) {
             log.warn("Read or deserialize id {} Custom AlertNotifyTemplate error.", resultSet.getLong("id"), ex);

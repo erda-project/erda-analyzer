@@ -82,16 +82,16 @@ public class AlertEventTemplateRenderFunction implements MapFunction<AlertEvent,
 
         templateContext = processFormatter(templateContext, value.getAlertNotifyTemplate().getFormats());
 
-        TemplateRenderer titleRenderer = templateManager.getRenderer(value.getAlertNotifyTemplate().getId() + "_title", value.getAlertNotifyTemplate().getTitle(), value.getAlertNotifyTemplate().isVariable());
+        TemplateRenderer titleRenderer = templateManager.getRenderer(value.getAlertNotifyTemplate().getAlertIndex() + "_title", value.getAlertNotifyTemplate().getTitle(), value.getAlertNotifyTemplate().isVariable());
         result.setTitle(titleRenderer.render(templateContext));
 
-        TemplateRenderer contentRenderer = templateManager.getRenderer(value.getAlertNotifyTemplate().getId() + "_content", value.getAlertNotifyTemplate().getTemplate(), value.getAlertNotifyTemplate().isVariable());
+        TemplateRenderer contentRenderer = templateManager.getRenderer(value.getAlertNotifyTemplate().getAlertIndex() + "_content", value.getAlertNotifyTemplate().getTemplate(), value.getAlertNotifyTemplate().isVariable());
         result.setContent(contentRenderer.render(templateContext));
         return result;
     }
 
     private String getRenderedAlertEventId(AlertEvent value) {
-        return value.getAlertId() + "-" + value.getAlertNotify().getId() + "-" + value.getAlertNotifyTemplate().getId();
+        return value.getAlertId() + "-" + value.getAlertNotify().getId() + "-" + value.getAlertNotifyTemplate().getAlertIndex();
     }
 
     private Map<String, Object> processFormatter(Map<String, Object> templateContext, Map<String, String> formatters) {
