@@ -14,14 +14,16 @@
 
 package cloud.erda.analyzer.alert.models;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import lombok.Data;
 
 @Data
 public class NotifyTarget {
-    @SerializedName(value = "group_id")
+    @JsonSetter("group_id")
     private String groupId;
-    @SerializedName(value = "channels")
+
+    @JsonSetter("channels")
     private String[] channels;
+
     private String dingdingUrl;
 }

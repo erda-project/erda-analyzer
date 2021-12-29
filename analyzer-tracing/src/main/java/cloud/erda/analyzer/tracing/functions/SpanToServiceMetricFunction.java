@@ -18,7 +18,7 @@ package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.constant.SpanConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
-import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import cloud.erda.analyzer.tracing.model.Span;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.functions.MapFunction;
@@ -46,14 +46,9 @@ public class SpanToServiceMetricFunction implements MapFunction<Span, MetricEven
         metricEvent.addTag(SpanConstants.PROJECT_NAME, span.getAttributes().get(SpanConstants.PROJECT_NAME));
         metricEvent.addTag(SpanConstants.WORKSPACE, span.getAttributes().get(SpanConstants.WORKSPACE));
         int startTimeCount = 0;
-//        Long startAt = getServiceInstanceStartedAt(span.getAttributes().get(SpanConstants.SERVICE_INSTANCE_STARTED_AT));
-//        if (startAt != null) {
-//            startTimeCount++;
-//            metricEvent.addField(SpanConstants.START_TIME_MEAN, startAt);
-//        }
         metricEvent.addField(SpanConstants.START_TIME_COUNT, startTimeCount);
         if (log.isDebugEnabled()) {
-            log.debug("Map reduced span to service metric @SpanEndTime {}. {} ", new Date(metricEvent.getTimestamp() / 1000000), GsonUtil.toJson(metricEvent));
+            log.debug("Map reduced span to service metric @SpanEndTime {}. {} ", new Date(metricEvent.getTimestamp() / 1000000), JsonMapperUtils.toStrings(metricEvent));
         }
         return metricEvent;
     }

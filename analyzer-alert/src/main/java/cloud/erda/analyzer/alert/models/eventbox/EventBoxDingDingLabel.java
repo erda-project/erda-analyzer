@@ -14,7 +14,7 @@
 
 package cloud.erda.analyzer.alert.models.eventbox;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import lombok.Data;
 
 /**
@@ -24,11 +24,20 @@ import lombok.Data;
 @Data
 public class EventBoxDingDingLabel {
 
-    @SerializedName(value = "DINGDING")
+
+    private EventBoxDingDingLabelMarkdown markdown;
+
     private String[] dingding;
 
-    @SerializedName(value = "MARKDOWN")
-    private EventBoxDingDingLabelMarkdown markdown;
+    @JsonGetter("MARKDOWN")
+    public EventBoxDingDingLabelMarkdown getMarkdown() {
+        return markdown;
+    }
+
+    @JsonGetter("DINGDING")
+    public String[] getDingding() {
+        return dingding;
+    }
 
     public static EventBoxDingDingLabel label(String title, String... dingding) {
         EventBoxDingDingLabel eventBoxDingDingLabel = new EventBoxDingDingLabel();

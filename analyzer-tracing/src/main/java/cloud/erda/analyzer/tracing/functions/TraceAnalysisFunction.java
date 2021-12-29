@@ -18,7 +18,7 @@ package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.constant.SpanConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
-import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import cloud.erda.analyzer.common.utils.StringUtil;
 import cloud.erda.analyzer.tracing.model.Span;
 import lombok.extern.slf4j.Slf4j;
@@ -90,7 +90,7 @@ public class TraceAnalysisFunction extends ProcessWindowFunction<Span, MetricEve
                 metricEvent.addTag(SpanConstants.REQUEST_ID, span.getTraceID());
                 metricEvent.addTag(SpanConstants.TRACE_SAMPLED, SpanConstants.TRUE);
                 if (log.isDebugEnabled()) {
-                    log.debug("Map span to transaction metric @SpanEndTime {}. {}", new Date(metricEvent.getTimestamp() / 1000000), GsonUtil.toJson(metricEvent));
+                    log.debug("Map span to transaction metric @SpanEndTime {}. {}", new Date(metricEvent.getTimestamp() / 1000000), JsonMapperUtils.toStrings(metricEvent));
                 }
                 collector.collect(metricEvent);
             }

@@ -88,21 +88,21 @@ public class Main {
 
         // Extract service from span
         // TODO remove
-        DataStream<MetricEvent> serviceStream = spanStream
-                .filter(new SpanServiceTagCheckFunction())
-                .name("check whether the tag of the service exists")
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
-                .keyBy(new SpanServiceGroupFunction())
-                .window(TumblingEventTimeWindows.of(Time.seconds(10)))
-                .reduce(new SpanServiceReduceFunction())
-                .name("reduce span service")
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
-                .map(new SpanToServiceMetricFunction())
-                .name("map reduced span to service metric")
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
+//        DataStream<MetricEvent> serviceStream = spanStream
+//                .filter(new SpanServiceTagCheckFunction())
+//                .name("check whether the tag of the service exists")
+//                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
+//                .keyBy(new SpanServiceGroupFunction())
+//                .window(TumblingEventTimeWindows.of(Time.seconds(10)))
+//                .reduce(new SpanServiceReduceFunction())
+//                .name("reduce span service")
+//                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
+//                .map(new SpanToServiceMetricFunction())
+//                .name("map reduced span to service metric")
+//                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
 
         // trace analysis
-        DataStream<MetricEvent> tranMetricStream = spanStream
+        DataStream<MetricEvent> apmMetricsStream = spanStream
                 .keyBy(Span::getTraceID)
                 .window(EventTimeSessionWindows.withDynamicGap(new TraceAnalysisTimeGapExtractor()))
 //                .window(TumblingEventTimeWindows.of(Time.seconds(10)))
@@ -118,12 +118,12 @@ public class Main {
                 .name("Aggregate metrics field process")
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
 
-        DataStream<MetricEvent> tracingMetrics = serviceStream.union(tranMetricStream)
-                .map(new MetricMetaFunction())
-                .name("add metric meta")
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT));
+//        DataStream<MetricEvent> tracingMetrics = serviceStream.union(tranMetricStream)
+//                .map(new MetricMetaFunction())
+//                .name("add metric meta")
+//                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT));
 
-        tracingMetrics
+        apmMetricsStream
                 .flatMap(new MetricEventSerializeFunction())
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .addSink(new FlinkKafkaProducer<>(
@@ -170,12 +170,12 @@ public class Main {
                 .flatMap(new MetricEventSelectFunction())
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .name("Map metric output to metricEvent")
-                .flatMap(new MetricEventSerializeFunction())
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
+//                .flatMap(new MetricEventSerializeFunction())
+//                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .addSink(new FlinkKafkaProducer<>(
                         parameterTool.getRequired(Constants.KAFKA_BROKERS),
                         parameterTool.getRequired(Constants.TOPIC_TRACING_METRICS),
-                        new StringMetricEventSchema()))
+                        new MetricEventSchema()))
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .name("Push metric output to kafka");
 

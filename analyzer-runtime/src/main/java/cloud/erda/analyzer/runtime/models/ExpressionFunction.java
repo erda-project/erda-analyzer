@@ -14,8 +14,8 @@
 
 package cloud.erda.analyzer.runtime.models;
 
-import com.google.gson.annotations.SerializedName;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
  * @author: liuhaoyang
@@ -30,14 +30,14 @@ public class ExpressionFunction {
 
     private String field;
 
-    @SerializedName(value = "field_script")
+    @JsonSetter("field_script")
     private String fieldScript;
 
     private String operator;
 
     private Object value;
 
-    @SerializedName(value = "value_script")
+    @JsonSetter("value_script")
     private String valueScript;
 
     private ExpressionFunctionTrigger trigger;

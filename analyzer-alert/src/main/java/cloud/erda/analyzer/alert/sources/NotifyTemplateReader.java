@@ -16,7 +16,7 @@ package cloud.erda.analyzer.alert.sources;
 
 import cloud.erda.analyzer.alert.models.AlertNotifyTemplate;
 import cloud.erda.analyzer.alert.models.AlertTrigger;
-import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import cloud.erda.analyzer.runtime.sources.DataRowReader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -58,14 +58,16 @@ public class NotifyTemplateReader implements DataRowReader<AlertNotifyTemplate> 
             if (StringUtils.isEmpty(formatString)) {
                 formats = new HashMap<>();
             } else {
-                formats = GsonUtil.toMap(formatString, String.class, String.class);
+                formats = JsonMapperUtils.toStringValueMap(formatString);
             }
             notifyTemplate.setFormats(formats);
             checkNotNull(notifyTemplate.getTitle(), "Title cannot be null");
             checkNotNull(notifyTemplate.getTemplate(), "Template cannot be null");
             notifyTemplate.setProcessingTime(System.currentTimeMillis());
             notifyTemplate.setVariable(templateVariable);
-            log.info("Read alert notify template {} data: {}",notifyTemplate.getId(), GsonUtil.toJson(notifyTemplate));
+            if (log.isInfoEnabled()) {
+                log.info("Read alert notify template {} data: {}", notifyTemplate.getId(), JsonMapperUtils.toStrings(notifyTemplate));
+            }
             return notifyTemplate;
         } catch (Exception ex) {
             log.warn("Read or deserialize id {} Custom AlertNotifyTemplate error.", resultSet.getLong("id"), ex);
