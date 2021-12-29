@@ -22,6 +22,7 @@ import cloud.erda.analyzer.common.utils.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
 
 import java.util.HashMap;
@@ -31,7 +32,7 @@ import java.util.Map;
  * @author liuhaoyang
  * @date 2021/9/23 10:20
  */
-public class SlowOrErrorMetricFunction implements FlatMapFunction<MetricEvent, MetricEvent> {
+public class SlowOrErrorMetricFunction extends ProcessFunction<MetricEvent, MetricEvent> {
 
     private static final Map<String, String> parmaKeys;
 
@@ -51,8 +52,7 @@ public class SlowOrErrorMetricFunction implements FlatMapFunction<MetricEvent, M
     }
 
     @Override
-    public void flatMap(MetricEvent metricEvent, Collector<MetricEvent> collector) throws Exception {
-
+    public void processElement(MetricEvent metricEvent, ProcessFunction<MetricEvent, MetricEvent>.Context context, Collector<MetricEvent> collector) throws Exception {
         long slowDefault = parameterTool.getLong(parmaKeys.get("default"));
         long metricSlow = slowDefault;
 
