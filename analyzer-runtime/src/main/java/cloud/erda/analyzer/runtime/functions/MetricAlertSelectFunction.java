@@ -93,7 +93,8 @@ public class MetricAlertSelectFunction extends KeyedProcessFunction<String, Aggr
         alertEvent.setTimestamp(value.getTimestamp());
         alertEvent.getTags().putAll(value.getAggregatedTags());
         alertEvent.getFields().putAll(value.getAggregatedFields());
-        alertEvent.getTags().put(MetricTagConstants.METRIC_NAME, value.getAlias());
+        alertEvent.getTags().put(MetricTagConstants.RAW_METRIC_NAME, value.getRawMetricName());
+        alertEvent.getTags().put(MetricTagConstants.ALIAS, value.getAlias());
         if (!alertEvent.getTags().containsKey(MetricTagConstants.TRIGGER)) {
             alertEvent.getTags().put(MetricTagConstants.TRIGGER, MetricTagConstants.ALERT);
         }
