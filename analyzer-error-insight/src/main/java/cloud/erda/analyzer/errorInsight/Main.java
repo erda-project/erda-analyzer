@@ -18,6 +18,7 @@ import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.functions.MetricEventCorrectFunction;
 import cloud.erda.analyzer.common.models.Entity;
 import cloud.erda.analyzer.common.models.Event;
+import cloud.erda.analyzer.common.partitioners.EntityKafkaPartitioner;
 import cloud.erda.analyzer.common.schemas.CommonSchema;
 import cloud.erda.analyzer.common.schemas.MetricEventSchema;
 import cloud.erda.analyzer.common.utils.CassandraSinkUtils;
@@ -32,6 +33,9 @@ import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTime
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
+
+import java.util.Optional;
+import java.util.Properties;
 
 import static cloud.erda.analyzer.common.constant.Constants.STREAM_PARALLELISM_INPUT;
 
@@ -139,11 +143,15 @@ public class Main {
                     .name("error-event-es-sink")
                     .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
 
+            Properties kafkaProps = new Properties();
+            kafkaProps.setProperty("bootstrap.servers", parameterTool.getRequired(Constants.KAFKA_BROKERS));
+
             errorDescription.map(new ErrorDesc2ErdaEntityMapper()).setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                     .addSink(new FlinkKafkaProducer<>(
-                            parameterTool.getRequired(Constants.KAFKA_BROKERS),
                             parameterTool.getRequired(Constants.TOPIC_ERROR_DESCRIPTION),
-                            new CommonSchema<Entity>(Entity.class)))
+                            new CommonSchema<Entity>(Entity.class),
+                            kafkaProps,
+                            Optional.of(new EntityKafkaPartitioner())))
                     .name("error-description-es-sink")
                     .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR));
         } else {
