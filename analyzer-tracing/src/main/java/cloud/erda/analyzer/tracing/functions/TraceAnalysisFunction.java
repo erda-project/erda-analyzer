@@ -26,9 +26,7 @@ import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author liuhaoyang
@@ -40,11 +38,33 @@ public class TraceAnalysisFunction extends ProcessWindowFunction<Span, MetricEve
     @Override
     public void process(String s, ProcessWindowFunction<Span, MetricEvent, String, TimeWindow>.Context context, Iterable<Span> iterable, Collector<MetricEvent> collector) throws Exception {
         Map<String, Span> spans = new HashMap<>();
+        Map<String, Span> services = new HashMap<>();
+        Set<String> parentIds = new HashSet<>();
         for (Span span : iterable) {
             spans.put(span.getSpanID(), span);
+            if (StringUtil.isNotEmpty(span.getParentSpanID())) {
+                parentIds.add(span.getParentSpanID());
+            }
+            String serviceKey = getAttribute(span, SpanConstants.ENV_ID) + getAttribute(span, SpanConstants.TERMINUS_KEY) + getAttribute(span, SpanConstants.SERVICE_ID) + getAttribute(span, SpanConstants.SERVICE_INSTANCE_ID);
+            Span lastServiceSpan = services.get(serviceKey);
+            if (lastServiceSpan == null || span.getEndTimeUnixNano() > lastServiceSpan.getEndTimeUnixNano()) {
+                services.put(serviceKey, span);
+            }
         }
-        for (Map.Entry<String, Span> entry : spans.entrySet()) {
-            Span span = entry.getValue();
+
+        // process service node
+        for (Span span : services.values()) {
+            MetricEvent metricEvent = createServiceMetrics(span, SpanConstants.APPLICATION_SERVICE_NODE);
+            int startTimeCount = 0;
+            metricEvent.addField(SpanConstants.START_TIME, startTimeCount);
+            if (log.isDebugEnabled()) {
+                log.debug("Map span to service metric @SpanEndTime {}. {} ", new Date(metricEvent.getTimestamp() / 1000000), JsonMapperUtils.toStrings(metricEvent));
+            }
+            collector.collect(metricEvent);
+        }
+
+        // process http&rpc&db&cache&mq call metrics
+        for (Span span : iterable) {
             String layer = getAttribute(span, SpanConstants.SPAN_LAYER);
             String kind = getAttribute(span, SpanConstants.SPAN_KIND);
 
@@ -56,7 +76,7 @@ public class TraceAnalysisFunction extends ProcessWindowFunction<Span, MetricEve
                         metricEvent = createServerMetrics(spans, span, SpanConstants.APPLICATION_HTTP);
                     }
                     if (SpanConstants.SPAN_KIND_CLIENT.equals(kind)) {
-                        metricEvent = createClientMetrics(span, SpanConstants.APPLICATION_HTTP);
+                        metricEvent = createClientMetrics(parentIds, span, SpanConstants.APPLICATION_HTTP);
                     }
                     break;
                 case SpanConstants.SPAN_LAYER_RPC:
@@ -64,18 +84,18 @@ public class TraceAnalysisFunction extends ProcessWindowFunction<Span, MetricEve
                         metricEvent = createServerMetrics(spans, span, SpanConstants.APPLICATION_RPC);
                     }
                     if (SpanConstants.SPAN_KIND_CLIENT.equals(kind)) {
-                        metricEvent = createClientMetrics(span, SpanConstants.APPLICATION_RPC);
+                        metricEvent = createClientMetrics(parentIds, span, SpanConstants.APPLICATION_RPC);
                     }
                     break;
                 case SpanConstants.SPAN_LAYER_CACHE:
-                    metricEvent = createClientMetrics(span, SpanConstants.APPLICATION_CACHE);
+                    metricEvent = createClientMetrics(parentIds, span, SpanConstants.APPLICATION_CACHE);
                     break;
                 case SpanConstants.SPAN_LAYER_DB:
-                    metricEvent = createClientMetrics(span, SpanConstants.APPLICATION_DB);
+                    metricEvent = createClientMetrics(parentIds, span, SpanConstants.APPLICATION_DB);
                     break;
                 case SpanConstants.SPAN_LAYER_MQ:
                     if (SpanConstants.SPAN_KIND_PRODUCER.equals(kind)) {
-                        metricEvent = createClientMetrics(span, SpanConstants.APPLICATION_MQ);
+                        metricEvent = createClientMetrics(parentIds, span, SpanConstants.APPLICATION_MQ);
                     }
                     if (SpanConstants.SPAN_KIND_CONSUMER.equals(kind)) {
                         metricEvent = createServerMetrics(spans, span, SpanConstants.APPLICATION_MQ);
@@ -124,7 +144,11 @@ public class TraceAnalysisFunction extends ProcessWindowFunction<Span, MetricEve
         return metricEvent;
     }
 
-    private MetricEvent createClientMetrics(Span span, String metricName) {
+    private MetricEvent createClientMetrics(Set<String> parentIds, Span span, String metricName) {
+        // If the client span has child spans, this span will is ignored
+        if (parentIds.contains(span.getSpanID())) {
+            return null;
+        }
         MetricEvent metricEvent = new MetricEvent();
         metricEvent.setName(metricName);
         metricEvent.addTag(SpanConstants.SOURCE_SERVICE_ID, getAttribute(span, SpanConstants.SERVICE_ID));
@@ -132,6 +156,21 @@ public class TraceAnalysisFunction extends ProcessWindowFunction<Span, MetricEve
         metricEvent.addTag(SpanConstants.SOURCE_TERMINUS_KEY, getAttribute(span, SpanConstants.ENV_ID));
         metricEvent.addTag(SpanConstants.SOURCE_ENV_ID, getAttribute(span, SpanConstants.TERMINUS_KEY));
         metricEvent.addTag(SpanConstants.SOURCE_SERVICE_INSTANCE_ID, getAttribute(span, SpanConstants.SERVICE_INSTANCE_ID));
+        return metricEvent;
+    }
+
+    private MetricEvent createServiceMetrics(Span span, String metricName) {
+        MetricEvent metricEvent = new MetricEvent();
+        metricEvent.setTimestamp(span.getEndTimeUnixNano());
+        metricEvent.setName(metricName);
+        metricEvent.addTag(SpanConstants.ENV_ID, span.getAttributes().get(SpanConstants.ENV_ID));
+        metricEvent.addTag(SpanConstants.TERMINUS_KEY, span.getAttributes().get(SpanConstants.ENV_ID));
+        metricEvent.addTag(SpanConstants.SERVICE_ID, span.getAttributes().get(SpanConstants.SERVICE_ID));
+        metricEvent.addTag(SpanConstants.SERVICE_NAME, span.getAttributes().get(SpanConstants.SERVICE_NAME));
+        metricEvent.addTag(SpanConstants.SERVICE_INSTANCE_ID, span.getAttributes().get(SpanConstants.SERVICE_INSTANCE_ID));
+        metricEvent.addTag(SpanConstants.SERVICE_INSTANCE_IP, span.getAttributes().get(SpanConstants.SERVICE_INSTANCE_IP));
+        metricEvent.addTag(SpanConstants.PROJECT_NAME, span.getAttributes().get(SpanConstants.PROJECT_NAME));
+        metricEvent.addTag(SpanConstants.WORKSPACE, span.getAttributes().get(SpanConstants.WORKSPACE));
         return metricEvent;
     }
 

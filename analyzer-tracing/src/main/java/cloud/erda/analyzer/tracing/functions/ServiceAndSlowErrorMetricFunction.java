@@ -18,12 +18,12 @@ package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.constant.SpanConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
-import cloud.erda.analyzer.common.utils.StringUtil;
+import cloud.erda.analyzer.common.utils.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.util.Collector;
+import scala.concurrent.java8.FuturesConvertersImpl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +32,7 @@ import java.util.Map;
  * @author liuhaoyang
  * @date 2021/9/23 10:20
  */
-public class SlowOrErrorMetricFunction extends ProcessFunction<MetricEvent, MetricEvent> {
+public class ServiceAndSlowErrorMetricFunction extends ProcessFunction<MetricEvent, MetricEvent> {
 
     private static final Map<String, String> parmaKeys;
 
@@ -47,35 +47,36 @@ public class SlowOrErrorMetricFunction extends ProcessFunction<MetricEvent, Metr
 
     private final ParameterTool parameterTool;
 
-    public SlowOrErrorMetricFunction(ParameterTool parameterTool) {
+    public ServiceAndSlowErrorMetricFunction(ParameterTool parameterTool) {
         this.parameterTool = parameterTool;
     }
 
     @Override
     public void processElement(MetricEvent metricEvent, ProcessFunction<MetricEvent, MetricEvent>.Context context, Collector<MetricEvent> collector) throws Exception {
-        long slowDefault = parameterTool.getLong(parmaKeys.get("default"));
-        long metricSlow = slowDefault;
 
         if (parmaKeys.containsKey(metricEvent.getName())) {
-            metricSlow = parameterTool.getLong(parmaKeys.get(metricEvent.getName()), slowDefault);
-        }
+            long slowDefault = parameterTool.getLong(parmaKeys.get("default"));
+            long metricSlow = parameterTool.getLong(parmaKeys.get(metricEvent.getName()), slowDefault);
 
-        if ((long) metricEvent.getFields().get(SpanConstants.ELAPSED) > metricSlow) {
-            MetricEvent slowMetric = metricEvent.copy();
-            slowMetric.setName(metricEvent.getName() + "_slow");
-            collector.collect(slowMetric);
-        }
+            if ((long) metricEvent.getFields().get(SpanConstants.ELAPSED) > metricSlow) {
+                MetricEvent slowMetric = metricEvent.copy();
+                slowMetric.setName(metricEvent.getName() + "_slow");
+                collector.collect(slowMetric);
+            }
 
-        String tagError = metricEvent.getTags().get(SpanConstants.ERROR);
-        if (StringUtils.isNotEmpty(tagError) && tagError.equalsIgnoreCase(SpanConstants.TRUE)) {
-            MetricEvent errorMetric = metricEvent.copy();
-            errorMetric.setName(metricEvent.getName() + "_error");
-            collector.collect(errorMetric);
+            String tagError = metricEvent.getTags().get(SpanConstants.ERROR);
+            if (StringUtils.isNotEmpty(tagError) && tagError.equalsIgnoreCase(SpanConstants.TRUE)) {
+                MetricEvent errorMetric = metricEvent.copy();
+                errorMetric.setName(metricEvent.getName() + "_error");
+                collector.collect(errorMetric);
+            }
+            metricEvent.getTags().remove(SpanConstants.TRACE_ID);
+            metricEvent.getTags().remove(SpanConstants.REQUEST_ID);
+            metricEvent.getTags().remove(SpanConstants.TRACE_SAMPLED);
         }
-
-        metricEvent.getTags().remove(SpanConstants.TRACE_ID);
-        metricEvent.getTags().remove(SpanConstants.REQUEST_ID);
-        metricEvent.getTags().remove(SpanConstants.TRACE_SAMPLED);
+        metricEvent.addTag(SpanConstants.META, SpanConstants.TRUE);
+        metricEvent.addTag(SpanConstants.METRIC_SCOPE, SpanConstants.METRIC_SCOPE_MICRO_SERVICE);
+        metricEvent.addTag(SpanConstants.METRIC_SCOPE_ID, MapUtils.getByAnyKeys(metricEvent.getTags(), SpanConstants.ENV_ID, SpanConstants.TERMINUS_KEY));
         collector.collect(metricEvent);
     }
 }

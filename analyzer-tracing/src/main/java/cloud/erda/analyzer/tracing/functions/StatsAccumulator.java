@@ -41,7 +41,9 @@ public class StatsAccumulator implements Serializable {
         if (metricEvent == null) {
             return;
         }
-        lastMetric = metricEvent;
+        if (lastMetric == null || metricEvent.getTimestamp() > lastMetric.getTimestamp()) {
+            lastMetric = metricEvent;
+        }
         for (Map.Entry<String, Object> entry : metricEvent.getFields().entrySet()) {
             FieldAggregator aggregator = aggregators.computeIfAbsent(entry.getKey(), FieldAggregator::new);
             aggregator.apply(entry.getValue());
@@ -63,7 +65,7 @@ public class StatsAccumulator implements Serializable {
             metricEvent.addField(aggregator.getName() + "_max", aggregator.getMax());
         }
         if (log.isDebugEnabled()) {
-            log.debug("transaction metric aggregate @SpanEndTime {} . {}", new Date(metricEvent.getTimestamp() / 1000000), JsonMapperUtils.toStrings(metricEvent));
+            log.debug("apm metric aggregate @SpanEndTime {} {}", new Date(metricEvent.getTimestamp() / 1000000), JsonMapperUtils.toStrings(metricEvent));
         }
         return metricEvent;
     }
