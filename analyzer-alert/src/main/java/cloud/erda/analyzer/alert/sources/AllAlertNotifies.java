@@ -4,8 +4,10 @@ import cloud.erda.analyzer.alert.models.AlertLevel;
 import cloud.erda.analyzer.alert.models.AlertNotify;
 import cloud.erda.analyzer.alert.models.AlertNotifyData;
 import cloud.erda.analyzer.common.constant.AlertConstants;
+import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.HttpUtils;
 import cloud.erda.analyzer.common.utils.StringUtil;
-import cloud.erda.analyzer.runtime.httpconnect.ConnectManager;
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
@@ -26,13 +28,15 @@ public class AllAlertNotifies implements SourceFunction<AlertNotify> {
     }
 
     public ArrayList<AlertNotify> GetAllNotifies() throws Exception {
-        String uri = "/api/alert/notifies";
+        String uri = "/api/alert/notifies?pageNo=%d&pageSize=%d";
         String alertNotifyUrl = "http://" + monitorAddr + uri;
         ArrayList<AlertNotify> notifies = new ArrayList<>();
-        params.put("pageSize", String.valueOf(this.pageSize));
         while (true) {
-            params.put("pageNo", String.valueOf(this.pageNo));
-            AlertNotifyData alertNotifyData = ConnectManager.doHttpGet(alertNotifyUrl, params, AlertNotifyData.class);
+            String url = String.format(alertNotifyUrl, this.pageNo, this.pageSize);
+            String dataStr = HttpUtils.doGet(url);
+            Map<String,Object> dataMap = GsonUtil.toMap(dataStr,String.class,Object.class);
+            String data = JSON.toJSONString(dataMap.get("data"));
+            AlertNotifyData alertNotifyData = GsonUtil.toObject(data, AlertNotifyData.class);
             for (AlertNotify alertNotify : alertNotifyData.getList()) {
                 if (AlertConstants.ALERT_NOTIFY_TYPE_NOTIFY_GROUP.equals(alertNotify.getNotifyTarget().getType())) {
                     alertNotify.getNotifyTarget().setGroupTypes((alertNotify.getNotifyTarget().getGroupType().split(",")));

@@ -1,9 +1,11 @@
 package cloud.erda.analyzer.runtime.sources;
 
 import cloud.erda.analyzer.common.constant.ExpressionConstants;
+import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.HttpUtils;
 import cloud.erda.analyzer.runtime.expression.filters.FilterOperatorDefine;
-import cloud.erda.analyzer.runtime.httpconnect.ConnectManager;
 import cloud.erda.analyzer.runtime.models.*;
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import java.util.ArrayList;
@@ -19,20 +21,21 @@ public class AllMetricExpressions implements SourceFunction<ExpressionMetadata> 
     private long httpInterval = 60000;
     private int pageSize = 100;
     private int pageNo = 1;
-    Map<String, String> params = new HashMap<>();
 
     public AllMetricExpressions(String monitorAddr) {
         this.monitorAddr = monitorAddr;
     }
 
     public ArrayList<ExpressionMetadata> GetAllMetricEnabledExpressions() throws Exception {
-        String uri = "/api/metric/expressions";
+        String uri = "/api/metric/expressions?pageNo=%d&pageSize=%d";
         String expressionUrl = "http://" + monitorAddr + uri;
-        params.put("pageSize", String.valueOf(this.pageSize));
         ArrayList<ExpressionMetadata> expressionMetadataList = new ArrayList<>();
         while (true) {
-            params.put("pageNo", String.valueOf(this.pageNo));
-            AlertExpression alertExpression = ConnectManager.doHttpGet(expressionUrl, params, AlertExpression.class);
+            String url = String.format(expressionUrl,this.pageNo,this.pageSize);
+            String dataStr = HttpUtils.doGet(url);
+            Map<String,Object> dataMap = GsonUtil.toMap(dataStr,String.class,Object.class);
+            String data = JSON.toJSONString(dataMap.get("data"));
+            AlertExpression alertExpression = GsonUtil.toObject(data,AlertExpression.class);
             for (ExpressionMetadata expressionMetadata : alertExpression.getList()) {
                 expressionMetadata.getAttributes().put("window", expressionMetadata.getExpression().getWindow().toString());
                 expressionMetadata.setProcessingTime(System.currentTimeMillis());

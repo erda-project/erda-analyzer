@@ -3,11 +3,11 @@ package cloud.erda.analyzer.alert.sources;
 import cloud.erda.analyzer.alert.models.AlertNotifyTemplate;
 import cloud.erda.analyzer.alert.models.AlertNotifyTemplateData;
 import cloud.erda.analyzer.common.utils.GsonUtil;
-import cloud.erda.analyzer.runtime.httpconnect.ConnectManager;
+import cloud.erda.analyzer.common.utils.HttpUtils;
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.flink.util.Preconditions.checkNotNull;
@@ -18,7 +18,6 @@ public class AllNotifyAlertTemplates implements SourceFunction<AlertNotifyTempla
     private long httpInterval = 60000;
     private int pageSize = 100;
     private int pageNo = 1;
-    Map<String, String> params = new HashMap<>();
 
     public AllNotifyAlertTemplates(String monitorAddr) {
         this.monitorAddr = monitorAddr;
@@ -28,11 +27,12 @@ public class AllNotifyAlertTemplates implements SourceFunction<AlertNotifyTempla
         String uri = "/api/alert/templates";
         String templateUrl = "http://" + monitorAddr + uri;
         ArrayList<AlertNotifyTemplate> notifyTemplateList = new ArrayList<>();
-        params.put("pageSize", String.valueOf(this.pageSize));
         while (true) {
-            params.put("pageNo", String.valueOf(this.pageNo));
-            AlertNotifyTemplateData alertNotifyTemplateData = ConnectManager.doHttpGet(templateUrl, params, AlertNotifyTemplateData.class);
-
+            String url = String.format(templateUrl,this.pageNo,this.pageSize);
+            String dataStr = HttpUtils.doGet(url);
+            Map<String,Object> dataMap = GsonUtil.toMap(dataStr,String.class,Object.class);
+            String data = JSON.toJSONString(dataMap.get("data"));
+            AlertNotifyTemplateData alertNotifyTemplateData = GsonUtil.toObject(data,AlertNotifyTemplateData.class);
             for (AlertNotifyTemplate alertNotifyTemplate : alertNotifyTemplateData.getList()) {
                 checkNotNull(alertNotifyTemplate.getTitle(), "Title cannot be null");
                 checkNotNull(alertNotifyTemplate.getTemplate(), "Template cannot be null");
