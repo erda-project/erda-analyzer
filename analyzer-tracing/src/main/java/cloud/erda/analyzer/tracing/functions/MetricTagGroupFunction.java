@@ -16,7 +16,10 @@
 
 package cloud.erda.analyzer.tracing.functions;
 
+import cloud.erda.analyzer.common.constant.SpanConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
+import cloud.erda.analyzer.common.utils.MapUtils;
+import cloud.erda.analyzer.common.utils.StringBuilderUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.flink.api.java.functions.KeySelector;
@@ -33,17 +36,40 @@ import java.util.TreeMap;
 public class MetricTagGroupFunction implements KeySelector<MetricEvent, String> {
     @Override
     public String getKey(MetricEvent metricEvent) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        sb.append(metricEvent.getName());
-        Map<String, String> sortedTags = new TreeMap<>(metricEvent.getTags());
-        for (Map.Entry<String, String> tag : sortedTags.entrySet()) {
-            sb.append("_").append(tag.getKey()).append("_").append(tag.getValue());
+        StringBuilder sb = StringBuilderUtils.getCachedStringBuilder();
+        sb.append(metricEvent.getName()).append("_");
+
+        sb.append(metricEvent.getTags().get(SpanConstants.ENV_ID)).append("_");
+        sb.append(metricEvent.getTags().get(SpanConstants.SERVICE_ID)).append("_");
+        sb.append(metricEvent.getTags().get(SpanConstants.SERVICE_INSTANCE_ID)).append("_");
+
+        String spanLayer = metricEvent.getTags().getOrDefault(SpanConstants.SPAN_LAYER, SpanConstants.SPAN_LAYER_UNKNOWN);
+        sb.append(spanLayer).append("_");
+
+        switch (spanLayer) {
+            case SpanConstants.SPAN_LAYER_HTTP:
+                sb.append(MapUtils.getByAnyKeys(metricEvent.getTags(), SpanConstants.TAG_HTTP_PATH, SpanConstants.TAG_HTTP_TARGET, SpanConstants.TAG_HTTP_URL));
+                break;
+            case SpanConstants.SPAN_LAYER_RPC:
+                sb.append(MapUtils.getByAnyKeys(metricEvent.getTags(), SpanConstants.TAG_RPC_TARGET));
+                break;
+            case SpanConstants.APPLICATION_CACHE:
+            case SpanConstants.SPAN_LAYER_DB:
+                sb.append(MapUtils.getByAnyKeys(metricEvent.getTags(), SpanConstants.DB_SYSTEM, SpanConstants.DB_TYPE)).append(MapUtils.getByAnyKeys(metricEvent.getTags(), SpanConstants.DB_STATEMENT));
+                break;
+            case SpanConstants.SPAN_LAYER_MQ:
+                sb.append(MapUtils.getByAnyKeys(metricEvent.getTags(), SpanConstants.MESSAGE_BUS_DESTINATION));
+                break;
+            default:
+                sb.append(metricEvent.getTags().get(SpanConstants.OPERATION_NAME));
+                break;
         }
+
         String series = sb.toString();
-        String md5HexKey = DigestUtils.md5Hex(series);
+//        String md5HexKey = DigestUtils.md5Hex(series);
         if (log.isDebugEnabled()) {
-            log.debug("metric series = {} . md5HexKey = {}", series, md5HexKey);
+            log.debug("FieldAggregator group metric series = {}   md5HexKey = {}", series, "");
         }
-        return md5HexKey;
+        return series;
     }
 }

@@ -14,6 +14,7 @@
 
 package cloud.erda.analyzer.common.models;
 
+import cloud.erda.analyzer.common.utils.StringBuilderUtils;
 import lombok.Data;
 import lombok.val;
 
@@ -62,7 +63,7 @@ public class MetricEvent implements Serializable {
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = StringBuilderUtils.getCachedStringBuilder();
         sb.append(timestamp).append(" [Name=").append(name).append("] Tags[");
         for (Map.Entry<String, String> tag : tags.entrySet()) {
             sb.append(tag.getKey()).append("=").append(tag.getValue()).append(" ");

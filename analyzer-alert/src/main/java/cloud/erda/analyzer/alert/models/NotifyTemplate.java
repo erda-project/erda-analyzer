@@ -14,17 +14,22 @@
 
 package cloud.erda.analyzer.alert.models;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Data
 public class NotifyTemplate {
-    @SerializedName("id")
+
+    @JsonSetter("id")
     private String notifyId; //模版id
+
     private Metadata metadata;
+
     private Behavior behavior;
+
     private Template[] templates;
+
     private long processingTime;
 }

@@ -17,7 +17,7 @@
 package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.models.MetricEvent;
-import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
@@ -39,7 +39,7 @@ public class MetricFieldProcessFunction extends ProcessWindowFunction<MetricEven
         MetricEvent result = statsAccumulator.getResult();
         if (result != null) {
             if (log.isDebugEnabled()) {
-                log.debug("StatsAccumulator result : {}", GsonUtil.toJson(result));
+                log.debug("StatsAccumulator result : {}", JsonMapperUtils.toStrings(result));
             }
             collector.collect(result);
         }

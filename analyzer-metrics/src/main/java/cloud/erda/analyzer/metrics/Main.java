@@ -124,12 +124,12 @@ public class Main {
                 .flatMap(new MetricEventSelectFunction())
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .name("Map metric output to metricEvent")
-                .flatMap(new MetricEventSerializeFunction())
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
+//                .flatMap(new MetricEventSerializeFunction())
+//                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .addSink(new FlinkKafkaProducer<>(
                         parameterTool.getRequired(Constants.KAFKA_BROKERS),
                         parameterTool.getRequired(Constants.TOPIC_METRICS),
-                        new StringMetricEventSchema()))
+                        new MetricEventSchema()))
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .name("Push metric output to kafka");
 
@@ -138,12 +138,12 @@ public class Main {
                 .flatMap(new MetricEventSelectFunction())
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .name("Map metric temp output to metricEvent")
-                .flatMap(new MetricEventSerializeFunction())
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
+//                .flatMap(new MetricEventSerializeFunction())
+//                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .addSink(new FlinkKafkaProducer<>(
                         parameterTool.getRequired(Constants.KAFKA_BROKERS),
                         parameterTool.getRequired(Constants.TOPIC_METRICS_TEMP),
-                        new StringMetricEventSchema()))
+                        new MetricEventSchema()))
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .name("Push metric temp output to kafka");
 
@@ -153,12 +153,12 @@ public class Main {
                 .process(new MetricAlertSelectFunction())
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .name("Process alert recover_status and map metric to alert.")
-                .flatMap(new MetricEventSerializeFunction())
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
+//                .flatMap(new MetricEventSerializeFunction())
+//                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .addSink(new FlinkKafkaProducer<>(
                         parameterTool.getRequired(Constants.KAFKA_BROKERS),
                         parameterTool.getRequired(Constants.TOPIC_ALERT),
-                        new StringMetricEventSchema()))
+                        new MetricEventSchema()))
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .name("Push alert output to kafka");
 

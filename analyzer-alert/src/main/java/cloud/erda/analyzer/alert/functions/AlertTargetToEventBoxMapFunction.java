@@ -16,10 +16,9 @@ package cloud.erda.analyzer.alert.functions;
 
 import cloud.erda.analyzer.alert.models.RenderedAlertEvent;
 import cloud.erda.analyzer.alert.models.eventbox.*;
-import cloud.erda.analyzer.alert.models.eventbox.*;
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.constant.Constants;
-import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import org.apache.flink.api.common.functions.MapFunction;
 
 import java.util.Map;
@@ -62,7 +61,7 @@ public class AlertTargetToEventBoxMapFunction implements MapFunction<RenderedAle
             eventBoxChannel.setName(groupType);
             eventBoxChannel.setTemplate(value.getContent());
             // todo 在 3.19 兼容tag使用，eventbox Channel 需要重构，tag 改为map比较好
-            eventBoxChannel.setTag(GsonUtil.toJson(value.getMetricEvent().getTags()));
+            eventBoxChannel.setTag(JsonMapperUtils.toStrings(value.getMetricEvent().getTags()));
             // todo 只在3.11兼容邮件模板用
             if (groupType.equals("email")) {
                 eventBoxChannel.setType("markdown");
