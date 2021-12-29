@@ -15,7 +15,7 @@
 package cloud.erda.analyzer.runtime.functions;
 
 import cloud.erda.analyzer.common.models.MetricEvent;
-import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import cloud.erda.analyzer.runtime.models.AggregatedMetricEvent;
 import cloud.erda.analyzer.runtime.models.OutputMetricEvent;
 import cloud.erda.analyzer.common.constant.MetricTagConstants;
@@ -77,10 +77,12 @@ public class MetricAlertSelectFunction extends KeyedProcessFunction<String, Aggr
         if (filter(value)) {
             MetricEvent alert = mapAggregatedMetricEvent(value);
             try {
-                log.info("Collect alert event --> {}", GsonUtil.toJson(alert));
+                if (log.isInfoEnabled()) {
+                    log.info("Collect alert event --> {}", JsonMapperUtils.toStrings(value));
+                }
                 out.collect(alert);
             } catch (Throwable throwable) {
-                log.error("Cannot collect alertEvent from {} , tags {}", value.getMetric().getName(), GsonUtil.toJson(alert.getTags()), throwable);
+                log.error("Cannot collect alertEvent from {} , tags {}", value.getMetric().getName(), JsonMapperUtils.toStrings(alert.getTags()), throwable);
                 throw throwable;
             }
         }

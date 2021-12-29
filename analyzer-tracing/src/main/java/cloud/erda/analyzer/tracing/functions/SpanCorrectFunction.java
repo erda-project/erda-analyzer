@@ -44,20 +44,20 @@ public class SpanCorrectFunction implements FlatMapFunction<Span, Span> {
             return span.getAttributes().get(SpanConstants.SPAN_LAYER);
         }
 
-        if (MapUtils.containsAnyKey(span.getAttributes(), SpanConstants.TAG_HTTP_PATH, SpanConstants.TAG_HTTP_URL, SpanConstants.TAG_HTTP_TARGET)) {
+        if (MapUtils.containsAnyKeys(span.getAttributes(), SpanConstants.TAG_HTTP_PATH, SpanConstants.TAG_HTTP_URL, SpanConstants.TAG_HTTP_TARGET)) {
             return SpanConstants.SPAN_LAYER_HTTP;
         }
 
-        if (MapUtils.containsAnyKey(span.getAttributes(), SpanConstants.TAG_RPC_TARGET, SpanConstants.TAG_RPC_SERVICE, SpanConstants.TAG_RPC_METHOD, SpanConstants.TAG_DUBBO_SERVICE, SpanConstants.TAG_DUBBO_METHOD)) {
+        if (MapUtils.containsAnyKeys(span.getAttributes(), SpanConstants.TAG_RPC_TARGET, SpanConstants.TAG_RPC_SERVICE, SpanConstants.TAG_RPC_METHOD, SpanConstants.TAG_DUBBO_SERVICE, SpanConstants.TAG_DUBBO_METHOD)) {
             return SpanConstants.SPAN_LAYER_RPC;
         }
 
-        if (MapUtils.containsAnyKey(span.getAttributes(), SpanConstants.MESSAGE_BUS_DESTINATION)) {
+        if (MapUtils.containsAnyKeys(span.getAttributes(), SpanConstants.MESSAGE_BUS_DESTINATION)) {
             return SpanConstants.SPAN_LAYER_MQ;
         }
 
-        if (MapUtils.containsAnyKey(span.getAttributes(), SpanConstants.DB_STATEMENT)) {
-            String dbType = MapUtils.getByAnyKey(span.getAttributes(), SpanConstants.DB_SYSTEM, SpanConstants.DB_TYPE);
+        if (MapUtils.containsAnyKeys(span.getAttributes(), SpanConstants.DB_STATEMENT)) {
+            String dbType = MapUtils.getByAnyKeys(span.getAttributes(), SpanConstants.DB_SYSTEM, SpanConstants.DB_TYPE);
             if (dbType != null) {
                 if (SpanConstants.DB_TYPE_REDIS.equalsIgnoreCase(dbType)) {
                     return SpanConstants.SPAN_LAYER_CACHE;

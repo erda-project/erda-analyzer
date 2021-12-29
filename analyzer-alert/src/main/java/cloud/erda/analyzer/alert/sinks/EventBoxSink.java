@@ -16,7 +16,7 @@ package cloud.erda.analyzer.alert.sinks;
 
 import cloud.erda.analyzer.alert.models.eventbox.EventBoxRequest;
 import cloud.erda.analyzer.common.constant.Constants;
-import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import cloud.erda.analyzer.common.utils.http.ContentTypes;
 import cloud.erda.analyzer.common.utils.http.HttpMethods;
 import cloud.erda.analyzer.common.utils.http.HttpRequestDTO;
@@ -57,7 +57,7 @@ public class EventBoxSink extends RichSinkFunction<EventBoxRequest> {
         if (value == null) {
             return;
         }
-        String body = GsonUtil.toJson(value);
+        String body = JsonMapperUtils.toStrings(value);
         HttpRequestDTO httpRequestDTO = new HttpRequestDTO();
         httpRequestDTO.setBody(body);
         httpRequestDTO.setContentType(ContentTypes.APPLICATION_JSON);

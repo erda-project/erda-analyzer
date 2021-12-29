@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-package cloud.erda.analyzer.tracing.functions;
-
-import cloud.erda.analyzer.common.constant.SpanConstants;
-import cloud.erda.analyzer.common.utils.MapUtils;
-import cloud.erda.analyzer.tracing.model.Span;
-import org.apache.flink.api.common.functions.FilterFunction;
-
-import java.util.Map;
+package cloud.erda.analyzer.common.utils;
 
 /**
  * @author liuhaoyang
- * @date 2021/9/21 12:21
+ * @date 2021/12/28 16:20
  */
-public class SpanServiceTagCheckFunction implements FilterFunction<Span> {
+public class StringBuilderUtils {
 
-    @Override
-    public boolean filter(Span span) throws Exception {
-        return MapUtils.containsAllKeys(span.getAttributes(), SpanConstants.ENV_ID, SpanConstants.SERVICE_ID, SpanConstants.SERVICE_NAME);
+    private static final int DEFAULT_STRING_BUILDER_SIZE = 1024;
+    private static final ThreadLocal<StringBuilder> CACHED_STRINGBUILDERS =
+            ThreadLocal.withInitial(() -> new StringBuilder(DEFAULT_STRING_BUILDER_SIZE));
+
+    public static StringBuilder getCachedStringBuilder() {
+        StringBuilder sb = CACHED_STRINGBUILDERS.get();
+        sb.setLength(0);
+        return sb;
     }
 }

@@ -30,7 +30,7 @@ public class TraceAnalysisTimeGapExtractor implements SessionWindowTimeGapExtrac
 
     private static final Long ROOT_SPAN_GAP = Time.seconds(3).toMilliseconds();
 
-    private static final Long CHILD_SPAN_GAP = Time.seconds(15).toMilliseconds();
+    private static final Long CHILD_SPAN_GAP = Time.seconds(10).toMilliseconds();
 
     @Override
     public long extract(Span span) {

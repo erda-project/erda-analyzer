@@ -17,9 +17,11 @@
 package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.models.MetricEvent;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.functions.AggregateFunction;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
@@ -42,6 +44,7 @@ public class MetricFieldAggregateFunction implements AggregateFunction<MetricEve
         return statsAccumulator;
     }
 
+    @SneakyThrows
     @Override
     public MetricEvent getResult(StatsAccumulator statsAccumulator) {
         return statsAccumulator.getResult();

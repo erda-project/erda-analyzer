@@ -17,13 +17,13 @@
 package cloud.erda.analyzer.runtime.sources;
 
 import cloud.erda.analyzer.common.constant.ExpressionConstants;
-import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import cloud.erda.analyzer.runtime.expression.filters.FilterOperatorDefine;
 import cloud.erda.analyzer.runtime.models.*;
-import cloud.erda.analyzer.runtime.sources.DataRowReader;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ import static org.apache.flink.util.Preconditions.checkNotNull;
 public abstract class ExpressionMetadataReader implements DataRowReader<ExpressionMetadata> {
 
     @Override
-    public ExpressionMetadata read(ResultSet resultSet) throws SQLException {
+    public ExpressionMetadata read(ResultSet resultSet) throws SQLException, IOException {
         try {
 
             ExpressionMetadata metadata = new ExpressionMetadata();
@@ -193,9 +193,9 @@ public abstract class ExpressionMetadataReader implements DataRowReader<Expressi
         checkNotNull(expression.getAlias(), "Expression alias cannot be null");
     }
 
-    private <K, V> Map<K, V> parseJsonField(String value, String field, String matedataId, Class<K> keyClass, Class<V> valueClass) {
+    private <K, V> Map<K, V> parseJsonField(String value, String field, String matedataId, Class<K> keyClass, Class<V> valueClass) throws IOException {
         try {
-            Map<K, V> map = GsonUtil.toMap(value, keyClass, valueClass);
+            Map<K, V> map = JsonMapperUtils.toHashMap(value, keyClass, valueClass);
             return map;
         } catch (Throwable throwable) {
             log.warn("Parse json field fail. metadata {}, field {}\n {}", matedataId, field, value);
@@ -203,9 +203,9 @@ public abstract class ExpressionMetadataReader implements DataRowReader<Expressi
         }
     }
 
-    private <V> V parseJsonField(String value, String field, String matedataId, Class<V> valueClass) {
+    private <V> V parseJsonField(String value, String field, String matedataId, Class<V> valueClass) throws IOException {
         try {
-            V ins = GsonUtil.toObject(value, valueClass);
+            V ins = JsonMapperUtils.toObject(value, valueClass);
             return ins;
         } catch (Throwable throwable) {
             log.warn("Parse json field fail. metadata {}, field {}\n {}", matedataId, field, value);

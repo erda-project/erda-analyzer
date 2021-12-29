@@ -16,7 +16,7 @@ package cloud.erda.analyzer.alert.sources;
 
 import cloud.erda.analyzer.alert.models.NotifyTarget;
 import cloud.erda.analyzer.alert.models.Notify;
-import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import cloud.erda.analyzer.runtime.sources.DataRowReader;
 
 import java.sql.ResultSet;
@@ -29,9 +29,9 @@ public class SpotNotifyReader implements DataRowReader<Notify> {
         Notify notify = new Notify();
         Long id = resultSet.getLong("id");
         String target = resultSet.getString("target");
-        NotifyTarget notifyTarget = GsonUtil.toObject(target, NotifyTarget.class);
+        NotifyTarget notifyTarget = JsonMapperUtils.toObject(target, NotifyTarget.class);
         String templateIds = resultSet.getString("notify_id");
-        ArrayList<String> templateIDArr = GsonUtil.toArrayList(templateIds,String.class);
+        ArrayList<String> templateIDArr = JsonMapperUtils.toArrayList(templateIds, String.class);
         String scopeType = resultSet.getString("scope");
         String scopeId = resultSet.getString("scope_id");
         String attribute = resultSet.getString("attributes");
