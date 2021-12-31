@@ -17,12 +17,10 @@
 package cloud.erda.analyzer.common.schemas;
 
 import cloud.erda.analyzer.common.models.MetricEvent;
-import com.google.gson.Gson;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.util.Collector;
-
-import java.nio.charset.StandardCharsets;
 
 /**
  * @author liuhaoyang
@@ -31,12 +29,10 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 public class MetricEventSerializeFunction implements FlatMapFunction<MetricEvent, String> {
 
-    private static final Gson gson = new Gson();
-
     @Override
     public void flatMap(MetricEvent metricEvent, Collector<String> collector) throws Exception {
         try {
-            collector.collect(gson.toJson(metricEvent));
+            collector.collect(JsonMapperUtils.toStrings(metricEvent));
         } catch (Exception exception) {
             log.error("Serialize metric event fail. {}", metricEvent.toString(), exception);
         }

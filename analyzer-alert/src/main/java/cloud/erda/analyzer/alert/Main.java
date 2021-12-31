@@ -98,32 +98,15 @@ public class Main {
         )).setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
                 .name("Store raw notify metrics to kafka");
 
-//        DataStream<Notify> notifyQuery = env
-//                .addSource(new FlinkMysqlAppendSource<>(NOTIFY_QUERY, parameterTool.getLong(METRIC_METADATA_INTERVAL, 60000),
-//                        new SpotNotifyReader(), parameterTool.getProperties()))
-//                .forceNonParallel()
-//                .returns(Notify.class)
-//                .name("Query notify from mysql");
-
-        DataStream<AlertNotify> alertNotifies = env.addSource(new AllAlertNotifies(parameterTool.get(Constants.MONITOR_ADDR)))
+        DataStream<AlertNotify> alertNotifies = env.addSource(new AlertNotifies(parameterTool.get(Constants.MONITOR_ADDR)))
                 .forceNonParallel()
                 .returns(AlertNotify.class)
-                .name("Query notify from mysql");
+                .name("Query notify from monitor");
 
-
-//        DataStream<NotifyTemplate> allTemplates = env.addSource(new AllNotifyTemplates(parameterTool.get(Constants.MONITOR_ADDR)))
-//                .forceNonParallel()
-//                .returns(NotifyTemplate.class)
-//                .name("get templates use http");
-
-//        DataStream<UniversalTemplate> allUniversalTemplates = allTemplates.flatMap(new UniversalTemplateProcessFunction())
-//                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-//                .name("transform to universalTemplate");
-
-        DataStream<AlertNotifyTemplate> alertNotifyTemplate = env.addSource(new AllNotifyAlertTemplates(parameterTool.get(Constants.MONITOR_ADDR)))
+        DataStream<AlertNotifyTemplate> alertNotifyTemplate = env.addSource(new NotifyAlertTemplates(parameterTool.get(Constants.MONITOR_ADDR)))
                 .forceNonParallel()
                 .returns(AlertNotifyTemplate.class)
-                .name("get all alert templates");
+                .name("get alert templates from monitor");
 
         // metric转换event
         DataStream<AlertEvent> alertEvents = alertMetric
@@ -131,27 +114,11 @@ public class Main {
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("map metric to alert event");
 
-        //notifyMetric转换为notify_event
-        DataStream<NotifyEvent> notifyEvents = notifyMetric.flatMap(new NotifyEventMapFunction())
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-                .name("metric to notify event");
-
-        //notify_events和notify_query
-//        DataStream<NotifyEvent> notifyEventDataStream = notifyEvents.connect(notifyQuery.broadcast(StateDescriptors.notifyStateDescriptor))
-//                .process(new NotifyBroadcastProcessFunction(parameterTool.getLong(METRIC_METADATA_TTL, 75000), StateDescriptors.notifyStateDescriptor))
-//                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-//                .name("broadcast notify");
-
         DataStream<AlertEvent> alertEventsWithNotify = alertEvents
                 .connect(alertNotifies.broadcast(StateDescriptors.alertNotifyStateDescriptor))
                 .process(new AlertNotifyBroadcastProcessFunction(parameterTool.getLong(METRIC_METADATA_TTL, 75000), StateDescriptors.alertNotifyStateDescriptor))
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("broadcast alert notify");
-
-//        DataStream<NotifyEvent> notifyEventWithTemplate = notifyEventDataStream.connect(allUniversalTemplates.broadcast(StateDescriptors.notifyTemplate))
-//                .process(new NotifyTemplateProcessFunction(parameterTool.getLong(METRIC_METADATA_TTL, 7500), StateDescriptors.notifyTemplate))
-//                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
-//                .name("notify event with template");
 
         DataStream<AlertEvent> alertEventsWithTemplate = alertEventsWithNotify
                 .connect(alertNotifyTemplate.broadcast(StateDescriptors.alertNotifyTemplateStateDescriptor))
@@ -167,11 +134,6 @@ public class Main {
                 .map(new AlertEventTemplateRenderFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR));
 
-        //notify渲染事件
-//        DataStream<RenderedNotifyEvent> notifyRender = notifyEventWithTemplate
-//                .map(new NotifyEventTemplateRenderFunction())
-//                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR));
-
         // 存储告警记录
         //不进行数据存储操作，将数据发送到kafka中，由monitor读取再存入mysql中
         ticketAlertRender.
@@ -185,16 +147,6 @@ public class Main {
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .name("push alert record output to kafka");
 
-//        notifyRender.map(new NotifyRecordMapFunction())
-//                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
-//                .name("RenderedNotifyEvent to record")
-//                .addSink(new FlinkKafkaProducer<>(
-//                        parameterTool.getRequired(KAFKA_BROKERS),
-//                        parameterTool.getRequired(TOPIC_RECORD_NOTIFY),
-//                        new RecordSchema<>(NotifyRecord.class)))
-//                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
-//                .name("push notify record output to kafka");
-
         // 存储ticket告警指标
 //        ticketAlertEvents
 //            .map(new AlertMetricMapFunction())
@@ -207,7 +159,7 @@ public class Main {
 //                .name("Store ticket alert metrics to kafka");
 
         // 存储告警历史
-        if(parameterTool.getBoolean(WRITE_EVENT_TO_ES_ENABLE)){
+        if (parameterTool.getBoolean(WRITE_EVENT_TO_ES_ENABLE)) {
             // 数据发送到 kafka，由 streaming 消费写入 ES
             ticketAlertRender.map(new ErdaEventMapFunction())
                     .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
@@ -236,7 +188,6 @@ public class Main {
                 .name("processing alert level merge");
 
         // 告警静默
-//        DataStream<AlertEvent> alertEventsSilence = alertEventsWithTemplate
         DataStream<AlertEvent> alertEventsSilence = alertEventLevel
                 .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
@@ -279,12 +230,6 @@ public class Main {
                 .addSink(new EventBoxSink(parameterTool.getProperties()))
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
                 .name("send alert message to eventbox");
-
-//        notifyRender.map(new NotifyTargetToEventBoxMapFunction())
-//                .addSink(new EventBoxSink(parameterTool.getProperties()))
-//                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
-//                .name("send notify message to eventbox");
-
 
         log.info(env.getExecutionPlan());
 

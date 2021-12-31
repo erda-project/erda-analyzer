@@ -5,10 +5,9 @@ package cloud.erda.analyzer.errorInsight.functions;/**
 
 import cloud.erda.analyzer.common.constant.ExceptionConstants;
 import cloud.erda.analyzer.common.models.*;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import cloud.erda.analyzer.errorInsight.model.ErrorEvent;
 import lombok.var;
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
 import org.apache.flink.api.common.functions.MapFunction;
 
 import java.util.HashMap;
@@ -28,7 +27,7 @@ public class ErrorEvent2ErdaEventMapper implements MapFunction<ErrorEvent, Event
         erdaEvent.setKind(EventKind.EVENT_KIND_EXCEPTION);
         erdaEvent.setTimeUnixNano(value.getTimestamp());
         erdaEvent.setName(EventNameConstants.EXCEPTION);
-        erdaEvent.setMessage(JSONArray.toJSONString(value.getStacks()));
+        erdaEvent.setMessage(JsonMapperUtils.toStrings(value.getStacks()));
 
         Relation relation = new Relation();
         relation.setResID(value.getErrorId());
@@ -38,10 +37,10 @@ public class ErrorEvent2ErdaEventMapper implements MapFunction<ErrorEvent, Event
         HashMap<String, String> attributes = new HashMap<>();
         attributes.put(ExceptionConstants.REQUEST_ID, value.getRequestId());
         attributes.put(ExceptionConstants.TERMINUS_KEY, value.getTags().getOrDefault("terminus_key", "defaultKey"));
-        attributes.put(ExceptionConstants.META_DATA, JSONObject.toJSONString(value.getMetaData()));
-        attributes.put(ExceptionConstants.TAGS, JSONObject.toJSONString(value.getTags()));
-        attributes.put(ExceptionConstants.REQUEST_CONTEXT, JSONObject.toJSONString(value.getRequestContext()));
-        attributes.put(ExceptionConstants.REQUEST_HEADERS, JSONObject.toJSONString(value.getRequestHeaders()));
+        attributes.put(ExceptionConstants.META_DATA, JsonMapperUtils.toStrings(value.getMetaData()));
+        attributes.put(ExceptionConstants.TAGS, JsonMapperUtils.toStrings(value.getTags()));
+        attributes.put(ExceptionConstants.REQUEST_CONTEXT, JsonMapperUtils.toStrings(value.getRequestContext()));
+        attributes.put(ExceptionConstants.REQUEST_HEADERS, JsonMapperUtils.toStrings(value.getRequestHeaders()));
         erdaEvent.setAttributes(attributes);
 
         return erdaEvent;

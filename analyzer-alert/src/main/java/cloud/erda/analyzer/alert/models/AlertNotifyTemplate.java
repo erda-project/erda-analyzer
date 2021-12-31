@@ -14,6 +14,8 @@
 
 package cloud.erda.analyzer.alert.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import lombok.Data;
 
 import java.util.Map;
@@ -23,14 +25,15 @@ import java.util.Map;
  * @create: 2020-01-02 16:44
  **/
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AlertNotifyTemplate {
 
-    private long id;
+    private String id;
 
     private String name;
-
+    @JsonSetter("alert_type")
     private String alertType;
-
+    @JsonSetter("alert_index")
     private String alertIndex;
 
     private String target;

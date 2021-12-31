@@ -16,10 +16,9 @@ package cloud.erda.analyzer.alert.functions;
 
 import cloud.erda.analyzer.alert.models.RenderedNotifyEvent;
 import cloud.erda.analyzer.alert.models.eventbox.*;
-import cloud.erda.analyzer.alert.models.eventbox.*;
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.constant.Constants;
-import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import org.apache.flink.api.common.functions.MapFunction;
 
 import java.util.Map;
@@ -29,12 +28,12 @@ public class NotifyTargetToEventBoxMapFunction implements MapFunction<RenderedNo
     public EventBoxRequest map(RenderedNotifyEvent renderedNotifyEvent) throws Exception {
         EventBoxRequest request = new EventBoxRequest();
         request.setSender(Constants.EVENTBOX_SENDER);
-        if(renderedNotifyEvent.getNotifyTarget().equals(AlertConstants.ALERT_NOTIFY_TYPE_DINGDING)) {
+        if (renderedNotifyEvent.getNotifyTarget().equals(AlertConstants.ALERT_NOTIFY_TYPE_DINGDING)) {
             request.setContent(renderedNotifyEvent.getContent());
-            EventBoxDingDingLabel eventBoxDingDingLabel = EventBoxDingDingLabel.label(renderedNotifyEvent.getTitle(),renderedNotifyEvent.getNotifyTarget().getDingdingUrl());
+            EventBoxDingDingLabel eventBoxDingDingLabel = EventBoxDingDingLabel.label(renderedNotifyEvent.getTitle(), renderedNotifyEvent.getNotifyTarget().getDingdingUrl());
             request.setLabels(eventBoxDingDingLabel);
         } else {
-            Map<String,String> tags = renderedNotifyEvent.getMetricEvent().getTags();
+            Map<String, String> tags = renderedNotifyEvent.getMetricEvent().getTags();
             EventBoxContent content = new EventBoxContent();
 //            content.setSourceType(renderedNotifyEvent.getScopeType());
 //            content.setSourceId(renderedNotifyEvent.getScopeId());
@@ -44,7 +43,7 @@ public class NotifyTargetToEventBoxMapFunction implements MapFunction<RenderedNo
             EventBoxChannel eventBoxChannel = new EventBoxChannel();
             eventBoxChannel.setName(groupType);
             eventBoxChannel.setTemplate(renderedNotifyEvent.getContent());
-            eventBoxChannel.setTag(GsonUtil.toJson(renderedNotifyEvent.getMetricEvent().getTags()));
+            eventBoxChannel.setTag(JsonMapperUtils.toStrings(renderedNotifyEvent.getMetricEvent().getTags()));
             if (groupType.equals("email")) {
                 eventBoxChannel.setType("markdown");
             }

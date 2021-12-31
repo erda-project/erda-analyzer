@@ -18,7 +18,7 @@ import cloud.erda.analyzer.alert.models.Ticket;
 import cloud.erda.analyzer.alert.models.AlertTrigger;
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.constant.Constants;
-import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import cloud.erda.analyzer.common.utils.http.ContentTypes;
 import cloud.erda.analyzer.common.utils.http.HttpAsyncRequestService;
 import cloud.erda.analyzer.common.utils.http.HttpMethods;
@@ -58,7 +58,7 @@ public class TicketSink extends RichSinkFunction<Ticket> {
 
     @Override
     public void invoke(Ticket value, Context context) throws Exception {
-        String body = GsonUtil.toJson(value);
+        String body = JsonMapperUtils.toStrings(value);
         HttpRequestDTO httpRequestDTO = new HttpRequestDTO();
         String trigger = value.getLabel().getOrDefault(AlertConstants.TRIGGER, AlertTrigger.alert.name());
         if (AlertTrigger.alert.equals(AlertTrigger.valueOf(trigger))) {

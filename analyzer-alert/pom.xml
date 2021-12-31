@@ -38,13 +38,6 @@
             <artifactId>c3p0</artifactId>
             <version>0.9.5.5</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>1.2.78</version>
-        </dependency>
-
     </dependencies>
 
     <build>

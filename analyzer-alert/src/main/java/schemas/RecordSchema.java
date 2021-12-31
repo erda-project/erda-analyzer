@@ -1,6 +1,6 @@
 package schemas;
 
-import com.google.gson.Gson;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.serialization.SerializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -9,12 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 public class RecordSchema<T> implements DeserializationSchema<T>, SerializationSchema<T> {
 
     private final static Logger logger = LoggerFactory.getLogger(RecordSchema.class);
-    private static final Gson gson = new Gson();
 
     private final TypeInformation<T> type;
 
@@ -26,11 +24,10 @@ public class RecordSchema<T> implements DeserializationSchema<T>, SerializationS
 
     @Override
     public T deserialize(byte[] bytes) throws IOException {
-        String input = new String(bytes);
         try {
-            return gson.fromJson(input, this.type.getTypeClass());
+            return JsonMapperUtils.toObject(bytes, this.type.getTypeClass());
         } catch (Throwable throwable) {
-            logger.error("Deserialize record fail. \nSource : {} \n", input, throwable);
+            logger.error("Deserialize record fail. \nSource : {} \n", new String(bytes), throwable);
             return null;
         }
     }
@@ -42,7 +39,12 @@ public class RecordSchema<T> implements DeserializationSchema<T>, SerializationS
 
     @Override
     public byte[] serialize(T record) {
-        return gson.toJson(record).getBytes(Charset.forName("UTF-8"));
+        try {
+            return JsonMapperUtils.toBytes(record);
+        } catch (IOException throwable) {
+            logger.error("Serialize record fail. \n", throwable);
+            return null;
+        }
     }
 
     @Override

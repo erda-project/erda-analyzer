@@ -15,7 +15,7 @@
 package cloud.erda.analyzer.alert.sources;
 
 import cloud.erda.analyzer.alert.models.NotifyTemplate;
-import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
@@ -31,12 +31,12 @@ import java.util.ArrayList;
 import java.util.Map;
 
 @Slf4j
-public class AllNotifyTemplates implements SourceFunction<NotifyTemplate>{
+public class NotifyTemplates implements SourceFunction<NotifyTemplate> {
     private String monitorAddr;
     private CloseableHttpClient httpclient;
     private long httpInterval = 60000;
 
-    public AllNotifyTemplates(String monitorAddr) {
+    public NotifyTemplates(String monitorAddr) {
         this.monitorAddr = monitorAddr;
     }
 
@@ -50,10 +50,10 @@ public class AllNotifyTemplates implements SourceFunction<NotifyTemplate>{
             CloseableHttpResponse closeableHttpResponse = httpclient.execute(httpGet);
             try {
                 if (closeableHttpResponse.getStatusLine().getStatusCode() == HttpURLConnection.HTTP_OK) {
-                    String str = EntityUtils.toString(closeableHttpResponse.getEntity());
-                    Map<String, Object> templateMap = GsonUtil.toMap(str, String.class, Object.class);
+                    byte[] data = EntityUtils.toByteArray(closeableHttpResponse.getEntity());
+                    Map<String, Object> templateMap = JsonMapperUtils.toObjectValueMap(data);
                     Object templateInfo = templateMap.get("data");
-                    templateArr = GsonUtil.toArrayList(GsonUtil.toJson(templateInfo),NotifyTemplate.class);
+                    templateArr = JsonMapperUtils.toArrayList(JsonMapperUtils.toBytes(templateInfo), NotifyTemplate.class);
                 }
             } finally {
                 closeableHttpResponse.close();
@@ -78,7 +78,7 @@ public class AllNotifyTemplates implements SourceFunction<NotifyTemplate>{
 
     @Override
     public void cancel() {
-        if(this.httpclient != null) {
+        if (this.httpclient != null) {
             try {
                 this.httpclient.close();
             } catch (Exception e) {

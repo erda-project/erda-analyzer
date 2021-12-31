@@ -4,11 +4,8 @@ import cloud.erda.analyzer.alert.models.AlertLevel;
 import cloud.erda.analyzer.alert.models.AlertNotify;
 import cloud.erda.analyzer.alert.models.AlertNotifyData;
 import cloud.erda.analyzer.common.constant.AlertConstants;
-import cloud.erda.analyzer.common.utils.GsonUtil;
-import cloud.erda.analyzer.common.utils.HttpUtils;
 import cloud.erda.analyzer.common.utils.StringUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import cloud.erda.analyzer.runtime.sources.HttpSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
@@ -17,14 +14,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-public class AllAlertNotifies implements SourceFunction<AlertNotify> {
+public class AlertNotifies implements SourceFunction<AlertNotify> {
     private String monitorAddr;
     private long httpInterval = 60000;
     private int pageSize = 100;
     private int pageNo = 1;
     Map<String, String> params = new HashMap<>();
 
-    public AllAlertNotifies(String monitorAddr) {
+    public AlertNotifies(String monitorAddr) {
         this.monitorAddr = monitorAddr;
     }
 
@@ -34,10 +31,7 @@ public class AllAlertNotifies implements SourceFunction<AlertNotify> {
         ArrayList<AlertNotify> notifies = new ArrayList<>();
         while (true) {
             String url = String.format(alertNotifyUrl, this.pageNo, this.pageSize);
-            String dataStr = HttpUtils.doGet(url);
-            Map<String,Object> dataMap = GsonUtil.toMap(dataStr,String.class,Object.class);
-            String data = JSON.toJSONString(dataMap.get("data"));
-            AlertNotifyData alertNotifyData = JSONObject.parseObject(data, AlertNotifyData.class);
+            AlertNotifyData alertNotifyData = HttpSource.doHttpGet(url, AlertNotifyData.class);
             for (AlertNotify alertNotify : alertNotifyData.getList()) {
                 if (AlertConstants.ALERT_NOTIFY_TYPE_NOTIFY_GROUP.equals(alertNotify.getNotifyTarget().getType())) {
                     alertNotify.getNotifyTarget().setGroupTypes((alertNotify.getNotifyTarget().getGroupType().split(",")));

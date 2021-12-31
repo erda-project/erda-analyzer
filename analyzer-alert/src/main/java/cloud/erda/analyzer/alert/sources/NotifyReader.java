@@ -18,7 +18,7 @@ import cloud.erda.analyzer.alert.models.AlertLevel;
 import cloud.erda.analyzer.alert.models.AlertNotify;
 import cloud.erda.analyzer.alert.models.AlertNotifyTarget;
 import cloud.erda.analyzer.common.constant.AlertConstants;
-import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import cloud.erda.analyzer.common.utils.StringUtil;
 import cloud.erda.analyzer.runtime.sources.DataRowReader;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +40,7 @@ public class NotifyReader implements DataRowReader<AlertNotify> {
             notify.setAlertId(resultSet.getString("alert_id"));
             notify.setEnable(resultSet.getBoolean("enable"));
             String notifyTargetData = resultSet.getString("notify_target");
-            AlertNotifyTarget notifyTarget = GsonUtil.toObject(notifyTargetData, AlertNotifyTarget.class);
+            AlertNotifyTarget notifyTarget = JsonMapperUtils.toObject(notifyTargetData, AlertNotifyTarget.class);
             if (AlertConstants.ALERT_NOTIFY_TYPE_NOTIFY_GROUP.equals(notifyTarget.getType())) {
                 notifyTarget.setGroupTypes(notifyTarget.getGroupType().split(","));
             }
@@ -58,7 +58,9 @@ public class NotifyReader implements DataRowReader<AlertNotify> {
             notify.setSilence(resultSet.getLong("silence"));
             notify.setSilencePolicy(resultSet.getString("silence_policy"));
             notify.setProcessingTime(System.currentTimeMillis());
-            log.info("Read alert notify {}  data: {}", notify.getId(), GsonUtil.toJson(notify));
+            if (log.isInfoEnabled()) {
+                log.info("Read alert notify {}  data: {}", notify.getId(), JsonMapperUtils.toStrings(notify));
+            }
             return notify;
         } catch (Exception ex) {
             log.warn("Read or deserialize Notify Metadata error.", ex);

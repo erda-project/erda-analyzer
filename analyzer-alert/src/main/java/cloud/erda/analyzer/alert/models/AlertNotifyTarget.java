@@ -14,7 +14,7 @@
 
 package cloud.erda.analyzer.alert.models;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import lombok.Data;
 
 /**
@@ -36,13 +36,13 @@ public class AlertNotifyTarget {
      */
     private String type;
 
-    @SerializedName(value = "group_id")
+    @JsonSetter("group_id")
     private String groupId;
 
-    @SerializedName(value = "group_type")
+    @JsonSetter("group_type")
     private String groupType;
 
-    @SerializedName(value = "dingding_url")
+    @JsonSetter("dingding_url")
     private String dingdingUrl;
 
     private String level;

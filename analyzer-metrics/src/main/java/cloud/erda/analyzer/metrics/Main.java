@@ -14,24 +14,26 @@
 
 package cloud.erda.analyzer.metrics;
 
-import cloud.erda.analyzer.common.schemas.MetricEventSerializeFunction;
-import cloud.erda.analyzer.common.schemas.StringMetricEventSchema;
 import cloud.erda.analyzer.metrics.functions.*;
-import cloud.erda.analyzer.runtime.sources.AllAlertExpressions;
-import cloud.erda.analyzer.runtime.sources.AllMetricExpressions;
+import cloud.erda.analyzer.runtime.sources.AlertExpressions;
+import cloud.erda.analyzer.runtime.sources.MetricExpressions;
 import cloud.erda.analyzer.runtime.MetricRuntime;
 import cloud.erda.analyzer.runtime.functions.MetricAlertSelectFunction;
 import cloud.erda.analyzer.runtime.functions.MetricEventSelectFunction;
 import cloud.erda.analyzer.runtime.functions.MetricSelectOutputProcessFunction;
-import cloud.erda.analyzer.runtime.models.*;
 import cloud.erda.analyzer.runtime.utils.OutputTagUtils;
 import com.esotericsoftware.kryo.serializers.CompatibleFieldSerializer;
+
 import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.functions.MetricEventCorrectFunction;
 import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.schemas.MetricEventSchema;
 import cloud.erda.analyzer.common.utils.ExecutionEnv;
 import cloud.erda.analyzer.common.watermarks.MetricWatermarkExtractor;
+import cloud.erda.analyzer.runtime.models.AggregatedMetricEvent;
+import cloud.erda.analyzer.runtime.models.Expression;
+import cloud.erda.analyzer.runtime.models.ExpressionFunction;
+import cloud.erda.analyzer.runtime.models.ExpressionMetadata;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -52,13 +54,13 @@ public class Main {
         env.getConfig().registerTypeWithKryoSerializer(Expression.class, CompatibleFieldSerializer.class);
         env.getConfig().registerTypeWithKryoSerializer(ExpressionFunction.class, CompatibleFieldSerializer.class);
         //从monitor中alert表达式数据
-        DataStream<ExpressionMetadata> allAlertExpressions = env.addSource(new AllAlertExpressions(parameterTool.get(Constants.MONITOR_ADDR)))
+        DataStream<ExpressionMetadata> allAlertExpressions = env.addSource(new AlertExpressions(parameterTool.get(Constants.MONITOR_ADDR)))
                 .forceNonParallel()
                 .returns(ExpressionMetadata.class)
                 .name("get alert expressions from monitor");
 
         //从monitor中获取metric表达式数据
-        DataStream<ExpressionMetadata> allMetricExpressions = env.addSource(new AllMetricExpressions(parameterTool.get(Constants.MONITOR_ADDR)))
+        DataStream<ExpressionMetadata> allMetricExpressions = env.addSource(new MetricExpressions(parameterTool.get(Constants.MONITOR_ADDR)))
                 .forceNonParallel()
                 .returns(ExpressionMetadata.class)
                 .name("get metric expressions from monitor");
@@ -124,12 +126,12 @@ public class Main {
                 .flatMap(new MetricEventSelectFunction())
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .name("Map metric output to metricEvent")
-                .flatMap(new MetricEventSerializeFunction())
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
+//                .flatMap(new MetricEventSerializeFunction())
+//                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .addSink(new FlinkKafkaProducer<>(
                         parameterTool.getRequired(Constants.KAFKA_BROKERS),
                         parameterTool.getRequired(Constants.TOPIC_METRICS),
-                        new StringMetricEventSchema()))
+                        new MetricEventSchema()))
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .name("Push metric output to kafka");
 
@@ -138,12 +140,12 @@ public class Main {
                 .flatMap(new MetricEventSelectFunction())
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .name("Map metric temp output to metricEvent")
-                .flatMap(new MetricEventSerializeFunction())
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
+//                .flatMap(new MetricEventSerializeFunction())
+//                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .addSink(new FlinkKafkaProducer<>(
                         parameterTool.getRequired(Constants.KAFKA_BROKERS),
                         parameterTool.getRequired(Constants.TOPIC_METRICS_TEMP),
-                        new StringMetricEventSchema()))
+                        new MetricEventSchema()))
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .name("Push metric temp output to kafka");
 
@@ -153,12 +155,12 @@ public class Main {
                 .process(new MetricAlertSelectFunction())
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OPERATOR))
                 .name("Process alert recover_status and map metric to alert.")
-                .flatMap(new MetricEventSerializeFunction())
-                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
+//                .flatMap(new MetricEventSerializeFunction())
+//                .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .addSink(new FlinkKafkaProducer<>(
                         parameterTool.getRequired(Constants.KAFKA_BROKERS),
                         parameterTool.getRequired(Constants.TOPIC_ALERT),
-                        new StringMetricEventSchema()))
+                        new MetricEventSchema()))
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .name("Push alert output to kafka");
 

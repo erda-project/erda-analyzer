@@ -2,25 +2,23 @@ package cloud.erda.analyzer.alert.sources;
 
 import cloud.erda.analyzer.alert.models.AlertNotifyTemplate;
 import cloud.erda.analyzer.alert.models.AlertNotifyTemplateData;
-import cloud.erda.analyzer.common.utils.GsonUtil;
-import cloud.erda.analyzer.common.utils.HttpUtils;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
+import cloud.erda.analyzer.runtime.sources.HttpSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
+
 import java.util.ArrayList;
-import java.util.Map;
 
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
 @Slf4j
-public class AllNotifyAlertTemplates implements SourceFunction<AlertNotifyTemplate> {
+public class NotifyAlertTemplates implements SourceFunction<AlertNotifyTemplate> {
     private String monitorAddr;
     private long httpInterval = 60000;
     private int pageSize = 100;
     private int pageNo = 1;
 
-    public AllNotifyAlertTemplates(String monitorAddr) {
+    public NotifyAlertTemplates(String monitorAddr) {
         this.monitorAddr = monitorAddr;
     }
 
@@ -29,11 +27,8 @@ public class AllNotifyAlertTemplates implements SourceFunction<AlertNotifyTempla
         String templateUrl = "http://" + monitorAddr + uri;
         ArrayList<AlertNotifyTemplate> notifyTemplateList = new ArrayList<>();
         while (true) {
-            String url = String.format(templateUrl,this.pageNo,this.pageSize);
-            String dataStr = HttpUtils.doGet(url);
-            Map<String,Object> dataMap = GsonUtil.toMap(dataStr,String.class,Object.class);
-            String data = JSON.toJSONString(dataMap.get("data"));
-            AlertNotifyTemplateData alertNotifyTemplateData = JSONObject.parseObject(data,AlertNotifyTemplateData.class);
+            String url = String.format(templateUrl, this.pageNo, this.pageSize);
+            AlertNotifyTemplateData alertNotifyTemplateData = HttpSource.doHttpGet(url, AlertNotifyTemplateData.class);
             for (AlertNotifyTemplate alertNotifyTemplate : alertNotifyTemplateData.getList()) {
                 checkNotNull(alertNotifyTemplate.getTitle(), "Title cannot be null");
                 checkNotNull(alertNotifyTemplate.getTemplate(), "Template cannot be null");
@@ -43,7 +38,8 @@ public class AllNotifyAlertTemplates implements SourceFunction<AlertNotifyTempla
                 } else {
                     alertNotifyTemplate.setVariable(true);
                 }
-                log.info("Read notify template {} data: {}", alertNotifyTemplate.getAlertIndex(), GsonUtil.toJson(alertNotifyTemplate));
+                alertNotifyTemplate.setId(alertNotifyTemplate.getAlertIndex() + "_" + alertNotifyTemplate.getTarget());
+                log.info("Read notify template {} data: {}", alertNotifyTemplate.getAlertIndex(), JsonMapperUtils.toStrings(alertNotifyTemplate));
                 notifyTemplateList.add(alertNotifyTemplate);
             }
             if (this.pageNo * this.pageSize >= alertNotifyTemplateData.getTotal()) {

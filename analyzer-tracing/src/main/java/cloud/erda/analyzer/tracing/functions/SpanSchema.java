@@ -16,8 +16,8 @@
 
 package cloud.erda.analyzer.tracing.functions;
 
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import cloud.erda.analyzer.tracing.model.Span;
-import com.google.gson.Gson;
 import org.apache.flink.api.common.serialization.DeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.slf4j.Logger;
@@ -32,12 +32,11 @@ import java.io.IOException;
 public class SpanSchema implements DeserializationSchema<Span> {
 
     private final static Logger logger = LoggerFactory.getLogger(SpanSchema.class);
-    private final static Gson gson = new Gson();
 
     @Override
     public Span deserialize(byte[] bytes) throws IOException {
         try {
-            Span span = gson.fromJson(new String(bytes), Span.class);
+            Span span = JsonMapperUtils.toObject(bytes, Span.class);
             return span;
         } catch (Exception e) {
             logger.error("Deserialize SpanEvent fail ", e);

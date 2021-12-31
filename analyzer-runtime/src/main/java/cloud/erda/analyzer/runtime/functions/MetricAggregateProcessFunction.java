@@ -53,7 +53,7 @@ public class MetricAggregateProcessFunction implements AggregateFunction<KeyedMe
             accumulator.setMetadataId(value.getMetadataId());
             accumulator.setExpression(value.getExpression());
 
-            for (Map.Entry<String, String> attribute : value.getAttributes().entrySet()) {
+            for (Map.Entry<String, Object> attribute : value.getAttributes().entrySet()) {
                 accumulator.setAttribute(attribute.getKey(), attribute.getValue());
             }
 

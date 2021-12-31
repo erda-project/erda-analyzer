@@ -38,7 +38,7 @@ public class AlertExpressionMetadataReader extends ExpressionMetadataReader {
         try {
             ExpressionMetadata expressionMetadata = super.read(resultSet);
             expressionMetadata.setId(String.format("alert_%s", expressionMetadata.getId()));
-            Map<String, String> attributes = expressionMetadata.getAttributes();
+            Map<String, Object> attributes = expressionMetadata.getAttributes();
             checkNotNull(attributes.get(AlertConstants.ALERT_INDEX), "Attribute alert_index cannot be null");
             checkNotNull(attributes.get(AlertConstants.ALERT_TYPE), "Attribute alert_type cannot be null");
 //            checkNotNull(attributes.get(DICE_ORG_ID), "Attribute dice_org_id cannot be null");

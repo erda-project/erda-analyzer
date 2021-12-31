@@ -17,12 +17,10 @@
 package cloud.erda.analyzer.tracing.functions;
 
 import cloud.erda.analyzer.common.models.MetricEvent;
-import cloud.erda.analyzer.common.utils.ConvertUtils;
-import cloud.erda.analyzer.common.utils.GsonUtil;
-import lombok.Data;
-import lombok.Getter;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,14 +41,16 @@ public class StatsAccumulator implements Serializable {
         if (metricEvent == null) {
             return;
         }
-        lastMetric = metricEvent;
+        if (lastMetric == null || metricEvent.getTimestamp() > lastMetric.getTimestamp()) {
+            lastMetric = metricEvent;
+        }
         for (Map.Entry<String, Object> entry : metricEvent.getFields().entrySet()) {
             FieldAggregator aggregator = aggregators.computeIfAbsent(entry.getKey(), FieldAggregator::new);
             aggregator.apply(entry.getValue());
         }
     }
 
-    public MetricEvent getResult() {
+    public MetricEvent getResult() throws IOException {
         if (lastMetric == null) {
             return null;
         }
@@ -65,7 +65,7 @@ public class StatsAccumulator implements Serializable {
             metricEvent.addField(aggregator.getName() + "_max", aggregator.getMax());
         }
         if (log.isDebugEnabled()) {
-            log.debug("transaction metric aggregate @SpanEndTime {} . {}", new Date(metricEvent.getTimestamp() / 1000000), GsonUtil.toJson(metricEvent));
+            log.debug("apm metric aggregate @SpanEndTime {} {}", new Date(metricEvent.getTimestamp() / 1000000), JsonMapperUtils.toStrings(metricEvent));
         }
         return metricEvent;
     }

@@ -21,10 +21,9 @@ import cloud.erda.analyzer.alert.templates.TemplateManager;
 import cloud.erda.analyzer.alert.templates.TemplateRenderer;
 import cloud.erda.analyzer.alert.templates.formatters.TemplateFormatter;
 import cloud.erda.analyzer.alert.templates.formatters.TemplateFormatterFactory;
-import cloud.erda.analyzer.alert.models.*;
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.utils.DateUtils;
-import cloud.erda.analyzer.common.utils.GsonUtil;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import org.apache.flink.api.common.functions.MapFunction;
 
 import java.util.HashMap;
@@ -48,7 +47,7 @@ public class NotifyEventTemplateRenderFunction implements MapFunction<NotifyEven
         result.setTemplateTarget(notifyEvent.getNotifyTemplate().getTemplate().getTarget());
         //将fields转换为map
         Map<String, Object> templateContext = TemplateContext.fromMetric(result.getMetricEvent());
-        Map<String, Object> attribute = GsonUtil.toMap(notifyEvent.getNotify().getAttribute(), String.class, Object.class);
+        Map<String, Object> attribute = JsonMapperUtils.toObjectValueMap(notifyEvent.getNotify().getAttribute());
         if (attribute != null) {
             templateContext.putAll(attribute);
         }

@@ -14,7 +14,8 @@
 
 package cloud.erda.analyzer.alert.models.eventbox;
 
-import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import lombok.Data;
 
 /**
@@ -24,6 +25,11 @@ import lombok.Data;
 @Data
 public class EventBoxNotifyGroupLabel {
 
-    @SerializedName(value = "GROUP")
+    @JsonSetter("GROUP")
     private long group;
+
+    @JsonGetter("GROUP")
+    public long getGroup() {
+        return group;
+    }
 }
