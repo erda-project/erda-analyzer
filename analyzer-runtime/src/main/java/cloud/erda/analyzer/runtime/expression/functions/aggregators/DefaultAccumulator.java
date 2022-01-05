@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.lang.ClassCastException;
 
 import static cloud.erda.analyzer.runtime.expression.functions.aggregators.FunctionAggregatorFactory.create;
 
@@ -79,7 +80,11 @@ public class DefaultAccumulator implements Accumulator {
 
     @Override
     public void setAttribute(String key, Object value) {
-        attributes.put(key, (String) value);
+        try {
+            attributes.put(key, (String) value);
+        } catch (ClassCastException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

@@ -2,6 +2,7 @@ package cloud.erda.analyzer.runtime.sources;
 
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.runtime.models.*;
+import cloud.erda.analyzer.runtime.utils.CheckUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
@@ -22,23 +23,28 @@ public class AlertExpressions implements SourceFunction<ExpressionMetadata> {
 
     public ArrayList<ExpressionMetadata> GetAlertEnabledExpressions() throws Exception {
         String uri = "/api/alert/expressions?pageNo=%d&pageSize=%d";
-        String expressionUrl = "http://" + monitorAddr + uri;
         ArrayList<ExpressionMetadata> expressionMetadataList = new ArrayList<>();
         while (true) {
-            String url = String.format(expressionUrl, this.pageNo, this.pageSize);
-            AlertExpression alertExpression = HttpSource.doHttpGet(url, AlertExpression.class);
-            for (ExpressionMetadata expressionMetadata : alertExpression.getList()) {
-                expressionMetadata.getAttributes().put("window", expressionMetadata.getExpression().getWindow().toString());
-                expressionMetadata.setProcessingTime(System.currentTimeMillis());
-                expressionMetadata.setId(String.format("alert_%s", expressionMetadata.getId()));
-                checkNotNull(expressionMetadata.getAttributes().get(AlertConstants.ALERT_INDEX), "Attribute alert_index cannot be null");
-                checkNotNull(expressionMetadata.getAttributes().get(AlertConstants.ALERT_TYPE), "Attribute alert_type cannot be null");
-                expressionMetadata.checkExpression(expressionMetadata);
-                log.info("Read alert metadata {}  expression: {}  attributes: {}", expressionMetadata.getId(), expressionMetadata.getExpression(), expressionMetadata.getAttributes());
-                expressionMetadataList.add(expressionMetadata);
-            }
-            if (this.pageNo * this.pageSize >= alertExpression.getTotal()) {
-                break;
+            AlertExpressionData alertExpressionData = HttpSource.doHttpGet(uri, this.monitorAddr, this.pageNo, this.pageSize, AlertExpressionData.class);
+            if (alertExpressionData != null) {
+                if (!alertExpressionData.isSuccess()) {
+                    log.error("get expression is failed err is {}", alertExpressionData.getErr().toString());
+                    this.pageNo++;
+                    continue;
+                }
+                for (ExpressionMetadata expressionMetadata : alertExpressionData.getData().getList()) {
+                    expressionMetadata.getAttributes().put("window", expressionMetadata.getExpression().getWindow().toString());
+                    expressionMetadata.setProcessingTime(System.currentTimeMillis());
+                    expressionMetadata.setId(String.format("alert_%s", expressionMetadata.getId()));
+                    checkNotNull(expressionMetadata.getAttributes().get(AlertConstants.ALERT_INDEX), "Attribute alert_index cannot be null");
+                    checkNotNull(expressionMetadata.getAttributes().get(AlertConstants.ALERT_TYPE), "Attribute alert_type cannot be null");
+                    CheckUtils.checkExpression(expressionMetadata);
+                    log.info("Read alert metadata {}  expression: {}  attributes: {}", expressionMetadata.getId(), expressionMetadata.getExpression(), expressionMetadata.getAttributes());
+                    expressionMetadataList.add(expressionMetadata);
+                }
+                if (this.pageNo * this.pageSize >= alertExpressionData.getData().getTotal()) {
+                    break;
+                }
             }
             this.pageNo++;
         }

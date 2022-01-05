@@ -5,8 +5,8 @@ import lombok.Data;
 
 
 @Data
-public class AlertNotifyTemplateData {
+public class AlertNotifiesData {
     private boolean success;
     private ErrorMessage err;
-    private AlertNotifyTemplates data;
+    private AlertNotifyData data;
 }

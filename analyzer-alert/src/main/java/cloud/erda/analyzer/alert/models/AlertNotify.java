@@ -14,6 +14,7 @@
 
 package cloud.erda.analyzer.alert.models;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
 import lombok.Data;
 
 /**
@@ -24,13 +25,13 @@ import lombok.Data;
 public class AlertNotify {
 
     private long id;
-
+    @JsonSetter("alert_id")
     private String alertId;
-
+    @JsonSetter("notify_target")
     private AlertNotifyTarget notifyTarget;
 
     private long silence;
-
+    @JsonSetter("silence_policy")
     private String silencePolicy;
 
     private boolean enable;

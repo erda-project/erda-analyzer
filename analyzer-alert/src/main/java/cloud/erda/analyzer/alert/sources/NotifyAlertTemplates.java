@@ -23,27 +23,33 @@ public class NotifyAlertTemplates implements SourceFunction<AlertNotifyTemplate>
     }
 
     public ArrayList<AlertNotifyTemplate> GetEnabledTemplates() throws Exception {
-        String uri = "/api/alert/templates";
-        String templateUrl = "http://" + monitorAddr + uri;
+        String uri = "/api/alert/templates?pageNo=%d&pageSize=%d";
         ArrayList<AlertNotifyTemplate> notifyTemplateList = new ArrayList<>();
         while (true) {
-            String url = String.format(templateUrl, this.pageNo, this.pageSize);
-            AlertNotifyTemplateData alertNotifyTemplateData = HttpSource.doHttpGet(url, AlertNotifyTemplateData.class);
-            for (AlertNotifyTemplate alertNotifyTemplate : alertNotifyTemplateData.getList()) {
-                checkNotNull(alertNotifyTemplate.getTitle(), "Title cannot be null");
-                checkNotNull(alertNotifyTemplate.getTemplate(), "Template cannot be null");
-                alertNotifyTemplate.setProcessingTime(System.currentTimeMillis());
-                if (alertNotifyTemplate.getAlertType().contains("customize")) {
-                    alertNotifyTemplate.setVariable(false);
-                } else {
-                    alertNotifyTemplate.setVariable(true);
+            AlertNotifyTemplateData alertNotifyTemplateData = HttpSource.doHttpGet(uri, this.monitorAddr, this.pageNo, this.pageSize, AlertNotifyTemplateData.class);
+            if (alertNotifyTemplateData != null) {
+                if (!alertNotifyTemplateData.isSuccess()) {
+                    log.error("get expression is failed err is {}", alertNotifyTemplateData.getErr().toString());
+                    this.pageNo++;
+                    continue;
                 }
-                alertNotifyTemplate.setId(alertNotifyTemplate.getAlertIndex() + "_" + alertNotifyTemplate.getTarget());
-                log.info("Read notify template {} data: {}", alertNotifyTemplate.getAlertIndex(), JsonMapperUtils.toStrings(alertNotifyTemplate));
-                notifyTemplateList.add(alertNotifyTemplate);
-            }
-            if (this.pageNo * this.pageSize >= alertNotifyTemplateData.getTotal()) {
-                break;
+                for (AlertNotifyTemplate alertNotifyTemplate : alertNotifyTemplateData.getData().getList()) {
+                    checkNotNull(alertNotifyTemplate.getTitle(), "Title cannot be null");
+                    checkNotNull(alertNotifyTemplate.getTemplate(), "Template cannot be null");
+                    alertNotifyTemplate.setProcessingTime(System.currentTimeMillis());
+                    if (alertNotifyTemplate.getAlertType().contains("customize")) {
+                        alertNotifyTemplate.setVariable(false);
+                    } else {
+                        alertNotifyTemplate.setVariable(true);
+                    }
+                    alertNotifyTemplate.setId(alertNotifyTemplate.getAlertIndex() + "_" + alertNotifyTemplate.getTarget());
+                    log.info("Read notify template {} data: {}", alertNotifyTemplate.getAlertIndex(), JsonMapperUtils.toStrings(alertNotifyTemplate));
+                    notifyTemplateList.add(alertNotifyTemplate);
+                }
+
+                if (this.pageNo * this.pageSize >= alertNotifyTemplateData.getData().getTotal()) {
+                    break;
+                }
             }
             this.pageNo++;
         }

@@ -1,6 +1,7 @@
 package cloud.erda.analyzer.runtime.sources;
 
 import cloud.erda.analyzer.runtime.models.*;
+import cloud.erda.analyzer.runtime.utils.CheckUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
@@ -19,21 +20,26 @@ public class MetricExpressions implements SourceFunction<ExpressionMetadata> {
 
     public ArrayList<ExpressionMetadata> GetAllMetricEnabledExpressions() throws Exception {
         String uri = "/api/metric/expressions?pageNo=%d&pageSize=%d";
-        String expressionUrl = "http://" + monitorAddr + uri;
         ArrayList<ExpressionMetadata> expressionMetadataList = new ArrayList<>();
         while (true) {
-            String url = String.format(expressionUrl, this.pageNo, this.pageSize);
-            AlertExpression metricExpression = HttpSource.doHttpGet(url, AlertExpression.class);
-            for (ExpressionMetadata expressionMetadata : metricExpression.getList()) {
-                expressionMetadata.getAttributes().put("window", expressionMetadata.getExpression().getWindow().toString());
-                expressionMetadata.setProcessingTime(System.currentTimeMillis());
-                expressionMetadata.setId(String.format("metric_%s", expressionMetadata.getId()));
-                expressionMetadata.checkExpression(expressionMetadata);
-                log.info("Read metric metadata {}  expression: {}  attributes: {}", expressionMetadata.getExpression().getMetric(), expressionMetadata.getExpression(), expressionMetadata.getAttributes());
-                expressionMetadataList.add(expressionMetadata);
-            }
-            if (this.pageNo * this.pageSize >= metricExpression.getTotal()) {
-                break;
+            AlertExpressionData metricExpressionData = HttpSource.doHttpGet(uri, this.monitorAddr, this.pageNo, this.pageSize, AlertExpressionData.class);
+            if (metricExpressionData != null) {
+                if (!metricExpressionData.isSuccess()) {
+                    log.error("get expression is failed err is {}", metricExpressionData.getErr().toString());
+                    this.pageNo++;
+                    continue;
+                }
+                for (ExpressionMetadata expressionMetadata : metricExpressionData.getData().getList()) {
+                    expressionMetadata.getAttributes().put("window", expressionMetadata.getExpression().getWindow().toString());
+                    expressionMetadata.setProcessingTime(System.currentTimeMillis());
+                    expressionMetadata.setId(String.format("metric_%s", expressionMetadata.getId()));
+                    CheckUtils.checkExpression(expressionMetadata);
+                    log.info("Read metric metadata {}  expression: {}  attributes: {}", expressionMetadata.getExpression().getMetric(), expressionMetadata.getExpression(), expressionMetadata.getAttributes());
+                    expressionMetadataList.add(expressionMetadata);
+                }
+                if (this.pageNo * this.pageSize >= metricExpressionData.getData().getTotal()) {
+                    break;
+                }
             }
             this.pageNo++;
         }
