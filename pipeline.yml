@@ -54,7 +54,6 @@ stages:
       - release:
           alias: release-erda-analyzer
           params:
-            tag_version: ${{ outputs.extract-repo-version.version }}
             check_diceyml: false
             dice_yml: ${erda-analyzer}/erda.yml
             image:
