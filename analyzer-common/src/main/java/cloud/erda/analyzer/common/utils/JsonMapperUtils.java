@@ -16,6 +16,7 @@
 
 package cloud.erda.analyzer.common.utils;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapType;
@@ -29,7 +30,11 @@ import java.util.*;
  */
 public class JsonMapperUtils {
 
-    private static final ThreadLocal<ObjectMapper> CACHED_OBJECTMAPPER = ThreadLocal.withInitial(ObjectMapper::new);
+    private static final ThreadLocal<ObjectMapper> CACHED_OBJECTMAPPER = ThreadLocal.withInitial(() -> {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return objectMapper;
+    });
 
     private static ObjectMapper getCachedObjectMapper() {
         return CACHED_OBJECTMAPPER.get();
