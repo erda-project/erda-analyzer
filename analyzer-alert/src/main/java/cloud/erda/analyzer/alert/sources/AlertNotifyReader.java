@@ -12,13 +12,13 @@ import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import java.util.ArrayList;
 
 @Slf4j
-public class AlertNotifies implements SourceFunction<AlertNotify> {
+public class AlertNotifyReader implements SourceFunction<AlertNotify> {
     private String monitorAddr;
     private long httpInterval = 60000;
     private int pageSize = 100;
     private int pageNo = 1;
 
-    public AlertNotifies(String monitorAddr) {
+    public AlertNotifyReader(String monitorAddr) {
         this.monitorAddr = monitorAddr;
     }
 

@@ -11,13 +11,13 @@ import java.util.ArrayList;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
 @Slf4j
-public class AlertExpressions implements SourceFunction<ExpressionMetadata> {
+public class AlertExpressionReader implements SourceFunction<ExpressionMetadata> {
     private String monitorAddr;
     private long httpInterval = 60000;
     private int pageSize = 100;
     private int pageNo = 1;
 
-    public AlertExpressions(String monitorAddr) {
+    public AlertExpressionReader(String monitorAddr) {
         this.monitorAddr = monitorAddr;
     }
 

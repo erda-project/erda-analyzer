@@ -15,8 +15,8 @@
 package cloud.erda.analyzer.metrics;
 
 import cloud.erda.analyzer.metrics.functions.*;
-import cloud.erda.analyzer.runtime.sources.AlertExpressions;
-import cloud.erda.analyzer.runtime.sources.MetricExpressions;
+import cloud.erda.analyzer.runtime.sources.AlertExpressionReader;
+import cloud.erda.analyzer.runtime.sources.MetricExpressionReader;
 import cloud.erda.analyzer.runtime.MetricRuntime;
 import cloud.erda.analyzer.runtime.functions.MetricAlertSelectFunction;
 import cloud.erda.analyzer.runtime.functions.MetricEventSelectFunction;
@@ -54,13 +54,13 @@ public class Main {
         env.getConfig().registerTypeWithKryoSerializer(Expression.class, CompatibleFieldSerializer.class);
         env.getConfig().registerTypeWithKryoSerializer(ExpressionFunction.class, CompatibleFieldSerializer.class);
         //从monitor中alert表达式数据
-        DataStream<ExpressionMetadata> allAlertExpressions = env.addSource(new AlertExpressions(parameterTool.get(Constants.MONITOR_ADDR)))
+        DataStream<ExpressionMetadata> allAlertExpressions = env.addSource(new AlertExpressionReader(parameterTool.get(Constants.MONITOR_ADDR)))
                 .forceNonParallel()
                 .returns(ExpressionMetadata.class)
                 .name("get alert expressions from monitor");
 
         //从monitor中获取metric表达式数据
-        DataStream<ExpressionMetadata> allMetricExpressions = env.addSource(new MetricExpressions(parameterTool.get(Constants.MONITOR_ADDR)))
+        DataStream<ExpressionMetadata> allMetricExpressions = env.addSource(new MetricExpressionReader(parameterTool.get(Constants.MONITOR_ADDR)))
                 .forceNonParallel()
                 .returns(ExpressionMetadata.class)
                 .name("get metric expressions from monitor");

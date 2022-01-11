@@ -12,13 +12,13 @@ import java.util.ArrayList;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
 @Slf4j
-public class NotifyAlertTemplates implements SourceFunction<AlertNotifyTemplate> {
+public class NotifyAlertTemplateReader implements SourceFunction<AlertNotifyTemplate> {
     private String monitorAddr;
     private long httpInterval = 60000;
     private int pageSize = 100;
     private int pageNo = 1;
 
-    public NotifyAlertTemplates(String monitorAddr) {
+    public NotifyAlertTemplateReader(String monitorAddr) {
         this.monitorAddr = monitorAddr;
     }
 

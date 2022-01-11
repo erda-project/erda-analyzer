@@ -98,12 +98,12 @@ public class Main {
         )).setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
                 .name("Store raw notify metrics to kafka");
 
-        DataStream<AlertNotify> alertNotifies = env.addSource(new AlertNotifies(parameterTool.get(Constants.MONITOR_ADDR)))
+        DataStream<AlertNotify> alertNotifies = env.addSource(new AlertNotifyReader(parameterTool.get(Constants.MONITOR_ADDR)))
                 .forceNonParallel()
                 .returns(AlertNotify.class)
                 .name("Query notify from monitor");
 
-        DataStream<AlertNotifyTemplate> alertNotifyTemplate = env.addSource(new NotifyAlertTemplates(parameterTool.get(Constants.MONITOR_ADDR)))
+        DataStream<AlertNotifyTemplate> alertNotifyTemplate = env.addSource(new NotifyAlertTemplateReader(parameterTool.get(Constants.MONITOR_ADDR)))
                 .forceNonParallel()
                 .returns(AlertNotifyTemplate.class)
                 .name("get alert templates from monitor");

@@ -8,13 +8,13 @@ import org.apache.flink.streaming.api.functions.source.SourceFunction;
 import java.util.ArrayList;
 
 @Slf4j
-public class MetricExpressions implements SourceFunction<ExpressionMetadata> {
+public class MetricExpressionReader implements SourceFunction<ExpressionMetadata> {
     private String monitorAddr;
     private long httpInterval = 60000;
     private int pageSize = 100;
     private int pageNo = 1;
 
-    public MetricExpressions(String monitorAddr) {
+    public MetricExpressionReader(String monitorAddr) {
         this.monitorAddr = monitorAddr;
     }
 

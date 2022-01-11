@@ -36,10 +36,10 @@ public class AlertNotifyTarget {
      */
     private String type;
 
-    @JsonSetter("group_id")
+    @JsonSetter("groupId")
     private String groupId;
 
-    @JsonSetter("group_type")
+    @JsonSetter("groupType")
     private String groupType;
 
     @JsonSetter("dingding_url")
