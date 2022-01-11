@@ -23,7 +23,7 @@ import java.util.HashSet;
  **/
 public class DistinctFunctionAggregator implements FunctionAggregator {
 
-    private final HashSet<Object> set = new HashSet<>();
+    protected final HashSet<Object> set = new HashSet<>();
 
     @Override
     public String aggregator() {
