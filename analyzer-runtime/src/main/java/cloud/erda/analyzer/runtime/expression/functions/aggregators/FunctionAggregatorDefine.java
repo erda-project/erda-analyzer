@@ -36,6 +36,8 @@ public class FunctionAggregatorDefine {
 
     static final String DISTINCT = "distinct";
 
+    static final String DISTINCT_COUNT = "distinct_count";
+
     static final String P99 = "p99";
 
     static final String P95 = "p95";

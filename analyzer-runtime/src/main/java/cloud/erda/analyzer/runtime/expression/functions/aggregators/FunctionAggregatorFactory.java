@@ -57,6 +57,9 @@ public class FunctionAggregatorFactory {
             case DISTINCT:
                 aggregator = new DistinctFunctionAggregator();
                 break;
+            case DISTINCT_COUNT:
+                aggregator = new DistinctCountFunctionAggregator();
+                break;
             case MERGE:
                 aggregator = new MergeFunctionAggregator();
                 break;
