@@ -40,4 +40,6 @@ public class EventBoxContent {
     private String label = "monitor";
 
     private List<EventBoxChannel> channels = new ArrayList<>();
+
+    private int alertId;
 }
