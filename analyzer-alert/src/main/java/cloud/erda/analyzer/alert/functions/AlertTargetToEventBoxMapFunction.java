@@ -48,6 +48,7 @@ public class AlertTargetToEventBoxMapFunction implements MapFunction<RenderedAle
             content.setOrgId(Integer.parseInt(tags.getOrDefault(AlertConstants.DICE_ORG_ID, AlertConstants.INVALID_ORG_ID)));
             Map<String, Object> notifyTags = new HashMap<>();
             notifyTags.put("alertId", Integer.parseInt(tags.get(AlertConstants.ALERT_ID)));
+            content.setNotifyTags(notifyTags);
 //            String[] groupTypes = value.getNotifyTarget().getGroupTypes();
 //            for (String groupType : groupTypes) {
 //                EventBoxChannel eventBoxChannel = new EventBoxChannel();
