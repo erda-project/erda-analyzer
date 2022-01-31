@@ -30,6 +30,7 @@ import org.apache.flink.util.Collector;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 /**
@@ -40,6 +41,13 @@ import java.util.Map;
 public class AlertEventMapFunction implements FlatMapFunction<MetricEvent, AlertEvent> {
 
     private TemplateManager templateManager = new TemplateManager();
+
+    private static final HashSet<String> defaultCustomAlertTypes = new HashSet<>();
+
+    static {
+        defaultCustomAlertTypes.add("org_customize");
+        defaultCustomAlertTypes.add("micro_service_customize");
+    }
 
     @Override
     public void flatMap(MetricEvent value, Collector<AlertEvent> out) {
@@ -64,6 +72,9 @@ public class AlertEventMapFunction implements FlatMapFunction<MetricEvent, Alert
         if (StringUtils.isEmpty(trigger)) {
             return;
         }
+        if( Boolean.parseBoolean(tags.get(AlertConstants.ALERT_SUPPRESSED))) {
+            return;
+        }
         try {
             AlertEvent alertEvent = new AlertEvent();
             alertEvent.setMetricEvent(value);
@@ -73,6 +84,7 @@ public class AlertEventMapFunction implements FlatMapFunction<MetricEvent, Alert
             alertEvent.setAlertIndex(alertIndex);
             alertEvent.setTrigger(AlertTrigger.valueOf(trigger));
             alertEvent.setLevel(AlertLevel.of(value));
+            this.setAlertSource(alertEvent, alertType);
             // 设置分组ID
             this.setGroupId(alertEvent, alertType, alertIndex);
             out.collect(alertEvent);
@@ -102,5 +114,13 @@ public class AlertEventMapFunction implements FlatMapFunction<MetricEvent, Alert
         value.setAlertGroup(groupId);
         value.getMetricEvent().getTags().put(AlertConstants.ALERT_GROUP_ID, groupId);
         value.getMetricEvent().getTags().put(AlertConstants.ALERT_GROUP, alertGroup);
+    }
+
+    private void setAlertSource(AlertEvent value, String alertType) {
+        String alertSource = value.getMetricEvent().getTags().get(AlertConstants.ALERT_SOURCE);
+        if(!StringUtils.isEmpty(alertSource))
+            return;
+        alertSource = defaultCustomAlertTypes.contains(alertType) ? "Custom" : "System";
+        value.setAlertSource(alertSource);
     }
 }

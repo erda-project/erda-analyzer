@@ -12,36 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cloud.erda.analyzer.runtime.models;
+package cloud.erda.analyzer.alert.models;
 
 import lombok.Data;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.Date;
 
-/**
- * @author: liuhaoyang
- * @create: 2019-12-20 00:01
- **/
 @Data
-public class OutputMetricEvent {
+public class AlertEventSuppress {
 
-    private String metadataId;
+    private String id;
 
-    private String rawMetricName;
+    private String alertEventId;
 
-    private String alias;
+    private AlertSuppressType suppressType;
 
-    // timestamp for metric
-    private long timestamp;
+    private Date expireTime;
 
-    // values for metric
-    private Map<String, Object> aggregatedFields;
-
-    // tags for metric
-    private Map<String, String> aggregatedTags;
-
-    private Set<String> outputs;
-
-    private AggregatedMetricEvent metric;
+    private boolean enable;
 }
+

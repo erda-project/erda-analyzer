@@ -35,6 +35,7 @@ public interface MetricSelectProcessFunction {
          * 处理Expression中的 select 和 field result
          */
         OutputMetricEvent outputMetricEvent = new OutputMetricEvent();
+        outputMetricEvent.setMetric(value);
         outputMetricEvent.setMetadataId(value.getMetadataId());
         outputMetricEvent.setAlias(value.getAlias());
         outputMetricEvent.setTimestamp(value.getMetric().getTimestamp());
