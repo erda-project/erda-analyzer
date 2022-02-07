@@ -37,6 +37,9 @@ public class AlertEventNotifyMetric implements Serializable {
     // tags for metric
     private Map<String, String> tags = new HashMap<>();
 
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp * 1000_000;
+    }
 
     public void addReduced() {
         fields.addReduced(1);
