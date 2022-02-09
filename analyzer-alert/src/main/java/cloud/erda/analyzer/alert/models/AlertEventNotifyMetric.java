@@ -14,6 +14,7 @@
 
 package cloud.erda.analyzer.alert.models;
 
+import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.constant.MetricConstants;
 import cloud.erda.analyzer.common.constant.MetricTagConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
@@ -66,6 +67,8 @@ public class AlertEventNotifyMetric implements Serializable {
 
         metric.getTags().put(MetricTagConstants.METRIC_SCOPE, alertMetric.getTags().get(MetricTagConstants.METRIC_SCOPE));
         metric.getTags().put(MetricTagConstants.METRIC_SCOPE_ID, alertMetric.getTags().get(MetricTagConstants.METRIC_SCOPE_ID));
+        metric.getTags().put(AlertConstants.ALERT_SCOPE, alertMetric.getTags().get(AlertConstants.ALERT_SCOPE));
+        metric.getTags().put(AlertConstants.ALERT_SCOPE_ID, alertMetric.getTags().get(AlertConstants.ALERT_SCOPE_ID));
 
         return metric;
     }
