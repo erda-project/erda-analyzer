@@ -29,6 +29,6 @@ public class AlertEventSuppress {
 
     private Date expireTime;
 
-    private boolean enable;
+    private boolean enabled;
 }
 

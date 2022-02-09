@@ -35,14 +35,14 @@ public class AlertEventSuppressReader implements DataRowReader<AlertEventSuppres
         String alertEventId = resultSet.getString("alert_event_id");
         AlertSuppressType suppressType = AlertSuppressType.valueOf(resultSet.getString("suppress_type"));
         Date expireTime = resultSet.getDate("expire_time");
-        boolean enable = resultSet.getBoolean("enable");
+        boolean enabled = resultSet.getBoolean("enabled");
 
         AlertEventSuppress suppress = new AlertEventSuppress();
         suppress.setId(id);
         suppress.setAlertEventId(alertEventId);
         suppress.setSuppressType(suppressType);
         suppress.setExpireTime(expireTime);
-        suppress.setEnable(enable);
+        suppress.setEnabled(enabled);
         return suppress;
     }
 }
