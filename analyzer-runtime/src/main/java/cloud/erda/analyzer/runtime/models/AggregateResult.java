@@ -28,4 +28,7 @@ public class AggregateResult {
     private Object formattedValue;
 
     private ExpressionFunction function;
+
+    // if operator exec success
+    private boolean operatorResult;
 }

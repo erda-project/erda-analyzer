@@ -187,6 +187,7 @@ public class MetricConstants {
 
     public static final String ALERT_KEY = "alert_keys";
     public static final String ALERT_METRIC_NAME = "analyzer-alert";
+    public static final String ALERT_EVENT_NOTIFY_METRIC_NAME = "analyzer-alert-notify";
 
     public static final String ALERT_ID = "alert_id";
 

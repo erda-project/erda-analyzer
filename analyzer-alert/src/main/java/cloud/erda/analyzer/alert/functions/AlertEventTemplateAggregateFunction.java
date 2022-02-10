@@ -14,7 +14,9 @@
 
 package cloud.erda.analyzer.alert.functions;
 
+import cloud.erda.analyzer.alert.models.AlertEventNotifyMetric;
 import cloud.erda.analyzer.alert.models.RenderedAlertEvent;
+import cloud.erda.analyzer.alert.utils.OutputTagUtils;
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.utils.StringUtil;
 import com.sun.org.apache.xpath.internal.axes.PredicatedNodeTest;
@@ -37,6 +39,7 @@ public class AlertEventTemplateAggregateFunction extends ProcessWindowFunction<R
 
     @Override
     public void process(String s, Context context, Iterable<RenderedAlertEvent> elements, Collector<RenderedAlertEvent> out) throws Exception {
+        AlertEventNotifyMetric processMetric = null;
         RenderedAlertEvent result = new RenderedAlertEvent();
         RenderedAlertEvent renderedAlertEvent = new RenderedAlertEvent();
         int dingLength = 20000;
@@ -59,12 +62,21 @@ public class AlertEventTemplateAggregateFunction extends ProcessWindowFunction<R
                     out.collect(result);
                     content = "";
                 }
+                if (StringUtil.isNotEmpty(content)) {
+                    if (processMetric == null) {
+                        processMetric = AlertEventNotifyMetric.createFrom(element.getMetricEvent());
+                    }
+                    processMetric.addReduced();
+                }
                 content = StringUtil.isEmpty(content) ? renderedAlertEvent.getContent() : content + space + renderedAlertEvent.getContent();
             }
             if (!StringUtil.isEmpty(content)) {
                 setResult(result, renderedAlertEvent, content);
                 out.collect(result);
             }
+        }
+        if (processMetric != null) {
+            context.output(OutputTagUtils.AlertEventNotifyProcess, processMetric);
         }
     }
 

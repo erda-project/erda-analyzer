@@ -14,13 +14,17 @@
 
 package cloud.erda.analyzer.runtime.functions;
 
+import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.utils.JsonMapperUtils;
+import cloud.erda.analyzer.runtime.models.AggregateResult;
 import cloud.erda.analyzer.runtime.models.AggregatedMetricEvent;
+import cloud.erda.analyzer.runtime.models.ExpressionFunction;
 import cloud.erda.analyzer.runtime.models.OutputMetricEvent;
 import cloud.erda.analyzer.common.constant.MetricTagConstants;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -28,6 +32,8 @@ import org.apache.flink.streaming.api.functions.KeyedProcessFunction;
 import org.apache.flink.util.Collector;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import static cloud.erda.analyzer.common.constant.MetricConstants.ALERT_METRIC_NAME;
 
@@ -50,18 +56,21 @@ public class MetricAlertSelectFunction extends KeyedProcessFunction<String, Aggr
         if (recoverState == null) {
             recoverState = factory(value.getKey());
         }
+
+        long lastTimestamp = recoverState.getTimestamp();
+        long now = System.currentTimeMillis();
+
         if (value.isOperatorResult()) {
             value.getAttributes().put(MetricTagConstants.TRIGGER, MetricTagConstants.ALERT);
+            value.getAttributes().put(MetricTagConstants.TRIGGER_DURATION, String.valueOf(now - lastTimestamp));
             if (!recoverState.isNeedRecover()) {
                 recoverState.setNeedRecover(true);
-                recoverState.setTimestamp(System.currentTimeMillis());
+                recoverState.setTimestamp(now);
                 state.update(recoverState);
             }
             return true;
         }
         if (!value.isOperatorResult() && recoverState.isNeedRecover()) {
-            long lastTimestamp = recoverState.getTimestamp();
-            long now = System.currentTimeMillis();
             recoverState.setNeedRecover(false);
             recoverState.setTimestamp(now);
             value.getAttributes().put(MetricTagConstants.TRIGGER, MetricTagConstants.RECOVER);
@@ -104,6 +113,27 @@ public class MetricAlertSelectFunction extends KeyedProcessFunction<String, Aggr
             alertEvent.getFields().put(MetricTagConstants.TRIGGER_DURATION, Long.parseLong(alertEvent.getTags().get(MetricTagConstants.TRIGGER_DURATION)));
             alertEvent.getTags().remove(MetricTagConstants.TRIGGER_DURATION);
         }
+
+        if (value.getMetric().getMetric().getTags().containsKey(MetricTagConstants.METRIC_EXPRESSION_GROUP_JSON)) {
+            alertEvent.getTags().put(AlertConstants.ALERT_SUBJECT, value.getMetric().getMetric().getTags().get(MetricTagConstants.METRIC_EXPRESSION_GROUP_JSON));
+        }
+
+        if (value.getMetric().isOperatorResult()) {
+            List<ExpressionFunction> funcs = new ArrayList<>();
+            for (AggregateResult result : value.getMetric().getResults()) {
+                if (result.isOperatorResult()) {
+                    funcs.add(result.getFunction());
+                }
+            }
+            alertEvent.getFields().put(AlertConstants.ALERT_TRIGGER_FUNCTIONS, JsonMapperUtils.toStrings(funcs));
+        }
+
+        alertEvent.getTags().put(AlertConstants.ALERT_EVENT_FAMILY_ID, DigestUtils.md5Hex(String.format("%s_%s_%s_%s",
+                value.getAggregatedTags().get(AlertConstants.ALERT_ID),
+                value.getAggregatedTags().get(AlertConstants.ALERT_TYPE),
+                value.getAggregatedTags().get(AlertConstants.ALERT_INDEX),
+                value.getMetric().getMetric().getTags().get(MetricTagConstants.METRIC_EXPRESSION_GROUP))));
+
         return alertEvent;
     }
 

@@ -12,36 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cloud.erda.analyzer.runtime.models;
+package cloud.erda.analyzer.alert.utils;
 
-import lombok.Data;
+import cloud.erda.analyzer.alert.models.AlertEventNotifyMetric;
+import org.apache.flink.api.common.typeinfo.TypeInformation;
+import org.apache.flink.util.OutputTag;
 
-import java.util.Map;
-import java.util.Set;
-
-/**
- * @author: liuhaoyang
- * @create: 2019-12-20 00:01
- **/
-@Data
-public class OutputMetricEvent {
-
-    private String metadataId;
-
-    private String rawMetricName;
-
-    private String alias;
-
-    // timestamp for metric
-    private long timestamp;
-
-    // values for metric
-    private Map<String, Object> aggregatedFields;
-
-    // tags for metric
-    private Map<String, String> aggregatedTags;
-
-    private Set<String> outputs;
-
-    private AggregatedMetricEvent metric;
+public class OutputTagUtils {
+    public static final OutputTag<AlertEventNotifyMetric> AlertEventNotifyProcess =
+            new OutputTag<AlertEventNotifyMetric>("output-alert-event-processing-metric", TypeInformation.of(AlertEventNotifyMetric.class));
 }

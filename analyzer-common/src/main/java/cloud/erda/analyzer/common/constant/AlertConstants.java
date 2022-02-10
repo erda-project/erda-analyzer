@@ -25,7 +25,17 @@ public class AlertConstants {
 
     public static final String ALERT_TYPE = "alert_type";
 
+    public static final String ALERT_SOURCE = "alert_source";
+
     public static final String ALERT_INDEX = "alert_index";
+
+    public static final String ALERT_SUBJECT = "alert_subject";
+
+    public static final String ALERT_TRIGGER_FUNCTIONS = "alert_trigger_functions";
+
+    public static final String ALERT_EVENT_FAMILY_ID = "family_id";
+
+    public static final String ALERT_SUPPRESSED = "alert_suppressed";
 
     public static final String TRIGGER = "trigger";
 
@@ -46,6 +56,8 @@ public class AlertConstants {
     public static final String ALERT_EXPRESSION_LEVEL = "level";
 
     public static final String ALERT_RULE_ID = "rule_id";
+
+    public static final String ALERT_RULE_NAME = "alert_name";
 
     public static final String ALERT_NOTIFY_TEMPLATE_ID = "notify_template_id";
 

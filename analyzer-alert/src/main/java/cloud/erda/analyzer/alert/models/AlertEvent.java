@@ -36,6 +36,8 @@ public class AlertEvent {
 
     private String alertIndex;
 
+    private String alertSource;
+
     private AlertTrigger trigger;
 
     private AlertLevel level;
@@ -52,6 +54,7 @@ public class AlertEvent {
         alertEvent.setExpressionId(expressionId);
         alertEvent.setAlertType(alertType);
         alertEvent.setAlertIndex(alertIndex);
+        alertEvent.setAlertSource(alertSource);
         alertEvent.setTrigger(trigger);
         alertEvent.setLevel(level);
         alertEvent.setAlertNotify(alertNotify);

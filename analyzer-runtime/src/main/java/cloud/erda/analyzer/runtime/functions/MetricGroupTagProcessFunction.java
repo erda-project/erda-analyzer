@@ -18,9 +18,11 @@ package cloud.erda.analyzer.runtime.functions;
 
 import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.constant.MetricTagConstants;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import cloud.erda.analyzer.runtime.models.KeyedMetricEvent;
 import org.apache.flink.api.common.functions.MapFunction;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -31,12 +33,15 @@ public class MetricGroupTagProcessFunction implements MapFunction<KeyedMetricEve
     @Override
     public KeyedMetricEvent map(KeyedMetricEvent event) throws Exception {
         StringBuilder sb = new StringBuilder();
+        HashMap<String, String> groups = new HashMap<>();
         for (String groupKey : event.getExpression().getGroup()) {
             Map<String, String> tags = event.getMetric().getTags();
             String value = tags.get(groupKey);
             sb.append(groupKey).append("_").append(value).append("_");
+            groups.put(groupKey, value);
         }
         event.getMetric().addTag(MetricTagConstants.METRIC_EXPRESSION_GROUP, sb.toString());
+        event.getMetric().addTag(MetricTagConstants.METRIC_EXPRESSION_GROUP_JSON, JsonMapperUtils.toStrings(groups));
         return event;
     }
 }
