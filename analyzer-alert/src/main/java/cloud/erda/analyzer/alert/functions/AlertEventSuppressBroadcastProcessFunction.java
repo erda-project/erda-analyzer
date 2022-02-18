@@ -45,8 +45,8 @@ public class AlertEventSuppressBroadcastProcessFunction extends BroadcastProcess
         String eventFamilyId = value.getTags().get(AlertConstants.ALERT_EVENT_FAMILY_ID);
         if (StringUtil.isNotEmpty(eventFamilyId)) {
             AlertEventSuppress suppressSetting = templateState.get(eventFamilyId);
-            if (suppressSetting != null && suppressSetting.isEnabled() && (suppressSetting.getSuppressType() == AlertSuppressType.Terminate
-                    || suppressSetting.getSuppressType() == AlertSuppressType.TimerRecover && suppressSetting.getExpireTime().getTime() > System.currentTimeMillis())) {
+            if (suppressSetting != null && suppressSetting.isEnabled() && (suppressSetting.getSuppressType() == AlertSuppressType.stop
+                    || suppressSetting.getSuppressType() == AlertSuppressType.pause && suppressSetting.getExpireTime().getTime() > System.currentTimeMillis())) {
                 suppressed = true;
             }
         }

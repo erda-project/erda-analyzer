@@ -15,7 +15,7 @@
 package cloud.erda.analyzer.alert.models;
 
 public enum AlertSuppressType {
-    None,
-    TimerRecover,
-    Terminate,
+    none,
+    pause,
+    stop,
 }
