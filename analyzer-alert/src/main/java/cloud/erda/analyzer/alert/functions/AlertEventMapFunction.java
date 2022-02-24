@@ -118,10 +118,10 @@ public class AlertEventMapFunction implements FlatMapFunction<MetricEvent, Alert
 
     private void setAlertSource(AlertEvent value, String alertType) {
         String alertSource = value.getMetricEvent().getTags().get(AlertConstants.ALERT_SOURCE);
-        if(!StringUtils.isEmpty(alertSource))
-            return;
-        alertSource = defaultCustomAlertTypes.contains(alertType) ? "Custom" : "System";
+        if(StringUtils.isEmpty(alertSource)){
+            alertSource = defaultCustomAlertTypes.contains(alertType) ? "Custom" : "System";
+            value.getMetricEvent().getTags().put(AlertConstants.ALERT_SOURCE, alertSource);
+        }
         value.setAlertSource(alertSource);
-        value.getMetricEvent().getTags().put(AlertConstants.ALERT_SOURCE, alertSource);
     }
 }
