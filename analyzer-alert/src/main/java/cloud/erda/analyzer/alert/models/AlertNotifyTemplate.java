@@ -46,6 +46,8 @@ public class AlertNotifyTemplate {
 
     private Map<String, String> formats;
 
+    private String language;
+
     /**
      * 内置的告警模板是不可变的，可以缓存解析器
      * 自定义告警模板是可变的。
@@ -55,4 +57,21 @@ public class AlertNotifyTemplate {
     private boolean enable;
 
     private long processingTime;
+
+    public AlertNotifyTemplate copy() {
+        AlertNotifyTemplate alertNotifyTemplate = new AlertNotifyTemplate();
+        alertNotifyTemplate.setId(id);
+        alertNotifyTemplate.setName(name);
+        alertNotifyTemplate.setAlertType(alertType);
+        alertNotifyTemplate.setAlertIndex(alertIndex);
+        alertNotifyTemplate.setTarget(target);
+        alertNotifyTemplate.setTrigger(trigger);
+        alertNotifyTemplate.setTitle(title);
+        alertNotifyTemplate.setTemplate(template);
+        alertNotifyTemplate.setFormats(formats);
+        alertNotifyTemplate.setLanguage(language);
+        alertNotifyTemplate.setVariable(variable);
+        alertNotifyTemplate.setEnable(enable);
+        return alertNotifyTemplate;
+    }
 }

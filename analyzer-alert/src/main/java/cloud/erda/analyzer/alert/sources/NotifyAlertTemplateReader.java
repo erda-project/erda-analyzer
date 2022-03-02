@@ -42,9 +42,20 @@ public class NotifyAlertTemplateReader implements SourceFunction<AlertNotifyTemp
                     } else {
                         alertNotifyTemplate.setVariable(true);
                     }
-                    alertNotifyTemplate.setId(alertNotifyTemplate.getAlertIndex() + "_" + alertNotifyTemplate.getTarget());
-                    log.info("Read notify template {} data: {}", alertNotifyTemplate.getAlertIndex(), JsonMapperUtils.toStrings(alertNotifyTemplate));
-                    notifyTemplateList.add(alertNotifyTemplate);
+                    String[] targetArr = alertNotifyTemplate.getTarget().split(",");
+                    if (targetArr.length > 1) {
+                        for (String target : targetArr) {
+                            AlertNotifyTemplate template = alertNotifyTemplate.copy();
+                            template.setTarget(target);
+                            template.setId(template.getAlertIndex() + "_" + target);
+                            log.info("Read notify template {} data: {}", template.getAlertIndex(), JsonMapperUtils.toStrings(template));
+                            notifyTemplateList.add(template);
+                        }
+                    } else {
+                        alertNotifyTemplate.setId(alertNotifyTemplate.getAlertIndex() + "_" + alertNotifyTemplate.getTarget());
+                        log.info("Read notify template {} data: {}", alertNotifyTemplate.getAlertIndex(), JsonMapperUtils.toStrings(alertNotifyTemplate));
+                        notifyTemplateList.add(alertNotifyTemplate);
+                    }
                 }
 
                 if (this.pageNo * this.pageSize >= alertNotifyTemplateData.getData().getTotal()) {

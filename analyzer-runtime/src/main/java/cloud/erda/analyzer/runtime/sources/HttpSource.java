@@ -13,7 +13,7 @@ public class HttpSource {
         if (dataStr == null) {
             return null;
         }
-        T result = JsonMapperUtils.toObject(dataStr,clazz);
+        T result = JsonMapperUtils.toObject(dataStr, clazz);
         return result;
     }
 }

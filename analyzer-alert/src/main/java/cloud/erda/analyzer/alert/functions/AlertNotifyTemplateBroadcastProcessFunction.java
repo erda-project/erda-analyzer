@@ -28,6 +28,8 @@ import org.apache.flink.util.Collector;
 import java.util.HashMap;
 import java.util.Map;
 
+import static cloud.erda.analyzer.common.constant.Constants.CUSTOMIZE;
+
 /**
  * @author: liuhaoyang
  * @create: 2020-01-05 21:13
@@ -93,17 +95,27 @@ public class AlertNotifyTemplateBroadcastProcessFunction extends BroadcastProces
     }
 
     private String getTemplateKey(AlertNotifyTemplate value) {
-        return value.getAlertType() + "." + value.getAlertIndex() + "." + value.getTarget() + "." + value.getTrigger().name();
+        if (value.getAlertType().contains(CUSTOMIZE)) {
+            return value.getAlertType() + "." + value.getAlertIndex() + "." + value.getTarget() + "." + value.getTrigger().name();
+        }
+        return value.getAlertType() + "." + value.getAlertIndex() + "." + value.getTarget() + "." + value.getLanguage() + "." + value.getTrigger().name();
     }
 
     private String[] getTemplateKeys(AlertEvent value, AlertNotifyTarget target) {
         if (AlertConstants.ALERT_NOTIFY_TYPE_NOTIFY_GROUP.equals(target.getType())) {
             String[] keys = new String[target.getGroupTypes().length];
             for (int i = 0; i < target.getGroupTypes().length; i++) {
-                keys[i] = value.getAlertType() + "." + value.getAlertIndex() + "." + target.getGroupTypes()[i] + "." + value.getTrigger().name();
+                if (value.getAlertType().contains(CUSTOMIZE)) {
+                    keys[i] = value.getAlertType() + "." + value.getAlertIndex() + "." + target.getGroupTypes()[i] + "." + value.getTrigger().name();
+                } else {
+                    keys[i] = value.getAlertType() + "." + value.getAlertIndex() + "." + target.getGroupTypes()[i] + "." + value.getLocale() + "." + value.getTrigger().name();
+                }
             }
             return keys;
         }
-        return new String[]{value.getAlertType() + "." + value.getAlertIndex() + "." + target.getType() + "." + value.getTrigger().name()};
+        if (value.getAlertType().contains(CUSTOMIZE)) {
+            return new String[]{value.getAlertType() + "." + value.getAlertIndex() + "." + target.getType() + "." + value.getTrigger().name()};
+        }
+        return new String[]{value.getAlertType() + "." + value.getAlertIndex() + "." + target.getType() + "." + value.getLocale() + "." + value.getTrigger().name()};
     }
 }

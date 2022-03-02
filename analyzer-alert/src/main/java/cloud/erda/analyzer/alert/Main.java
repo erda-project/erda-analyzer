@@ -107,6 +107,12 @@ public class Main {
                 .forceNonParallel()
                 .returns(AlertNotifyTemplate.class)
                 .name("get alert templates from monitor");
+        //获取对应组织设置的语言
+        DataStream<Org> orgLocale = env.addSource(new OrgLocaleReader(parameterTool.get(Constants.MONITOR_ADDR)))
+                .forceNonParallel()
+                .returns(Org.class)
+                .name("get org locale from monitor");
+
 
         // metric转换event
         DataStream<AlertEvent> alertEvents = alertMetric
@@ -120,7 +126,14 @@ public class Main {
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("broadcast alert notify");
 
-        DataStream<AlertEvent> alertEventsWithTemplate = alertEventsWithNotify
+        DataStream<AlertEvent> alertEventsWithLocale = alertEventsWithNotify
+                .connect(orgLocale.broadcast(StateDescriptors.orgLocaleStateDescriptor))
+                .process(new OrgLocaleBroadcastProcessFunction(parameterTool.getLong(METRIC_METADATA_TTL, 75000), StateDescriptors.orgLocaleStateDescriptor))
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+                .name("broadcast org locale");
+
+//        DataStream<AlertEvent> alertEventsWithTemplate = alertEventsWithNotify
+        DataStream<AlertEvent> alertEventsWithTemplate = alertEventsWithLocale
                 .connect(alertNotifyTemplate.broadcast(StateDescriptors.alertNotifyTemplateStateDescriptor))
                 .process(new AlertNotifyTemplateBroadcastProcessFunction(parameterTool.getLong(METRIC_METADATA_TTL,
                         75000), StateDescriptors.alertNotifyTemplateStateDescriptor))
