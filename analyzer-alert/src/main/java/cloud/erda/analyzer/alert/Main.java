@@ -18,7 +18,6 @@ import cloud.erda.analyzer.alert.functions.*;
 import cloud.erda.analyzer.alert.models.*;
 import cloud.erda.analyzer.alert.sources.*;
 import cloud.erda.analyzer.alert.utils.OutputTagUtils;
-import cloud.erda.analyzer.alert.sources.*;
 import cloud.erda.analyzer.alert.watermarks.RenderedAlertEventWatermarkExtractor;
 import cloud.erda.analyzer.alert.sinks.EventBoxSink;
 import cloud.erda.analyzer.alert.utils.StateDescriptors;
@@ -40,7 +39,6 @@ import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
@@ -272,6 +270,16 @@ public class Main {
                 .addSink(new EventBoxSink(parameterTool.getProperties()))
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
                 .name("send alert message to eventbox");
+
+        alertEventLevel.getSideOutput(OutputTagUtils.AlertEventNotifyProcess)
+                .union(alertEventsSilence.getSideOutput(OutputTagUtils.AlertEventNotifyProcess))
+                .union(aggregatedAlertEvents.getSideOutput(OutputTagUtils.AlertEventNotifyProcess))
+                .addSink(new FlinkKafkaProducer<>(
+                        parameterTool.getRequired(Constants.KAFKA_BROKERS),
+                        parameterTool.getRequired(Constants.TOPIC_METRICS),
+                        new CommonSchema<>(AlertEventNotifyMetric.class)))
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
+                .name("send notify message to eventbox");
 
         alertEventLevel.getSideOutput(OutputTagUtils.AlertEventNotifyProcess)
                 .union(alertEventsSilence.getSideOutput(OutputTagUtils.AlertEventNotifyProcess))
