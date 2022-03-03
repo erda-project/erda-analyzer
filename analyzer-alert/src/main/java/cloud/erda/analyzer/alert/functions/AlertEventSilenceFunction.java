@@ -15,8 +15,10 @@
 package cloud.erda.analyzer.alert.functions;
 
 import cloud.erda.analyzer.alert.models.AlertEvent;
+import cloud.erda.analyzer.alert.models.AlertEventNotifyMetric;
 import cloud.erda.analyzer.alert.models.AlertLevel;
 import cloud.erda.analyzer.alert.models.AlertTrigger;
+import cloud.erda.analyzer.alert.utils.OutputTagUtils;
 import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.constant.MetricTagConstants;
 import lombok.Data;
@@ -41,6 +43,7 @@ public class AlertEventSilenceFunction extends KeyedProcessFunction<String, Aler
 
     @Override
     public void processElement(AlertEvent value, Context ctx, Collector<AlertEvent> out) throws Exception {
+        AlertEventNotifyMetric processMetric = AlertEventNotifyMetric.createFrom(value.getMetricEvent());
         ValueState<SilenceState> state = getRuntimeContext().getState(silenceStateDescriptor);
         SilenceState silence = state.value();
         if (silence == null) {
@@ -60,6 +63,8 @@ public class AlertEventSilenceFunction extends KeyedProcessFunction<String, Aler
                 // If the alert level is higher than the alert level triggered last time, the alert event will continue to be process
                 if (silence.getLastAlertLevel().compareTo(value.getLevel()) <= 0) {
                     silence.setSilenceCount(silence.getSilenceCount() + 1);
+                    processMetric.addSilenced();
+                    ctx.output(OutputTagUtils.AlertEventNotifyProcess, processMetric);
                     return;
                 }
             }

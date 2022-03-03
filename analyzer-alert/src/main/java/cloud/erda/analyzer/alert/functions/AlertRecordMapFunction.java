@@ -14,6 +14,7 @@
 
 package cloud.erda.analyzer.alert.functions;
 
+import cloud.erda.analyzer.alert.models.AlertLevel;
 import cloud.erda.analyzer.alert.models.RenderedAlertEvent;
 import cloud.erda.analyzer.alert.models.AlertRecord;
 import cloud.erda.analyzer.common.constant.AlertConstants;
@@ -43,6 +44,12 @@ public class AlertRecordMapFunction implements MapFunction<RenderedAlertEvent, A
         record.setAlertId(Long.valueOf(this.getTag(metric, AlertConstants.ALERT_ID)));
         record.setAlertName(this.getTag(metric, AlertConstants.ALERT_TITLE));
         record.setRuleId(Long.valueOf(this.getTag(metric, AlertConstants.ALERT_RULE_ID)));
+        record.setRuleName(this.getTag(metric, AlertConstants.ALERT_RULE_NAME));
+        record.setAlertSource(this.getTag(metric, AlertConstants.ALERT_SOURCE));
+        record.setAlertSubject(this.getTag(metric, AlertConstants.ALERT_SUBJECT));
+        record.setAlertEventFamilyId(this.getTag(metric, AlertConstants.ALERT_EVENT_FAMILY_ID));
+        record.setOrgId(Long.valueOf(this.getTag(metric, AlertConstants.DICE_ORG_ID)));
+        record.setAlertLevel(AlertLevel.of(this.getTag(metric, AlertConstants.ALERT_LEVEL)).toString());
         record.setAlertTime(metric.getTimestamp() / (1000 * 1000));
         return record;
     }

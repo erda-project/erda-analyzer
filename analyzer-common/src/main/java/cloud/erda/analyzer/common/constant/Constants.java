@@ -130,11 +130,14 @@ public class Constants {
     /**
      * sql
      */
+    public static final String ALERT_EVENT_SUPPRESS_QUERY = "SELECT * FROM `sp_alert_event_suppress`";
+
     public static final String ALERT_EXPRESSION_QUERY = "SELECT * FROM `sp_alert_expression` WHERE enable = 1";
 
     public static final String METRIC_EXPRESSION_QUERY = "SELECT * FROM `sp_metric_expression` WHERE enable = 1";
 
     public static final String ALERT_NOTIFY_QUERY = "SELECT * FROM `sp_alert_notify` WHERE enable = 1";
+
     //用户配置的告警策略
     public static final String NOTIFY_QUERY = "SELECT * FROM `sp_notify` WHERE enable = 1";
 

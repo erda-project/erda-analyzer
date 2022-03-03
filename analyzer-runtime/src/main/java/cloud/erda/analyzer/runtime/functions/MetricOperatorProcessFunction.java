@@ -63,6 +63,7 @@ public class MetricOperatorProcessFunction extends ProcessWindowFunction<Aggrega
             invokeScript(value, result.getFunction(), resultFields);
             FunctionOperator functionOperator = FunctionOperatorFactory.create(result.getFunction());
             boolean op = functionOperator.invoke(result);
+            result.setOperatorResult(op);
             condition = result.getFunction().getCondition();
             if (condition.equals(FunctionCondition.and) && !op) {
                 return false;

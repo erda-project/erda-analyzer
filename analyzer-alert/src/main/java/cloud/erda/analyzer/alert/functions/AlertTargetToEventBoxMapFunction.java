@@ -21,6 +21,7 @@ import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import org.apache.flink.api.common.functions.MapFunction;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -45,6 +46,11 @@ public class AlertTargetToEventBoxMapFunction implements MapFunction<RenderedAle
             content.setSourceId(tags.get(AlertConstants.ALERT_SCOPE_ID));
             content.setNotifyItemDisplayName(value.getTitle());
             content.setOrgId(Integer.parseInt(tags.getOrDefault(AlertConstants.DICE_ORG_ID, AlertConstants.INVALID_ORG_ID)));
+            Map<String, Object> notifyTags = new HashMap<>();
+            notifyTags.put("alertId", Integer.parseInt(tags.get(AlertConstants.ALERT_ID)));
+            notifyTags.put("groupId", Long.parseLong(value.getNotifyTarget().getGroupId()));
+            notifyTags.put("alertName", tags.get("alert_name"));
+            content.setNotifyTags(notifyTags);
 //            String[] groupTypes = value.getNotifyTarget().getGroupTypes();
 //            for (String groupType : groupTypes) {
 //                EventBoxChannel eventBoxChannel = new EventBoxChannel();

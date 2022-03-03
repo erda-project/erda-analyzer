@@ -18,6 +18,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author: liuhaoyang
@@ -40,4 +41,6 @@ public class EventBoxContent {
     private String label = "monitor";
 
     private List<EventBoxChannel> channels = new ArrayList<>();
+
+    private Map<String, Object> notifyTags;
 }

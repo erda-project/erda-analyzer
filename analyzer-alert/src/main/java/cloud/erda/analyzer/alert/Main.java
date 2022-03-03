@@ -17,6 +17,8 @@ package cloud.erda.analyzer.alert;
 import cloud.erda.analyzer.alert.functions.*;
 import cloud.erda.analyzer.alert.models.*;
 import cloud.erda.analyzer.alert.sources.*;
+import cloud.erda.analyzer.alert.utils.OutputTagUtils;
+import cloud.erda.analyzer.alert.sources.*;
 import cloud.erda.analyzer.alert.watermarks.RenderedAlertEventWatermarkExtractor;
 import cloud.erda.analyzer.alert.sinks.EventBoxSink;
 import cloud.erda.analyzer.alert.utils.StateDescriptors;
@@ -26,19 +28,27 @@ import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.functions.MetricEventCorrectFunction;
 import cloud.erda.analyzer.common.models.Event;
 import cloud.erda.analyzer.common.models.MetricEvent;
+import cloud.erda.analyzer.alert.partitioners.AlertRecordKafkaPartitioner;
+import cloud.erda.analyzer.common.schemas.CommonSchema;
 import cloud.erda.analyzer.common.schemas.MetricEventSchema;
 import cloud.erda.analyzer.common.utils.CassandraSinkUtils;
 import cloud.erda.analyzer.common.utils.ExecutionEnv;
 import cloud.erda.analyzer.common.watermarks.MetricWatermarkExtractor;
+import cloud.erda.analyzer.runtime.sources.FlinkMysqlAppendSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.ProcessFunction;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer;
 import schemas.RecordSchema;
+
+import java.util.Optional;
+import java.util.Properties;
 
 import static cloud.erda.analyzer.common.constant.Constants.*;
 
@@ -71,6 +81,21 @@ public class Main {
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_INPUT))
                 .name("alert metrics consumer");
 
+        //sp_alert_event_suppress
+        DataStream<AlertEventSuppress> alertEventSuppressSettings = env
+                .addSource(new FlinkMysqlAppendSource<>(ALERT_EVENT_SUPPRESS_QUERY,
+                        parameterTool.getLong(METRIC_METADATA_INTERVAL, 60000),
+                        new AlertEventSuppressReader(), parameterTool.getProperties()))
+                .forceNonParallel() // 避免多个线程重复读取mysql
+                .returns(AlertEventSuppress.class)
+                .name("Query alert event suppress settings from mysql");
+
+        DataStream<MetricEvent> alertMetricWithSuppressSettings = alertMetric
+                .connect(alertEventSuppressSettings.broadcast(StateDescriptors.alertEventSuppressSettingsStateDescriptor))
+                .process(new AlertEventSuppressBroadcastProcessFunction(StateDescriptors.alertEventSuppressSettingsStateDescriptor))
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+                .name("broadcast alert event suppress settings");
+
         //获取notify相关的metric
         DataStream<MetricEvent> notifyMetric = env.addSource(new FlinkKafkaConsumer<>(
                 parameterTool.getRequired(Constants.TOPIC_NOTIFY),
@@ -84,7 +109,7 @@ public class Main {
                 .name("alert metrics consumer");
 
         // 存储原始告警数据
-        alertMetric.addSink(new FlinkKafkaProducer<>(
+        alertMetricWithSuppressSettings.addSink(new FlinkKafkaProducer<>(
                 parameterTool.getRequired(Constants.KAFKA_BROKERS),
                 parameterTool.getRequired(Constants.TOPIC_METRICS),
                 new MetricEventSchema()
@@ -115,7 +140,7 @@ public class Main {
 
 
         // metric转换event
-        DataStream<AlertEvent> alertEvents = alertMetric
+        DataStream<AlertEvent> alertEvents = alertMetricWithSuppressSettings
                 .flatMap(new AlertEventMapFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("map metric to alert event");
@@ -149,14 +174,17 @@ public class Main {
 
         // 存储告警记录
         //不进行数据存储操作，将数据发送到kafka中，由monitor读取再存入mysql中
+        Properties kafkaProps = new Properties();
+        kafkaProps.setProperty("bootstrap.servers", parameterTool.getRequired(Constants.KAFKA_BROKERS));
         ticketAlertRender.
                 map(new AlertRecordMapFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("RenderedAlertEvent to record")
                 .addSink(new FlinkKafkaProducer<>(
-                        parameterTool.getRequired(Constants.KAFKA_BROKERS),
-                        parameterTool.getRequired(Constants.TOPIC_RECORD_ALERT),
-                        new RecordSchema(AlertRecord.class)))
+                        parameterTool.getRequired(TOPIC_RECORD_ALERT),
+                        new RecordSchema<>(AlertRecord.class),
+                        kafkaProps,
+                        Optional.of(new AlertRecordKafkaPartitioner())))
                 .setParallelism(parameterTool.getInt(Constants.STREAM_PARALLELISM_OUTPUT))
                 .name("push alert record output to kafka");
 
@@ -189,7 +217,7 @@ public class Main {
             CassandraSinkUtils.addSink(alertHistories, env, parameterTool);
         }
 
-        DataStream<AlertEvent> alertEventLevel = alertEventsWithTemplate
+        SingleOutputStreamOperator<AlertEvent> alertEventLevel = alertEventsWithTemplate
                 .filter(new AlertEventLevelFilterFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("filter event notify level")
@@ -201,7 +229,8 @@ public class Main {
                 .name("processing alert level merge");
 
         // 告警静默
-        DataStream<AlertEvent> alertEventsSilence = alertEventLevel
+//        DataStream<AlertEvent> alertEventsSilence = alertEventsWithTemplate
+        SingleOutputStreamOperator<AlertEvent> alertEventsSilence = alertEventLevel
                 .assignTimestampsAndWatermarks(new AlertEventWatermarkExtractor())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .keyBy(new AlertEventGroupFunction())
@@ -224,7 +253,7 @@ public class Main {
         //        .name("send alert message to ticket");
 
         // dingding 和 notify_group 的消息1分钟内收敛聚合
-        DataStream<RenderedAlertEvent> aggregatedAlertEvents = alertEventsSilence
+        SingleOutputStreamOperator<RenderedAlertEvent> aggregatedAlertEvents = alertEventsSilence
                 .filter(new AlertEventTargetFilterFunction(AlertConstants.ALERT_NOTIFY_TYPE_DINGDING, AlertConstants.ALERT_NOTIFY_TYPE_NOTIFY_GROUP))
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .map(new AlertEventTemplateRenderFunction())
@@ -243,6 +272,16 @@ public class Main {
                 .addSink(new EventBoxSink(parameterTool.getProperties()))
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
                 .name("send alert message to eventbox");
+
+        alertEventLevel.getSideOutput(OutputTagUtils.AlertEventNotifyProcess)
+                .union(alertEventsSilence.getSideOutput(OutputTagUtils.AlertEventNotifyProcess))
+                .union(aggregatedAlertEvents.getSideOutput(OutputTagUtils.AlertEventNotifyProcess))
+                .addSink(new FlinkKafkaProducer<>(
+                        parameterTool.getRequired(Constants.KAFKA_BROKERS),
+                        parameterTool.getRequired(Constants.TOPIC_METRICS),
+                        new CommonSchema<>(AlertEventNotifyMetric.class)))
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
+                .name("Store alert notify processing metrics to kafka");
 
         log.info(env.getExecutionPlan());
 

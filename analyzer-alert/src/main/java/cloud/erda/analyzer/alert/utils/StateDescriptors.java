@@ -48,4 +48,7 @@ public class StateDescriptors {
 
     public static final MapStateDescriptor<String, Org> orgLocaleStateDescriptor =
             new MapStateDescriptor<>("org_locales", BasicTypeInfo.STRING_TYPE_INFO, TypeInformation.of(Org.class));
+
+    public static final MapStateDescriptor<String, AlertEventSuppress> alertEventSuppressSettingsStateDescriptor =
+            new MapStateDescriptor<>("alert_event_suppress_settings_state", BasicTypeInfo.STRING_TYPE_INFO, TypeInformation.of(AlertEventSuppress.class));
 }

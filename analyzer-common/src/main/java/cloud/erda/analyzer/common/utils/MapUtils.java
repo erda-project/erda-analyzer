@@ -16,6 +16,7 @@
 
 package cloud.erda.analyzer.common.utils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -50,5 +51,20 @@ public class MapUtils {
             }
         }
         return true;
+    }
+
+    public static <TKey, TValue> Map<TKey, TValue> excludeKeys(Map<TKey, TValue> map, TKey... keys) {
+        if (map == null)
+            return null;
+
+        HashMap<TKey, TValue> result = new HashMap<>();
+        for (Map.Entry<TKey, TValue> entry : map.entrySet()) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+        for (TKey key : keys) {
+            result.remove(key);
+        }
+
+        return result;
     }
 }

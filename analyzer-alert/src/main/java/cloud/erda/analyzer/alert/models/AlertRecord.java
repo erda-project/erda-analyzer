@@ -46,5 +46,19 @@ public class AlertRecord {
 
     private Long ruleId;
 
+    private String ruleName;
+
     private Long alertTime;
+
+    private String alertEventFamilyId;
+
+    private String alertSource;
+
+    private String alertSubject;
+
+    private String alertTriggerFunctions;
+
+    private String alertLevel;
+
+    private Long orgId;
 }

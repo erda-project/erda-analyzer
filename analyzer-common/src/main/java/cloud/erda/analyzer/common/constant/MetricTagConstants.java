@@ -124,4 +124,5 @@ public class MetricTagConstants {
     public static final String LABELS_OFFLINE = "offline";
 
     public static final String METRIC_EXPRESSION_GROUP = "metric_expression_group";
+    public static final String METRIC_EXPRESSION_GROUP_JSON = "metric_expression_group_json";
 }
