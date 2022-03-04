@@ -16,7 +16,6 @@ package cloud.erda.analyzer.alert.utils;
 
 import cloud.erda.analyzer.common.constant.AlertConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
-import cloud.erda.analyzer.common.*;
 import cloud.erda.analyzer.common.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,6 +36,15 @@ public class RepairErrorUrlUtils {
     private static String pattern = "(.*)-org.*";
     private static Pattern p = Pattern.compile(pattern);
 
+    //部署中心（详情）
+    //	routeFormatRuntime      = "/workBench/projects/%s/apps/%s/deploy/runtimes/%s/overview"(原)
+    private static String routeFormatRuntime = "dop/projects/%s/deploy/list/%s/{{application_id}}/runtime/{{runtime_id}}";
+
+    //记录
+    //  RecordPathFormat    = "/microService/%s/%s/%s/alarm-management/%s/alarm-record"(原）
+    private static String recordPathFormat = "msp/%s/%s/%s/alarm-management/%s/list/events/{{family_id}}";
+
+
     public static MetricEvent modifyMetricEvent(MetricEvent metricEvent) throws MalformedURLException {
         String displayUrl = metricEvent.getTags().get(AlertConstants.DISPLAY_URL);
         String recordUrl = metricEvent.getTags().get(AlertConstants.RECORD_URL);
@@ -54,6 +62,44 @@ public class RepairErrorUrlUtils {
         }
         return metricEvent;
     }
+
+    public static String[] getElements(String url, MetricEvent metricEvent) throws MalformedURLException {
+        String head = getHead(url, metricEvent);
+        String subString = url.substring(head.length());
+        String[] elements = subString.split("/");
+        return elements;
+    }
+
+    public static String getHead(String url, MetricEvent metricEvent) throws MalformedURLException {
+        URL u = new URL(url);
+        String protocol = u.getProtocol();
+        String host = u.getHost();
+        String head = protocol + "://" + host + "/" + metricEvent.getTags().get("org_name") + "/";
+        return head;
+    }
+
+    public static void replaceMetricEvent(MetricEvent metricEvent) throws MalformedURLException {
+        String displayUrl = metricEvent.getTags().get(AlertConstants.DISPLAY_URL);
+        String recordUrl = metricEvent.getTags().get(AlertConstants.RECORD_URL);
+        String head = "";
+        if (!displayUrl.equals("")) {
+            head = getHead(displayUrl, metricEvent);
+            String[] elements = getElements(displayUrl, metricEvent);
+            if (elements[0].equals(WorkBench)) {
+                String rDisplayUrl = String.format(routeFormatRuntime, elements[2], metricEvent.getTags().get("workspace"));
+                metricEvent.getTags().put(AlertConstants.DISPLAY_URL, head + rDisplayUrl);
+            }
+        }
+        if (!recordUrl.equals("")) {
+            head = getHead(recordUrl, metricEvent);
+            String[] elements = getElements(recordUrl, metricEvent);
+            if (elements[0].equals(MicroService)) {
+                String rRecordUrl = String.format(recordPathFormat, elements[1], elements[2], elements[3], elements[5]);
+                metricEvent.getTags().put(AlertConstants.RECORD_URL, head + rRecordUrl);
+            }
+        }
+    }
+
 
     public static String modifyUrl(String orgName, String url) throws MalformedURLException {
         URL u = new URL(url);
