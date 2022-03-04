@@ -61,6 +61,8 @@ public class AlertEventTemplateRenderFunction implements MapFunction<AlertEvent,
 
         //repair the old display_url and record_url
         RepairErrorUrlUtils.modifyMetricEvent(value.getMetricEvent());
+        //replace the old err display_url and record_url
+        RepairErrorUrlUtils.replaceMetricEvent(value.getMetricEvent());
 
         String displayUrl = value.getMetricEvent().getTags().get(AlertConstants.DISPLAY_URL);
         if (displayUrl != null) {
