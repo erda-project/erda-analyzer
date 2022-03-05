@@ -59,6 +59,7 @@ public class NotifyAlertTemplateReader implements SourceFunction<AlertNotifyTemp
                 }
 
                 if (this.pageNo * this.pageSize >= alertNotifyTemplateData.getData().getTotal()) {
+                    this.pageNo = 1;
                     break;
                 }
             }

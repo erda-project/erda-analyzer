@@ -2,6 +2,7 @@ package cloud.erda.analyzer.alert.sources;
 
 import cloud.erda.analyzer.alert.models.Org;
 import cloud.erda.analyzer.alert.models.OrgData;
+import cloud.erda.analyzer.common.utils.JsonMapperUtils;
 import cloud.erda.analyzer.runtime.sources.HttpSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
@@ -27,11 +28,12 @@ public class OrgLocaleReader implements SourceFunction<Org> {
                 log.error("get org locale is failed err is {}", orgData.getErr().toString());
                 return orgs;
             }
-            for (Map.Entry<String, String> entry: orgData.getData().entrySet()) {
+            for (Map.Entry<String, String> entry : orgData.getData().entrySet()) {
                 Org org = new Org();
                 org.setName(entry.getKey());
                 org.setLocale(entry.getValue());
                 org.setProcessingTime(System.currentTimeMillis());
+                log.info("Read Org data:{}", JsonMapperUtils.toStrings(org));
                 orgs.add(org);
             }
         }

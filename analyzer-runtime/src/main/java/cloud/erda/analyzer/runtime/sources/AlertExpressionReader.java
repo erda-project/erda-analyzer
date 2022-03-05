@@ -43,6 +43,7 @@ public class AlertExpressionReader implements SourceFunction<ExpressionMetadata>
                     expressionMetadataList.add(expressionMetadata);
                 }
                 if (this.pageNo * this.pageSize >= alertExpressionData.getData().getTotal()) {
+                    this.pageNo = 1;
                     break;
                 }
             }

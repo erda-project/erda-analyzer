@@ -52,6 +52,7 @@ public class AlertNotifyReader implements SourceFunction<AlertNotify> {
                     notifies.add(alertNotify);
                 }
                 if (this.pageNo * this.pageSize >= alertNotifiesData.getData().getTotal()) {
+                    this.pageNo = 1;
                     break;
                 }
             }
