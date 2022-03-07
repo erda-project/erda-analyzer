@@ -155,7 +155,6 @@ public class Main {
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("broadcast org locale");
 
-//        DataStream<AlertEvent> alertEventsWithTemplate = alertEventsWithNotify
         DataStream<AlertEvent> alertEventsWithTemplate = alertEventsWithLocale
                 .connect(alertNotifyTemplate.broadcast(StateDescriptors.alertNotifyTemplateStateDescriptor))
                 .process(new AlertNotifyTemplateBroadcastProcessFunction(parameterTool.getLong(METRIC_METADATA_TTL,
@@ -270,16 +269,6 @@ public class Main {
                 .addSink(new EventBoxSink(parameterTool.getProperties()))
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
                 .name("send alert message to eventbox");
-
-        alertEventLevel.getSideOutput(OutputTagUtils.AlertEventNotifyProcess)
-                .union(alertEventsSilence.getSideOutput(OutputTagUtils.AlertEventNotifyProcess))
-                .union(aggregatedAlertEvents.getSideOutput(OutputTagUtils.AlertEventNotifyProcess))
-                .addSink(new FlinkKafkaProducer<>(
-                        parameterTool.getRequired(Constants.KAFKA_BROKERS),
-                        parameterTool.getRequired(Constants.TOPIC_METRICS),
-                        new CommonSchema<>(AlertEventNotifyMetric.class)))
-                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OUTPUT))
-                .name("send notify message to eventbox");
 
         alertEventLevel.getSideOutput(OutputTagUtils.AlertEventNotifyProcess)
                 .union(alertEventsSilence.getSideOutput(OutputTagUtils.AlertEventNotifyProcess))
