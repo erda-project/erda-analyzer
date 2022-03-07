@@ -34,5 +34,5 @@ public class KeyedMetricEvent {
 
     private Expression expression;
 
-    private Map<String, Object> attributes;
+    private Map<String, String> attributes;
 }

@@ -90,7 +90,7 @@ public abstract class ExpressionMetadataReader implements DataRowReader<Expressi
              */
 
             String attributesValue = resultSet.getString("attributes");
-            Map<String, Object> attributes = new HashMap<>();
+            Map<String, String> attributes = new HashMap<>();
             if (!StringUtils.isEmpty(attributesValue)) {
                 Map<String, Object> local = parseJsonField(attributesValue, "attributes", metadata.getId(), String.class, Object.class);
                 processAttributes(local, attributes);
@@ -213,7 +213,7 @@ public abstract class ExpressionMetadataReader implements DataRowReader<Expressi
         }
     }
 
-    private void processAttributes(Map<String, Object> src, Map<String, Object> des) {
+    private void processAttributes(Map<String, Object> src, Map<String, String> des) {
         for (Map.Entry<String, Object> item : src.entrySet()) {
             if (item.getValue() instanceof String) {
                 des.put(item.getKey(), (String) item.getValue());

@@ -31,7 +31,7 @@ public class ExpressionMetadata {
 
     private String version;
 
-    private Map<String, Object> attributes;
+    private Map<String, String> attributes;
 
     private Expression expression;
 
