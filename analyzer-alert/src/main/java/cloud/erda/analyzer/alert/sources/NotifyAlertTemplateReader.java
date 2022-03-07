@@ -25,7 +25,6 @@ public class NotifyAlertTemplateReader implements SourceFunction<AlertNotifyTemp
     public ArrayList<AlertNotifyTemplate> GetEnabledTemplates() throws Exception {
         String uri = "/api/alert/templates?pageNo=%d&pageSize=%d";
         ArrayList<AlertNotifyTemplate> notifyTemplateList = new ArrayList<>();
-        log.isInfoEnabled();
         while (true) {
             AlertNotifyTemplateData alertNotifyTemplateData = HttpSource.doHttpGet(uri, this.monitorAddr, this.pageNo, this.pageSize, AlertNotifyTemplateData.class);
             if (alertNotifyTemplateData != null) {
@@ -49,12 +48,16 @@ public class NotifyAlertTemplateReader implements SourceFunction<AlertNotifyTemp
                             AlertNotifyTemplate template = alertNotifyTemplate.copy();
                             template.setTarget(target);
                             template.setId(template.getAlertIndex() + "_" + target);
-//                            log.info("Read notify template {} data: {}", template.getAlertIndex(), JsonMapperUtils.toStrings(template));
+                            if (log.isInfoEnabled()) {
+                                log.info("Read notify template {} data: {}", template.getAlertIndex(), JsonMapperUtils.toStrings(template));
+                            }
                             notifyTemplateList.add(template);
                         }
                     } else {
                         alertNotifyTemplate.setId(alertNotifyTemplate.getAlertIndex() + "_" + alertNotifyTemplate.getTarget());
-//                        log.info("Read notify template {} data: {}", alertNotifyTemplate.getAlertIndex(), JsonMapperUtils.toStrings(alertNotifyTemplate));
+                        if (log.isInfoEnabled()) {
+                            log.info("Read notify template {} data: {}", alertNotifyTemplate.getAlertIndex(), JsonMapperUtils.toStrings(alertNotifyTemplate));
+                        }
                         notifyTemplateList.add(alertNotifyTemplate);
                     }
                 }

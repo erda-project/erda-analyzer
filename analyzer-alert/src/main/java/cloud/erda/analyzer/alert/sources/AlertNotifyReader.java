@@ -49,7 +49,9 @@ public class AlertNotifyReader implements SourceFunction<AlertNotify> {
                         alertNotify.getNotifyTarget().setLevels(new AlertLevel[0]);
                     }
                     alertNotify.setProcessingTime(System.currentTimeMillis());
-                    log.info("Read alert notify {} data: {}", alertNotify.getId(), alertNotify);
+                    if (log.isInfoEnabled()) {
+                        log.info("Read alert notify {} data: {}", alertNotify.getId(), alertNotify);
+                    }
                     notifies.add(alertNotify);
                 }
                 if (this.pageNo * this.pageSize >= alertNotifiesData.getData().getTotal()) {

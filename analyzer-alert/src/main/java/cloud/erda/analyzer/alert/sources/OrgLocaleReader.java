@@ -26,7 +26,9 @@ public class OrgLocaleReader implements SourceFunction<Org> {
         log.isInfoEnabled();
         if (orgData != null) {
             if (!orgData.isSuccess()) {
-                log.info("get org locale is failed err is {}", orgData.getErr().toString());
+                if (log.isInfoEnabled()) {
+                    log.info("get org locale is failed err is {}", orgData.getErr().toString());
+                }
                 return orgs;
             }
             for (Map.Entry<String, String> entry : orgData.getData().entrySet()) {
@@ -34,7 +36,9 @@ public class OrgLocaleReader implements SourceFunction<Org> {
                 org.setName(entry.getKey());
                 org.setLocale(entry.getValue());
                 org.setProcessingTime(System.currentTimeMillis());
-                log.info("Read Org data:{}", JsonMapperUtils.toStrings(org));
+                if (log.isInfoEnabled()) {
+                    log.info("Read Org data:{}", JsonMapperUtils.toStrings(org));
+                }
                 orgs.add(org);
             }
         }
