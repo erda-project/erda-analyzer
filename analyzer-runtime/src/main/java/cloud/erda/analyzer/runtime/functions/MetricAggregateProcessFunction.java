@@ -54,7 +54,7 @@ public class MetricAggregateProcessFunction implements AggregateFunction<KeyedMe
             accumulator.setExpression(value.getExpression());
 
             for (Map.Entry<String, Object> attribute : value.getAttributes().entrySet()) {
-                accumulator.setAttribute(attribute.getKey(), attribute.getValue());
+                accumulator.setAttribute(attribute.getKey(), attribute.getValue().toString());
             }
 
             // 把 select 放到 attributes 中

@@ -25,6 +25,7 @@ public class AlertNotifyReader implements SourceFunction<AlertNotify> {
     public ArrayList<AlertNotify> GetAllNotifies() throws Exception {
         String uri = "/api/alert/notifies?pageNo=%d&pageSize=%d";
         ArrayList<AlertNotify> notifies = new ArrayList<>();
+        log.isInfoEnabled();
         while (true) {
             AlertNotifiesData alertNotifiesData = HttpSource.doHttpGet(uri, this.monitorAddr, this.pageNo, this.pageSize, AlertNotifiesData.class);
             if (alertNotifiesData != null) {

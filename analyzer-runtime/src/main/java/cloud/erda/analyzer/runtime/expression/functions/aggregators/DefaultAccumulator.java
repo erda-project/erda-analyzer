@@ -79,9 +79,9 @@ public class DefaultAccumulator implements Accumulator {
     }
 
     @Override
-    public void setAttribute(String key, Object value) {
+    public void setAttribute(String key, String value) {
         try {
-            attributes.put(key, (String) value);
+            attributes.put(key, value);
         } catch (ClassCastException e) {
             e.printStackTrace();
         }

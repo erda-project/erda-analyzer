@@ -16,6 +16,7 @@ package cloud.erda.analyzer.common.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -46,12 +47,12 @@ public class HttpUtils {
         CloseableHttpResponse httpResponse = null;
         try {
             httpResponse = httpClient.execute(get);
-//            if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-            HttpEntity entity = httpResponse.getEntity();
-            if (null != entity) {
-                return EntityUtils.toString(httpResponse.getEntity());
+            if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                HttpEntity entity = httpResponse.getEntity();
+                if (null != entity) {
+                    return EntityUtils.toString(httpResponse.getEntity());
+                }
             }
-//            }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

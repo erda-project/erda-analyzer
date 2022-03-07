@@ -39,7 +39,7 @@ public interface Accumulator extends Serializable {
 
     void setKey(String key);
 
-    void setAttribute(String key, Object value);
+    void setAttribute(String key, String value);
 
     void setExpression(Expression expression);
 

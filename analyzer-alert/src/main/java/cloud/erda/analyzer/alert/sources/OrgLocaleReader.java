@@ -23,9 +23,10 @@ public class OrgLocaleReader implements SourceFunction<Org> {
         String uri = "/api/alert/org-locale";
         ArrayList<Org> orgs = new ArrayList<>();
         OrgData orgData = HttpSource.doHttpGet(uri, this.monitorAddr, 0, 0, OrgData.class);
+        log.isInfoEnabled();
         if (orgData != null) {
             if (!orgData.isSuccess()) {
-                log.error("get org locale is failed err is {}", orgData.getErr().toString());
+                log.info("get org locale is failed err is {}", orgData.getErr().toString());
                 return orgs;
             }
             for (Map.Entry<String, String> entry : orgData.getData().entrySet()) {
