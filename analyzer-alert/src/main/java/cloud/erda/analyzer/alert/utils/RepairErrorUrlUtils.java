@@ -82,7 +82,7 @@ public class RepairErrorUrlUtils {
         String displayUrl = metricEvent.getTags().get(AlertConstants.DISPLAY_URL);
         String recordUrl = metricEvent.getTags().get(AlertConstants.RECORD_URL);
         String head = "";
-        if (!displayUrl.equals("")) {
+        if (StringUtil.isNotEmpty(displayUrl)) {
             head = getHead(displayUrl, metricEvent);
             String[] elements = getElements(displayUrl, metricEvent);
             if (elements[0].equals(WorkBench)) {
@@ -90,7 +90,7 @@ public class RepairErrorUrlUtils {
                 metricEvent.getTags().put(AlertConstants.DISPLAY_URL, head + rDisplayUrl);
             }
         }
-        if (!recordUrl.equals("")) {
+        if (StringUtil.isNotEmpty(recordUrl)) {
             head = getHead(recordUrl, metricEvent);
             String[] elements = getElements(recordUrl, metricEvent);
             if (elements[0].equals(MicroService)) {
