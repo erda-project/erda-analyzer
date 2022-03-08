@@ -1,4 +1,4 @@
-package cloud.erda.analyzer.runtime.utils;
+package cloud.erda.analyzer.runtime.JsonDeserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ArrayDeserializerUtils extends JsonDeserializer<String> {
+public class ArrayToStringDeserializer extends JsonDeserializer<String> {
     @Override
     public String deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         if (jsonParser.currentToken() == JsonToken.START_ARRAY) {
