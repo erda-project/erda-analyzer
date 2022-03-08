@@ -14,7 +14,9 @@
 
 package cloud.erda.analyzer.runtime.models;
 
+import cloud.erda.analyzer.runtime.jsonDeserializers.ArrayToStringDeserializer;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
 
 import java.util.Map;
@@ -30,7 +32,7 @@ public class ExpressionMetadata {
     private String id;
 
     private String version;
-
+    @JsonDeserialize(contentUsing = ArrayToStringDeserializer.class)
     private Map<String, String> attributes;
 
     private Expression expression;
