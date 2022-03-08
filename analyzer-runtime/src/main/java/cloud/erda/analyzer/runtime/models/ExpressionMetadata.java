@@ -14,7 +14,7 @@
 
 package cloud.erda.analyzer.runtime.models;
 
-import cloud.erda.analyzer.runtime.JsonDeserializer.ArrayToStringDeserializer;
+import cloud.erda.analyzer.runtime.jsonDeserializers.ArrayToStringDeserializer;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;

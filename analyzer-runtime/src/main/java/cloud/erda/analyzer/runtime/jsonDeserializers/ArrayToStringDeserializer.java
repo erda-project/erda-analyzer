@@ -1,4 +1,4 @@
-package cloud.erda.analyzer.runtime.JsonDeserializer;
+package cloud.erda.analyzer.runtime.jsonDeserializers;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
