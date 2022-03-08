@@ -45,6 +45,7 @@ public class AlertNotifyTarget {
     @JsonSetter("dingding_url")
     private String dingdingUrl;
 
+    @JsonSetter("level")
     private String level;
 
     private AlertLevel[] levels;

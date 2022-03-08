@@ -19,9 +19,7 @@ package cloud.erda.analyzer.tracing.functions;
 import cloud.erda.analyzer.common.constant.SpanConstants;
 import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.utils.MapUtils;
-import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
-import org.apache.flink.util.Collector;
 
 /**
  * @author liuhaoyang

@@ -31,12 +31,12 @@ import java.util.ArrayList;
 import java.util.Map;
 
 @Slf4j
-public class AllNotifyTemplates implements SourceFunction<NotifyTemplate> {
+public class NotifyTemplates implements SourceFunction<NotifyTemplate> {
     private String monitorAddr;
     private CloseableHttpClient httpclient;
     private long httpInterval = 60000;
 
-    public AllNotifyTemplates(String monitorAddr) {
+    public NotifyTemplates(String monitorAddr) {
         this.monitorAddr = monitorAddr;
     }
 

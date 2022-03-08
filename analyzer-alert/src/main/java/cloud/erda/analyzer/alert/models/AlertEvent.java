@@ -42,6 +42,8 @@ public class AlertEvent {
 
     private AlertLevel level;
 
+    private String locale;
+
     private AlertNotify alertNotify;
 
     private AlertNotifyTemplate alertNotifyTemplate;

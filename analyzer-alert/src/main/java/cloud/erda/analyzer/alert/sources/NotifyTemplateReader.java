@@ -44,7 +44,7 @@ public class NotifyTemplateReader implements DataRowReader<AlertNotifyTemplate> 
     public AlertNotifyTemplate read(ResultSet resultSet) throws Exception {
         try {
             AlertNotifyTemplate notifyTemplate = new AlertNotifyTemplate();
-            notifyTemplate.setId(resultSet.getLong("id"));
+            notifyTemplate.setId(resultSet.getString("id"));
             notifyTemplate.setName(resultSet.getString("name"));
             notifyTemplate.setAlertType(resultSet.getString("alert_type"));
             notifyTemplate.setAlertIndex(resultSet.getString("alert_index"));

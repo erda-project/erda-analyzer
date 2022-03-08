@@ -14,26 +14,26 @@
 
 package cloud.erda.analyzer.metrics;
 
+import cloud.erda.analyzer.metrics.functions.*;
+import cloud.erda.analyzer.runtime.sources.AlertExpressionReader;
+import cloud.erda.analyzer.runtime.sources.MetricExpressionReader;
+import cloud.erda.analyzer.runtime.MetricRuntime;
+import cloud.erda.analyzer.runtime.functions.MetricAlertSelectFunction;
+import cloud.erda.analyzer.runtime.functions.MetricEventSelectFunction;
+import cloud.erda.analyzer.runtime.functions.MetricSelectOutputProcessFunction;
+import cloud.erda.analyzer.runtime.utils.OutputTagUtils;
+import com.esotericsoftware.kryo.serializers.CompatibleFieldSerializer;
+
 import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.functions.MetricEventCorrectFunction;
 import cloud.erda.analyzer.common.models.MetricEvent;
 import cloud.erda.analyzer.common.schemas.MetricEventSchema;
 import cloud.erda.analyzer.common.utils.ExecutionEnv;
 import cloud.erda.analyzer.common.watermarks.MetricWatermarkExtractor;
-import cloud.erda.analyzer.metrics.functions.*;
-import cloud.erda.analyzer.runtime.MetricRuntime;
-import cloud.erda.analyzer.runtime.functions.MetricAlertSelectFunction;
-import cloud.erda.analyzer.runtime.functions.MetricEventSelectFunction;
-import cloud.erda.analyzer.runtime.functions.MetricSelectOutputProcessFunction;
 import cloud.erda.analyzer.runtime.models.AggregatedMetricEvent;
 import cloud.erda.analyzer.runtime.models.Expression;
 import cloud.erda.analyzer.runtime.models.ExpressionFunction;
 import cloud.erda.analyzer.runtime.models.ExpressionMetadata;
-import cloud.erda.analyzer.runtime.sources.AlertExpressionMetadataReader;
-import cloud.erda.analyzer.runtime.sources.FlinkMysqlAppendSource;
-import cloud.erda.analyzer.runtime.sources.MetricExpressionMetadataReader;
-import cloud.erda.analyzer.runtime.utils.OutputTagUtils;
-import com.esotericsoftware.kryo.serializers.CompatibleFieldSerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.streaming.api.datastream.DataStream;
@@ -48,27 +48,24 @@ import java.util.List;
 
 @Slf4j
 public class Main {
-
     public static void main(String[] args) throws Exception {
         final ParameterTool parameterTool = ExecutionEnv.createParameterTool(args);
         StreamExecutionEnvironment env = ExecutionEnv.prepare(parameterTool);
         env.getConfig().registerTypeWithKryoSerializer(Expression.class, CompatibleFieldSerializer.class);
         env.getConfig().registerTypeWithKryoSerializer(ExpressionFunction.class, CompatibleFieldSerializer.class);
-        //规则表达式数据
-        DataStream<ExpressionMetadata> alertExpressionQuery = env
-                .addSource(new FlinkMysqlAppendSource<>(Constants.ALERT_EXPRESSION_QUERY, parameterTool.getLong(Constants.METRIC_METADATA_INTERVAL, 60000), new AlertExpressionMetadataReader(), parameterTool.getProperties()))
+        //从monitor中alert表达式数据
+        DataStream<ExpressionMetadata> allAlertExpressions = env.addSource(new AlertExpressionReader(parameterTool.get(Constants.MONITOR_ADDR)))
                 .forceNonParallel()
                 .returns(ExpressionMetadata.class)
-                .name("Query alert expression from mysql");
+                .name("get alert expressions from monitor");
 
-        //规则表达式数据
-        DataStream<ExpressionMetadata> metricExpressionQuery = env
-                .addSource(new FlinkMysqlAppendSource<>(Constants.METRIC_EXPRESSION_QUERY, parameterTool.getLong(Constants.METRIC_METADATA_INTERVAL, 60000), new MetricExpressionMetadataReader(), parameterTool.getProperties()))
+        //从monitor中获取metric表达式数据
+        DataStream<ExpressionMetadata> allMetricExpressions = env.addSource(new MetricExpressionReader(parameterTool.get(Constants.MONITOR_ADDR)))
                 .forceNonParallel()
                 .returns(ExpressionMetadata.class)
-                .name("Query metric expression from mysql");
+                .name("get metric expressions from monitor");
 
-        DataStream<ExpressionMetadata> expressionQuery = alertExpressionQuery.union(metricExpressionQuery);
+        DataStream<ExpressionMetadata> expressionQuery = allAlertExpressions.union(allMetricExpressions);
 
         //metric data from kafka
         List<String> topics = Arrays.asList(parameterTool.getRequired(Constants.TOPIC_METRICS), parameterTool.getRequired(Constants.TOPIC_METRICS_TEMP));

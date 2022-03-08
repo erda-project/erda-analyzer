@@ -14,6 +14,7 @@
 
 package cloud.erda.analyzer.runtime.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import java.util.Map;
@@ -23,6 +24,7 @@ import java.util.Map;
  * @create: 2019-06-28 14:34
  **/
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ExpressionMetadata {
 
     private String id;
@@ -37,3 +39,5 @@ public class ExpressionMetadata {
 
     private long processingTime;
 }
+
+
