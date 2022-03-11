@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 
 @Slf4j
 public class RepairErrorUrlUtils {
-    private static String DataCenter = "dataCenter", WorkBench = "workBench", MicroService = "microService";
+    private static final String DataCenter = "dataCenter", WorkBench = "workBench", MicroService = "microService";
 
     private static String pattern = "(.*)-org.*";
     private static Pattern p = Pattern.compile(pattern);
@@ -43,7 +43,8 @@ public class RepairErrorUrlUtils {
     //记录
     //  RecordPathFormat    = "/microService/%s/%s/%s/alarm-management/%s/alarm-record"(原）
     private static String recordPathFormat = "msp/%s/%s/%s/alarm-management/%s/list/events/{{family_id}}";
-
+    // /dataCenter/alarm/record(原)
+    private static String cmpRecordPathFormat = "cmp/alarm/record/events/{{family_id}}";
 
     public static MetricEvent modifyMetricEvent(MetricEvent metricEvent) throws MalformedURLException {
         String displayUrl = metricEvent.getTags().get(AlertConstants.DISPLAY_URL);
@@ -93,9 +94,14 @@ public class RepairErrorUrlUtils {
         if (StringUtil.isNotEmpty(recordUrl)) {
             head = getHead(recordUrl, metricEvent);
             String[] elements = getElements(recordUrl, metricEvent);
-            if (elements[0].equals(MicroService)) {
-                String rRecordUrl = String.format(recordPathFormat, elements[1], elements[2], elements[3], elements[5]);
-                metricEvent.getTags().put(AlertConstants.RECORD_URL, head + rRecordUrl);
+            switch (elements[0]) {
+                case MicroService:
+                    String rRecordUrl = String.format(recordPathFormat, elements[1], elements[2], elements[3], elements[5]);
+                    metricEvent.getTags().put(AlertConstants.RECORD_URL, head + rRecordUrl);
+                    break;
+                case DataCenter:
+                    metricEvent.getTags().put(AlertConstants.RECORD_URL, head + cmpRecordPathFormat);
+                    break;
             }
         }
     }
