@@ -44,7 +44,7 @@ public class AlertLevelProcessFunction extends ProcessWindowFunction<AlertEvent,
         } else {
             collector.collect(maxLevelAlert);
         }
-        if (processMetric != null) {
+        if (processMetric != null && counter > 1) {
             processMetric.addReduced(counter-1);
             context.output(OutputTagUtils.AlertEventNotifyProcess, processMetric);
         }
