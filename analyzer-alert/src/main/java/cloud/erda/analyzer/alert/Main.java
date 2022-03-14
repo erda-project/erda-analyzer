@@ -215,6 +215,9 @@ public class Main {
         }
 
         SingleOutputStreamOperator<AlertEvent> alertEventLevel = alertEventsWithTemplate
+                .filter(new AlertEventTargetExcludeFilterFunction(AlertConstants.ALERT_NOTIFY_TYPE_TICKET))
+                .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
+                .name("filter out ticket alert")
                 .filter(new AlertEventLevelFilterFunction())
                 .setParallelism(parameterTool.getInt(STREAM_PARALLELISM_OPERATOR))
                 .name("filter event notify level")

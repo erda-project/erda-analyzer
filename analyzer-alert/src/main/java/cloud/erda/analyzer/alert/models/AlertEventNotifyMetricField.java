@@ -12,10 +12,10 @@ public class AlertEventNotifyMetricField implements Serializable {
     private long silenced;
 
     public void addReduced(long delta) {
-        reduced++;
+        reduced += delta;
     }
 
     public void addSilenced(long delta) {
-        silenced++;
+        silenced += delta;
     }
 }
