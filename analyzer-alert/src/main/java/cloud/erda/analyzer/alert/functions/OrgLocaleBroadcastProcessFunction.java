@@ -36,12 +36,15 @@ public class OrgLocaleBroadcastProcessFunction extends BroadcastProcessFunction<
         Map<String, String> tags = alertEvent.getMetricEvent().getTags();
         String orgName = tags.get("org_name");
 
-        String locale = defaultLocale;
+        String locale = null;
         if (StringUtil.isNotEmpty(orgName)) {
             Org org = orgLocaleState.get(orgName);
             if (org != null) {
                 locale = org.getLocale();
             }
+        }
+        if (StringUtil.isEmpty(locale)) {
+            locale = defaultLocale;
         }
 
         alertEvent.setLocale(locale);
