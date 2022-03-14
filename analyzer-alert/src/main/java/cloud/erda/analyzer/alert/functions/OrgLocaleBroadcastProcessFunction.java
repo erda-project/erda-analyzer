@@ -42,27 +42,6 @@ public class OrgLocaleBroadcastProcessFunction extends BroadcastProcessFunction<
         if (org == null) {
             return;
         }
-//        cleanExpireState(context);
         context.getBroadcastState(orgLocaleStateDescriptor).put(org.getName(), org);
-    }
-
-    private void cleanExpireState(Context ctx) throws Exception {
-        long now = System.currentTimeMillis();
-        if (now - lastCleanTime < stateTtl) {
-            return;
-        }
-        lastCleanTime = now;
-        BroadcastState<String, Org> orgLocale = ctx.getBroadcastState(orgLocaleStateDescriptor);
-        if (orgLocale == null) {
-            return;
-        }
-        Iterator<Map.Entry<String, Org>> item = orgLocale.entries().iterator();
-        while (item.hasNext()) {
-            Map.Entry<String, Org> entry = item.next();
-            if (now - entry.getValue().getProcessingTime() > stateTtl) {
-                item.remove();
-            }
-        }
-        log.info("Clean up expired org locale.");
     }
 }
