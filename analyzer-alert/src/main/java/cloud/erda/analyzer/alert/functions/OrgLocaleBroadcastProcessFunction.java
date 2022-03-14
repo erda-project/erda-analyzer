@@ -9,6 +9,8 @@ import org.apache.flink.api.common.state.ReadOnlyBroadcastState;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
 import org.apache.flink.util.Collector;
 
+import java.util.Iterator;
+
 import java.util.Map;
 
 @Slf4j
@@ -40,7 +42,7 @@ public class OrgLocaleBroadcastProcessFunction extends BroadcastProcessFunction<
         if (org == null) {
             return;
         }
-        cleanExpireState(context);
+//        cleanExpireState(context);
         context.getBroadcastState(orgLocaleStateDescriptor).put(org.getName(), org);
     }
 
@@ -54,9 +56,11 @@ public class OrgLocaleBroadcastProcessFunction extends BroadcastProcessFunction<
         if (orgLocale == null) {
             return;
         }
-        for (Map.Entry<String, Org> immutableEntry : orgLocale.immutableEntries()) {
-            if (now - immutableEntry.getValue().getProcessingTime() > stateTtl) {
-                orgLocale.remove(immutableEntry.getKey());
+        Iterator<Map.Entry<String, Org>> item = orgLocale.entries().iterator();
+        while (item.hasNext()) {
+            Map.Entry<String, Org> entry = item.next();
+            if (now - entry.getValue().getProcessingTime() > stateTtl) {
+                item.remove();
             }
         }
         log.info("Clean up expired org locale.");
