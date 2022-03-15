@@ -38,6 +38,7 @@ public class MetricExpressionReader implements SourceFunction<ExpressionMetadata
                     expressionMetadataList.add(expressionMetadata);
                 }
                 if (this.pageNo * this.pageSize >= metricExpressionData.getData().getTotal()) {
+                    this.pageNo = 1;
                     break;
                 }
             }
