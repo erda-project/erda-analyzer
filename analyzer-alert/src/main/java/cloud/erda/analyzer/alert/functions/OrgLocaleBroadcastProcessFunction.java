@@ -2,6 +2,7 @@ package cloud.erda.analyzer.alert.functions;
 
 import cloud.erda.analyzer.alert.models.AlertEvent;
 import cloud.erda.analyzer.alert.models.Org;
+import cloud.erda.analyzer.common.utils.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.state.BroadcastState;
 import org.apache.flink.api.common.state.MapStateDescriptor;
@@ -19,6 +20,8 @@ public class OrgLocaleBroadcastProcessFunction extends BroadcastProcessFunction<
     private long stateTtl;
     private long lastCleanTime;
 
+    private static final String defaultLocale = "zh-CN";
+
     public OrgLocaleBroadcastProcessFunction(long stateTtl, MapStateDescriptor<String, Org> orgLocaleStateDescriptor) {
         this.orgLocaleStateDescriptor = orgLocaleStateDescriptor;
         this.stateTtl = stateTtl;
@@ -32,8 +35,19 @@ public class OrgLocaleBroadcastProcessFunction extends BroadcastProcessFunction<
         ReadOnlyBroadcastState<String, Org> orgLocaleState = readOnlyContext.getBroadcastState(orgLocaleStateDescriptor);
         Map<String, String> tags = alertEvent.getMetricEvent().getTags();
         String orgName = tags.get("org_name");
-        Org org = orgLocaleState.get(orgName);
-        alertEvent.setLocale(org.getLocale());
+
+        String locale = null;
+        if (StringUtil.isNotEmpty(orgName)) {
+            Org org = orgLocaleState.get(orgName);
+            if (org != null) {
+                locale = org.getLocale();
+            }
+        }
+        if (StringUtil.isEmpty(locale)) {
+            locale = defaultLocale;
+        }
+
+        alertEvent.setLocale(locale);
         collector.collect(alertEvent);
     }
 
