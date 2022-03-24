@@ -77,6 +77,9 @@ public class FunctionAggregatorFactory {
             case RATEPS:
                 aggregator = new RatepsFunctionAggregator(expression.getWindow());
                 break;
+            case RATE:
+                aggregator = new RateFunctionAggregator(expression.getWindow());
+                break;
             default:
                 /**
                  * 如果用户定义了未实现的聚合器，默认使用空聚合器，业务容错避免抛出异常影响其他的表达式执行
