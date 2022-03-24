@@ -44,7 +44,7 @@ public class AlertRecord {
 
     private String alertName;
 
-    private Long ruleId;
+    private String ruleId;
 
     private String ruleName;
 

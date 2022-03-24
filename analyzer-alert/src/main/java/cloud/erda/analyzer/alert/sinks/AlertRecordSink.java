@@ -80,7 +80,7 @@ public class AlertRecordSink extends DBPoolSink<AlertRecord> {
     public void close() throws Exception {
         super.close();
         this.execute();
-       this.conn.close();
+        this.conn.close();
     }
 
     @Override
@@ -94,7 +94,7 @@ public class AlertRecordSink extends DBPoolSink<AlertRecord> {
     }
 
     private void openConnection() throws SQLException, PropertyVetoException {
-        initConnection(this.url,this.user,this.password);
+        initConnection(this.url, this.user, this.password);
         this.conn = newConnection();
         this.ps = conn.prepareStatement(PREPARE_STATEMENT);
         this.lastExecTimestamp = System.currentTimeMillis();
@@ -114,7 +114,7 @@ public class AlertRecordSink extends DBPoolSink<AlertRecord> {
             ps.setString(i++, value.getExpressionKey());
             ps.setLong(i++, value.getAlertId());
             ps.setString(i++, value.getAlertName());
-            ps.setLong(i++, value.getRuleId());
+            ps.setString(i++, value.getRuleId());
             ps.setTimestamp(i++, new Timestamp(value.getAlertTime()));
             ps.setString(i++, value.getAlertState());
             ps.setString(i++, value.getAlertType());

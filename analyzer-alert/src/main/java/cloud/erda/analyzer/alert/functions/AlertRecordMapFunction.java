@@ -43,7 +43,7 @@ public class AlertRecordMapFunction implements MapFunction<RenderedAlertEvent, A
         record.setExpressionKey(this.getTag(metric, AlertConstants.ALERT_EXPRESSION_ID));
         record.setAlertId(Long.valueOf(this.getTag(metric, AlertConstants.ALERT_ID)));
         record.setAlertName(this.getTag(metric, AlertConstants.ALERT_TITLE));
-        record.setRuleId(Long.valueOf(this.getTag(metric, AlertConstants.ALERT_RULE_ID)));
+        record.setRuleId(this.getTag(metric, AlertConstants.ALERT_RULE_ID));
         record.setRuleName(this.getTag(metric, AlertConstants.ALERT_RULE_NAME));
         record.setAlertSource(this.getTag(metric, AlertConstants.ALERT_SOURCE));
         record.setAlertSubject(this.getTag(metric, AlertConstants.ALERT_SUBJECT));
