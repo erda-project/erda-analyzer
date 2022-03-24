@@ -114,7 +114,7 @@ public class AlertRecordSink extends DBPoolSink<AlertRecord> {
             ps.setString(i++, value.getExpressionKey());
             ps.setLong(i++, value.getAlertId());
             ps.setString(i++, value.getAlertName());
-            ps.setString(i++, value.getRuleId());
+            ps.setLong(i++, value.getRuleId());
             ps.setTimestamp(i++, new Timestamp(value.getAlertTime()));
             ps.setString(i++, value.getAlertState());
             ps.setString(i++, value.getAlertType());
