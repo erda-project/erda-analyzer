@@ -42,7 +42,7 @@ public class EventBoxSink extends RichSinkFunction<EventBoxRequest> {
     private HttpAsyncRequestService httpAsyncRequestService = new HttpAsyncRequestService();
 
     public EventBoxSink(Properties props) {
-        String eventBoxAddr = (String) props.getOrDefault(Constants.EVENTBOX_ADDR, "eventbox.default.svc.cluster.local:9528");
+        String eventBoxAddr = (String) props.getOrDefault(Constants.CORE_SERVICES_ADDR, "core-services.default.svc.cluster.local:9526");
         String eventBoxMessagePath = (String) props.getOrDefault(Constants.EVENTBOX_MESSAGE, "/api/dice/eventbox/message/create");
         eventBoxCreateUrl = "http://" + eventBoxAddr + eventBoxMessagePath;
     }

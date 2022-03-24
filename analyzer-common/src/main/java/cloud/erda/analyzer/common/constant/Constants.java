@@ -169,7 +169,7 @@ public class Constants {
     /**
      * depends on
      */
-    public static final String EVENTBOX_ADDR = "eventbox.addr";
+    public static final String CORE_SERVICES_ADDR = "core.services.addr";
 
     public static final String EVENTBOX_MESSAGE = "eventbox.message.path";
 
