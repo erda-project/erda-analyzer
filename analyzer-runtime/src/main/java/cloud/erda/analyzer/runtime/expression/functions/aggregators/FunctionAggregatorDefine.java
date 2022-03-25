@@ -55,4 +55,6 @@ public class FunctionAggregatorDefine {
     static final String MEAN = "mean";
 
     static final String RATEPS = "rateps";
+
+    static final String RATE = "rate";
 }
