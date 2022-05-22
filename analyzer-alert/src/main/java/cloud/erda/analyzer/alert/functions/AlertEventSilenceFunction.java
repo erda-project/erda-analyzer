@@ -22,6 +22,7 @@ import cloud.erda.analyzer.alert.utils.OutputTagUtils;
 import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.constant.MetricTagConstants;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -33,6 +34,7 @@ import org.apache.flink.util.Collector;
  * @create: 2020-01-05 23:13
  **/
 
+@Slf4j
 public class AlertEventSilenceFunction extends KeyedProcessFunction<String, AlertEvent, AlertEvent> {
 
     private ValueStateDescriptor<SilenceState> silenceStateDescriptor;
@@ -56,7 +58,6 @@ public class AlertEventSilenceFunction extends KeyedProcessFunction<String, Aler
             silence.setLastAlertLevel(value.getLevel());
             state.update(silence);
         }
-
         // process eventCount and silence
         if (AlertTrigger.alert.equals(value.getTrigger())) {
             if (ctx.timestamp() - silence.getLastTimestamp() < silence.getSilence()) {
@@ -89,6 +90,8 @@ public class AlertEventSilenceFunction extends KeyedProcessFunction<String, Aler
         } else {
             silence.setSilence(value.getAlertNotify().getSilence());
         }
+
+        log.info("triggerCount {} data: {},silence: {}", ctx.getCurrentKey(), silence.getTriggerCount(),silence.getSilence());
 
         value.getMetricEvent().getFields().put(MetricTagConstants.SILENCE_COUNT, silence.getSilenceCount());
         value.getMetricEvent().getFields().put(MetricTagConstants.TRIGGER_COUNT, silence.getTriggerCount());
