@@ -37,4 +37,6 @@ public class AlertNotify {
     private boolean enable;
 
     private long processingTime;
+
+    private String updated;
 }
