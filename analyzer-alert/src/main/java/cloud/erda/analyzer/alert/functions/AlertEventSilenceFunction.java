@@ -48,6 +48,7 @@ public class AlertEventSilenceFunction extends KeyedProcessFunction<String, Aler
         AlertEventNotifyMetric processMetric = AlertEventNotifyMetric.createFrom(value.getMetricEvent());
         ValueState<SilenceState> state = getRuntimeContext().getState(silenceStateDescriptor);
         SilenceState silence = state.value();
+
         if (silence == null) {
             silence = new SilenceState();
             silence.setLastTimestamp(0);
@@ -55,9 +56,20 @@ public class AlertEventSilenceFunction extends KeyedProcessFunction<String, Aler
             silence.setTriggerCount(0);
             silence.setSilenceCount(0);
             silence.setSilence(value.getAlertNotify().getSilence());
+            silence.setLastSilence(value.getAlertNotify().getSilence());
             silence.setLastAlertLevel(value.getLevel());
+            silence.setLastSilencePolicy(value.getAlertNotify().getSilencePolicy());
             state.update(silence);
         }
+
+        if (silence.getLastSilence() != value.getAlertNotify().getSilence() ||
+                !silence.getLastSilencePolicy().equals(value.getAlertNotify().getSilencePolicy()))
+        {
+            silence.setLastSilence(value.getAlertNotify().getSilence());
+            silence.setLastSilencePolicy(value.getAlertNotify().getSilencePolicy());
+            silence.setTriggerCount(0);
+        }
+
         // process eventCount and silence
         if (AlertTrigger.alert.equals(value.getTrigger())) {
             if (ctx.timestamp() - silence.getLastTimestamp() < silence.getSilence()) {
@@ -119,5 +131,9 @@ public class AlertEventSilenceFunction extends KeyedProcessFunction<String, Aler
         private long silence;
 
         private long silenceCount;
+
+        private String lastSilencePolicy;
+
+        private long lastSilence;
     }
 }
