@@ -22,6 +22,7 @@ import cloud.erda.analyzer.alert.utils.OutputTagUtils;
 import cloud.erda.analyzer.common.constant.Constants;
 import cloud.erda.analyzer.common.constant.MetricTagConstants;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.state.ValueState;
 import org.apache.flink.api.common.state.ValueStateDescriptor;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
@@ -33,6 +34,7 @@ import org.apache.flink.util.Collector;
  * @create: 2020-01-05 23:13
  **/
 
+@Slf4j
 public class AlertEventSilenceFunction extends KeyedProcessFunction<String, AlertEvent, AlertEvent> {
 
     private ValueStateDescriptor<SilenceState> silenceStateDescriptor;
@@ -46,6 +48,7 @@ public class AlertEventSilenceFunction extends KeyedProcessFunction<String, Aler
         AlertEventNotifyMetric processMetric = AlertEventNotifyMetric.createFrom(value.getMetricEvent());
         ValueState<SilenceState> state = getRuntimeContext().getState(silenceStateDescriptor);
         SilenceState silence = state.value();
+
         if (silence == null) {
             silence = new SilenceState();
             silence.setLastTimestamp(0);
@@ -53,8 +56,18 @@ public class AlertEventSilenceFunction extends KeyedProcessFunction<String, Aler
             silence.setTriggerCount(0);
             silence.setSilenceCount(0);
             silence.setSilence(value.getAlertNotify().getSilence());
+            silence.setLastSilence(value.getAlertNotify().getSilence());
             silence.setLastAlertLevel(value.getLevel());
+            silence.setLastSilencePolicy(value.getAlertNotify().getSilencePolicy());
             state.update(silence);
+        }
+
+        if (silence.getLastSilence() != value.getAlertNotify().getSilence() ||
+                !silence.getLastSilencePolicy().equals(value.getAlertNotify().getSilencePolicy()))
+        {
+            silence.setLastSilence(value.getAlertNotify().getSilence());
+            silence.setLastSilencePolicy(value.getAlertNotify().getSilencePolicy());
+            silence.setTriggerCount(0);
         }
 
         // process eventCount and silence
@@ -90,6 +103,8 @@ public class AlertEventSilenceFunction extends KeyedProcessFunction<String, Aler
             silence.setSilence(value.getAlertNotify().getSilence());
         }
 
+        log.info("triggerCount {} data: {},silence: {}", ctx.getCurrentKey(), silence.getTriggerCount(),silence.getSilence());
+
         value.getMetricEvent().getFields().put(MetricTagConstants.SILENCE_COUNT, silence.getSilenceCount());
         value.getMetricEvent().getFields().put(MetricTagConstants.TRIGGER_COUNT, silence.getTriggerCount());
         value.getMetricEvent().getFields().put(MetricTagConstants.SILENCE, silence.silence);
@@ -116,5 +131,9 @@ public class AlertEventSilenceFunction extends KeyedProcessFunction<String, Aler
         private long silence;
 
         private long silenceCount;
+
+        private String lastSilencePolicy;
+
+        private long lastSilence;
     }
 }
