@@ -62,13 +62,13 @@ public class AlertEventTemplateAggregateFunction extends ProcessWindowFunction<R
                     out.collect(result);
                     content = "";
                 }
-                content = StringUtil.isEmpty(content) ? renderedAlertEvent.getContent() : content + space + renderedAlertEvent.getContent();
                 if (StringUtil.isNotEmpty(content)) {
                     if (processMetric == null) {
                         processMetric = AlertEventNotifyMetric.createFrom(element.getMetricEvent());
                     }
                     processMetric.addReduced();
                 }
+                content = StringUtil.isEmpty(content) ? renderedAlertEvent.getContent() : content + space + renderedAlertEvent.getContent();
             }
             if (!StringUtil.isEmpty(content)) {
                 setResult(result, renderedAlertEvent, content);
