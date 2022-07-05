@@ -36,7 +36,7 @@ services:
     resources:
       cpu: ${request_cpu:0.1}
       max_cpu: 0.5
-      mem: ${request_mem:1024}
+      mem: ${request_mem:500}
       max_mem: 1024
     deployments:
       replicas: 1
@@ -73,7 +73,7 @@ services:
     resources:
       cpu: ${reqeust_cpu:0.5}
       max_cpu: 1
-      mem: ${request_mem:2048}
+      mem: ${request_mem:500}
       max_mem: 2048
     deployments:
       replicas: 2
@@ -96,7 +96,7 @@ services:
     resources:
       cpu: ${request_cpu:0.1}
       max_cpu: 0.5
-      mem: ${request_mem:1024}
+      mem: ${request_mem:500}
       max_mem: 1024
     deployments:
       replicas: 1
@@ -133,7 +133,7 @@ services:
     resources:
       cpu: ${reqeust_cpu:0.5}
       max_cpu: 1
-      mem: ${request_mem:2048}
+      mem: ${request_mem:500}
       max_mem: 2048
     deployments:
       replicas: 2
@@ -156,7 +156,7 @@ services:
     resources:
       cpu: ${request_cpu:0.1}
       max_cpu: 0.5
-      mem: ${request_mem:1024}
+      mem: ${request_mem:500}
       max_mem: 1024
     deployments:
       replicas: 1
@@ -190,7 +190,7 @@ services:
     resources:
       cpu: ${request_cpu:0.1}
       max_cpu: 1
-      mem: ${request_mem:2048}
+      mem: ${request_mem:500}
       max_mem: 2048
     deployments:
       replicas: 1
@@ -213,7 +213,7 @@ services:
     resources:
       cpu: ${request_cpu:0.2}
       max_cpu: 0.5
-      mem: ${request_mem:2048}
+      mem: ${request_mem:500}
       max_mem: 2048
     deployments:
       replicas: 1
@@ -243,7 +243,7 @@ services:
     resources:
       cpu: ${request_cpu:0.2}
       max_cpu: 1
-      mem: ${request_mem:2048}
+      mem: ${request_mem:500}
       max_mem: 2048
     deployments:
       replicas: 1
