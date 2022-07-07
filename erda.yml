@@ -29,7 +29,7 @@ envs:
   ANALYZER_ALERT_ADDR: "analyzer-alert:8081"
   ANALYZER_ERROR_INSIGHT_ADDR: "analyzer-error-insight:8081"
   ANALYZER_TRACING_ADDR: "analyzer-tracing:8081"
-  CORE_SERVICES_ADDR: "erda-server.default.svc.cluster.local:9095"
+  CORE_SERVICES_ADDR: "erda-server:9095"
 
 services:
   analyzer-metrics:
