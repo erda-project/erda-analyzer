@@ -41,7 +41,7 @@ public class AlertExpressionReader implements SourceFunction<ExpressionMetadata>
                     try {
                         CheckUtils.checkExpression(expressionMetadata);
                     } catch (Exception e) {
-                        log.error("Check alert metadata failed{}  expression:{}", expressionMetadata.getId(), expressionMetadata.getExpression());
+                        log.error("Check alert metadata failed:{}  expression:{}", expressionMetadata.getId(), expressionMetadata.getExpression());
                         continue;
                     }
                     log.info("Read alert metadata {}  expression: {}  attributes: {}", expressionMetadata.getId(), expressionMetadata.getExpression(), expressionMetadata.getAttributes());
