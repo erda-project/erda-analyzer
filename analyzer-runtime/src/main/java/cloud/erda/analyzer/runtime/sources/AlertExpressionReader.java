@@ -38,7 +38,12 @@ public class AlertExpressionReader implements SourceFunction<ExpressionMetadata>
                     expressionMetadata.setId(String.format("alert_%s", expressionMetadata.getId()));
                     checkNotNull(expressionMetadata.getAttributes().get(AlertConstants.ALERT_INDEX), "Attribute alert_index cannot be null");
                     checkNotNull(expressionMetadata.getAttributes().get(AlertConstants.ALERT_TYPE), "Attribute alert_type cannot be null");
-                    CheckUtils.checkExpression(expressionMetadata);
+                    try {
+                        CheckUtils.checkExpression(expressionMetadata);
+                    } catch (Exception e) {
+                        log.error("Check alert metadata failed{}  expression:{}", expressionMetadata.getId(), expressionMetadata.getExpression());
+                        continue;
+                    }
                     log.info("Read alert metadata {}  expression: {}  attributes: {}", expressionMetadata.getId(), expressionMetadata.getExpression(), expressionMetadata.getAttributes());
                     expressionMetadataList.add(expressionMetadata);
                 }
