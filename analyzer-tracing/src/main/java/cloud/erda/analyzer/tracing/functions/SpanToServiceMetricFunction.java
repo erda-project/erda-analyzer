@@ -45,6 +45,9 @@ public class SpanToServiceMetricFunction implements MapFunction<Span, MetricEven
         metricEvent.addTag(SpanConstants.SERVICE_INSTANCE_IP, span.getAttributes().get(SpanConstants.SERVICE_INSTANCE_IP));
         metricEvent.addTag(SpanConstants.PROJECT_NAME, span.getAttributes().get(SpanConstants.PROJECT_NAME));
         metricEvent.addTag(SpanConstants.WORKSPACE, span.getAttributes().get(SpanConstants.WORKSPACE));
+        metricEvent.addTag(SpanConstants.HOST_IP, span.getAttributes().get(SpanConstants.HOST_IP));
+        metricEvent.addTag(SpanConstants.SERVICE_IP, span.getAttributes().get(SpanConstants.SERVICE_IP));
+
         int startTimeCount = 0;
         metricEvent.addField(SpanConstants.START_TIME_COUNT, startTimeCount);
         if (log.isDebugEnabled()) {
