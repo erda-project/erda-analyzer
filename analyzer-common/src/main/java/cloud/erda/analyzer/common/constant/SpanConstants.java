@@ -78,6 +78,10 @@ public class SpanConstants {
 
     public static final String SERVICE_INSTANCE_ID = "service_instance_id";
 
+    public static final String HOST_IP = "host_ip";
+
+    public static final String SERVICE_IP = "service_ip";
+
     public static final String SERVICE_INSTANCE_STARTED_AT = "service_instance_started_at";
 
     public static final String PROJECT_NAME = "project_name";
