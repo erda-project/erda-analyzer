@@ -24,7 +24,7 @@ stages:
       - custom-script:
           alias: build-metrics
           description: 运行自定义命令
-          image: registry.erda.cloud/erda-actions/erda-actions/custom-script-action:2.0-20230421110359-5fd86c2
+          image: registry.erda.cloud/erda-actions/custom-script-action:2.0-20230421152213-5fd86c2
           commands:
             - cd ${erda-analyzer}
             - ./build.sh analyzer-metrics
@@ -34,7 +34,7 @@ stages:
       - custom-script:
           alias: build-alert
           description: 运行自定义命令
-          image: registry.erda.cloud/erda-actions/erda-actions/custom-script-action:2.0-20230421110359-5fd86c2
+          image: registry.erda.cloud/erda-actions/custom-script-action:2.0-20230421152213-5fd86c2
           commands:
             - cd ${erda-analyzer}
             - ./build.sh analyzer-alert
@@ -44,7 +44,7 @@ stages:
       - custom-script:
           alias: build-error-insight
           description: 运行自定义命令
-          image: registry.erda.cloud/erda-actions/erda-actions/custom-script-action:2.0-20230421110359-5fd86c2
+          image: registry.erda.cloud/erda-actions/custom-script-action:2.0-20230421152213-5fd86c2
           commands:
             - cd ${erda-analyzer}
             - ./build.sh analyzer-error-insight
@@ -54,7 +54,7 @@ stages:
       - custom-script:
           alias: build-tracing
           description: 运行自定义命令
-          image: registry.erda.cloud/erda-actions/erda-actions/custom-script-action:2.0-20230421110359-5fd86c2
+          image: registry.erda.cloud/erda-actions/custom-script-action:2.0-20230421152213-5fd86c2
           commands:
             - cd ${erda-analyzer}
             - ./build.sh analyzer-tracing
