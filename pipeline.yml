@@ -1,26 +1,30 @@
 version: "1.1"
-
-on:
+name: ""
+"on":
   push:
     branches:
       - master
       - release/*
     tags:
       - v*
-
 stages:
   - stage:
       - git-checkout:
           alias: erda-analyzer
+          description: 代码仓库克隆
           params:
             depth: 1
   - stage:
       - extract-repo-version:
+          alias: extract-repo-version
+          description: 从 git 代码仓库中解析提交信息，生成仓库版本
           params:
             git_dir: ${{ dirs.erda-analyzer }}
   - stage:
       - custom-script:
           alias: build-metrics
+          description: 运行自定义命令
+          image: registry.erda.cloud/erda-actions/custom-script-action:2.0-20230421152213-5fd86c2
           commands:
             - cd ${erda-analyzer}
             - ./build.sh analyzer-metrics
@@ -29,6 +33,8 @@ stages:
             mem: 2048
       - custom-script:
           alias: build-alert
+          description: 运行自定义命令
+          image: registry.erda.cloud/erda-actions/custom-script-action:2.0-20230421152213-5fd86c2
           commands:
             - cd ${erda-analyzer}
             - ./build.sh analyzer-alert
@@ -37,6 +43,8 @@ stages:
             mem: 2048
       - custom-script:
           alias: build-error-insight
+          description: 运行自定义命令
+          image: registry.erda.cloud/erda-actions/custom-script-action:2.0-20230421152213-5fd86c2
           commands:
             - cd ${erda-analyzer}
             - ./build.sh analyzer-error-insight
@@ -45,6 +53,8 @@ stages:
             mem: 2048
       - custom-script:
           alias: build-tracing
+          description: 运行自定义命令
+          image: registry.erda.cloud/erda-actions/custom-script-action:2.0-20230421152213-5fd86c2
           commands:
             - cd ${erda-analyzer}
             - ./build.sh analyzer-tracing
@@ -54,10 +64,10 @@ stages:
   - stage:
       - release:
           alias: release-erda-analyzer
+          description: 用于打包完成时，向dicehub 提交完整可部署的dice.yml。用户若没在pipeline.yml里定义该action，CI会自动在pipeline.yml里插入该action
           params:
             check_diceyml: false
             dice_yml: ${erda-analyzer}/erda.yml
-            tag_version: ${{ outputs.extract-repo-version.version }}
             image:
               analyzer-alert: ${{ outputs.build-alert.image }}
               analyzer-alert-task: ${{ outputs.build-alert.image }}
@@ -67,3 +77,4 @@ stages:
               analyzer-metrics-task: ${{ outputs.build-metrics.image }}
               analyzer-tracing: ${{ outputs.build-tracing.image }}
               analyzer-tracing-task: ${{ outputs.build-tracing.image }}
+            tag_version: ${{ outputs.extract-repo-version.version }}
