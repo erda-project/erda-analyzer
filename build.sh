@@ -23,9 +23,10 @@ docker build -t "${image}" \
     --label "commit=$(git rev-parse HEAD)" \
     --label "build-time=$(date '+%Y-%m-%d %T%z')" \
     --build-arg APP=$1 \
+    --push \
     -f Dockerfile .
 
-docker push "${image}"
+#docker push "${image}"
 
 cat > "${METAFILE}" <<EOF
 image=${image}
