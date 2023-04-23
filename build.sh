@@ -17,7 +17,6 @@ mvn clean package -pl $1 -am -B -DskipTests
 echo "${image}"
 
 docker login -u "${DOCKER_REGISTRY_USERNAME}" -p "${DOCKER_REGISTRY_PASSWORD}" ${DOCKER_REGISTRY}
-
 docker buildx create --use
 docker buildx build --platform linux/amd64,linux/arm64 -t "${image}" \
     --label "branch=$(git rev-parse --abbrev-ref HEAD)" \
