@@ -1,6 +1,6 @@
-FROM registry.erda.cloud/erda/erda-flink-1.12.7:20211222-c6d766b
+FROM registry.erda.cloud/erda-addons/flink:1.12.7-erda
 
-RUN echo "Asia/Shanghai" | tee /etc/timezone
+RUN sed -i 's/X9\.62 \w\+, //g' /usr/lib/jvm/java-1.8.0-openjdk/jre/lib/security/java.security
 
 WORKDIR $FLINK_HOME
 
