@@ -22,6 +22,8 @@ public class FilterOperatorDefine {
 
     public static final String Equal = "eq";
 
+    public static final String InsensitivelyEqual = "ieq";
+
     public static final String NotEqual = "neq";
 
     public static final String Like = "like";

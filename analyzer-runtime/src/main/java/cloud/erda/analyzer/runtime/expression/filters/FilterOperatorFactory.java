@@ -27,6 +27,8 @@ public class FilterOperatorFactory {
         switch (filter.getOperator()) {
             case FilterOperatorDefine.Equal:
                 return EqualFilterOperator.instance;
+            case FilterOperatorDefine.InsensitivelyEqual:
+                return InsensitivelyEqualFilterOperator.instance;
             case FilterOperatorDefine.NotEqual:
                 return NotEqualFilterOperator.instance;
             case FilterOperatorDefine.Like:
