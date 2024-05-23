@@ -34,6 +34,7 @@ public class FilterOperatorFactory {
             case FilterOperatorDefine.Like:
                 return LikeFilterOperator.instance;
             case FilterOperatorDefine.Any:
+                return AnyFilterOperator.instance;
             case FilterOperatorDefine.All:
                 return AnyFilterOperator.instance;
             case FilterOperatorDefine.Null:
