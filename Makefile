@@ -13,7 +13,7 @@
 
 DOCKER_REGISTRY ?= registry.erda.cloud/erda
 PLATFORM ?= linux/amd64,linux/arm64
-VERSION = $(shell ./make-version.sh tag)
+VERSION := $(shell ./make-version.sh tag)
 BUILD_TIME := $(shell date '+%Y-%m-%d %T%z')
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 COMMIT_ID := $(shell git rev-parse HEAD 2>/dev/null)
@@ -21,14 +21,24 @@ IMAGE_TAG ?= $(VERSION)
 DOCKER_IMAGE ?= $(DOCKER_REGISTRY)/erda-$(APP):$(IMAGE_TAG)
 APP ?=
 
+# Ensure APP is provided
 ifndef APP
   $(error APP is required. Usage: make build-image APP=<NAME>)
 endif
 
+build-version:
+	@echo ------------ Start Build Version Details ------------
+	@echo App: ${APP}
+	@echo Version: ${VERSION}
+	@echo BuildTime: ${BUILD_TIME}
+	@echo CommitID: ${COMMIT_ID}
+	@echo DockerImage: ${DOCKER_IMAGE}
+	@echo ------------ End   Build Version Details ------------
+
 build:
 	@mvn clean package -pl ${APP} -am -B -DskipTests
 
-image:
+image: build-version
 	@docker buildx build --pull \
 		--platform ${PLATFORM} \
 		--label "branch=${BRANCH}" \
@@ -38,8 +48,8 @@ image:
 		-t "$(DOCKER_IMAGE)" \
 		-f Dockerfile . $(EXTRA_ARGS)
 
-build-image:
-	@$(MAKE) image EXTRA_ARGS="--load"
+build-image: image
+	@$(MAKE) image EXTRA_ARGS="$(if $(findstring ,, $(PLATFORM)),, --load)"
 
 build-push-image:
 	@$(MAKE) image EXTRA_ARGS="--push"
