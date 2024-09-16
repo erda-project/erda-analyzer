@@ -21,43 +21,79 @@ stages:
           params:
             git_dir: ${{ dirs.erda-analyzer }}
   - stage:
-      - custom-script:
+      - dockerfile:
           alias: build-metrics
-          description: 运行自定义命令
-          image: registry.erda.cloud/erda-actions/custom-script-action:2.0-20230423123122-5fd86c2
-          commands:
-            - cd ${erda-analyzer}
-            - ./build.sh analyzer-metrics
+          description: 针对自定义 dockerfile 打包，产出可运行镜像
+          version: "1.0"
+          params:
+            build_args:
+              APP: analyzer-metrics
+            image:
+              name: erda-analyzer-metrics
+              tag: ${{ outputs.extract-repo-version.image_tag }}
+            path: Dockerfile
+            registry:
+              password: ${{ configs.docker_registry_password }}
+              url: ${{ configs.docker_registry }}
+              username: ${{ configs.docker_registry_username }}
+            workdir: ${{ dirs.erda-analyzer }}
           resources:
             cpu: 2
             mem: 2048
-      - custom-script:
+      - dockerfile:
           alias: build-alert
-          description: 运行自定义命令
-          image: registry.erda.cloud/erda-actions/custom-script-action:2.0-20230423123122-5fd86c2
-          commands:
-            - cd ${erda-analyzer}
-            - ./build.sh analyzer-alert
+          description: 针对自定义 dockerfile 打包，产出可运行镜像
+          version: "1.0"
+          params:
+            build_args:
+              APP: analyzer-alert
+            image:
+              name: erda-analyzer-alert
+              tag: ${{ outputs.extract-repo-version.image_tag }}
+            path: Dockerfile
+            registry:
+              password: ${{ configs.docker_registry_password }}
+              url: ${{ configs.docker_registry }}
+              username: ${{ configs.docker_registry_username }}
+            workdir: ${{ dirs.erda-analyzer }}
           resources:
             cpu: 2
             mem: 2048
-      - custom-script:
+      - dockerfile:
           alias: build-error-insight
-          description: 运行自定义命令
-          image: registry.erda.cloud/erda-actions/custom-script-action:2.0-20230423123122-5fd86c2
-          commands:
-            - cd ${erda-analyzer}
-            - ./build.sh analyzer-error-insight
+          description: 针对自定义 dockerfile 打包，产出可运行镜像
+          version: "1.0"
+          params:
+            build_args:
+              APP: analyzer-error-insight
+            image:
+              name: erda-analyzer-error-insight
+              tag: ${{ outputs.extract-repo-version.image_tag }}
+            path: Dockerfile
+            registry:
+              password: ${{ configs.docker_registry_password }}
+              url: ${{ configs.docker_registry }}
+              username: ${{ configs.docker_registry_username }}
+            workdir: ${{ dirs.erda-analyzer }}
           resources:
             cpu: 2
             mem: 2048
-      - custom-script:
+      - dockerfile:
           alias: build-tracing
-          description: 运行自定义命令
-          image: registry.erda.cloud/erda-actions/custom-script-action:2.0-20230423123122-5fd86c2
-          commands:
-            - cd ${erda-analyzer}
-            - ./build.sh analyzer-tracing
+          description: 针对自定义 dockerfile 打包，产出可运行镜像
+          version: "1.0"
+          params:
+            build_args:
+              APP: analyzer-tracing
+            image:
+              name: erda-analyzer-tracing
+              tag: ${{ outputs.extract-repo-version.image_tag }}
+            path: Dockerfile
+            registry:
+              password: ${{ configs.docker_registry_password }}
+              url: ${{ configs.docker_registry }}
+              username: ${{ configs.docker_registry_username }}
+            workdir: ${{ dirs.erda-analyzer }}
           resources:
             cpu: 2
             mem: 2048
